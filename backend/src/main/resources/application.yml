@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: smarttravel-backend
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/smarttravel?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${SPRING_DATASOURCE_USERNAME:smarttravel}
+    password: ${SPRING_DATASOURCE_PASSWORD:smarttravel}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+server:
+  port: ${PORT:8080}
+
