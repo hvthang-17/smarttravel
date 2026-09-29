@@ -22,3 +22,6 @@ admin/dist/
 *.iml
 .DS_Store
 
+# Cline AI Agent skills (local tools)
+.cline/
+
