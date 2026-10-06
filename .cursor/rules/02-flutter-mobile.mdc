@@ -1,0 +1,25 @@
+---
+description: Flutter and Dart agent rules for SmartTravel mobile app.
+globs: ["mobile/lib/**/*.dart", "mobile/test/**/*.dart"]
+alwaysApply: false
+---
+
+# Flutter Mobile Rules for SmartTravel
+
+## Guidelines
+- **Framework**: Flutter 3.x, Dart 3.x, Material 3
+- **State Management**: Riverpod (`flutter_riverpod`)
+- **Navigation**: GoRouter (`lib/core/router/app_router.dart`)
+- **Networking**: Dio (`lib/core/network/api_client.dart`)
+- **Architecture**: `mobile/lib/features/<feature>/{data/{models,repositories}, presentation/{providers,screens}}`
+- **Design System**: Ocean Blue (`#0077B6`) primary, Sunset Coral (`#F77F00`) secondary CTA, Off-White (`#F8F9FA`) background canvas. Reference `tasks/DESIGN-SYSTEM.md`.
+
+## Anti-Slop UI Guidelines
+- Follow semantic token colors. Avoid harsh bright default colors or unstyled containers.
+- Standard spacing grid: 4, 8, 12, 16, 24, 32px. Minimum touch target size: 44x44 dp.
+- Always use `SafeArea`. Honor text scaling and accessibility.
+- Use `const` widgets where possible to optimize rebuilds.
+
+## Verification
+- Always run `cd mobile && flutter analyze` and `cd mobile && flutter test` after modifying mobile code.
+

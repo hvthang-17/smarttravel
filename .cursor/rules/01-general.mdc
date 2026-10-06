@@ -1,0 +1,34 @@
+---
+description: General rules, Karpathy guidelines, and multi-stack discipline for SmartTravel monorepo.
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# SmartTravel General Agent Rules
+
+SmartTravel is a monorepo consisting of:
+- `backend/`: Java 21, Spring Boot 3.5.5 REST API
+- `mobile/`: Flutter (Material 3, Riverpod, GoRouter, Dio)
+- `admin/`: React 19, TypeScript, Vite
+
+## Karpathy Guidelines
+- **Think before coding**: State assumptions, define success criteria, ask clarifying questions when requirements are unclear.
+- **Simplicity first**: No speculative abstractions or unnecessary features. Apply YAGNI, KISS, DRY.
+- **Surgical changes**: Minimal focused edits. Touch only files and lines required for the requested behavior.
+- **Goal-driven execution**: Define clear criteria and verify with concrete verification commands.
+
+## Multi-Stack Discipline
+1. Only edit code in the tier(s) requested by the user (`backend/`, `mobile/`, `admin/`).
+2. Maintain clean separation between tiers. Never mix tier dependencies.
+3. Keep API contracts consistent across tiers:
+   - All REST endpoints return `ApiResponse<T>` envelope.
+   - All error responses follow standard exception handling.
+   - Frontend types (Dart/TypeScript) must match backend DTOs.
+
+## Hard Rules
+- **No Placeholder Code**: Provide full, functional, tested implementations without `// TODO` comments or missing imports.
+- **Validate Every Change**: Run `cd backend && mvn test`, `cd mobile && flutter analyze`, or `cd admin && npm run build` based on changed files.
+- **Respect Dirty Worktrees**: Never revert user changes.
+- **Security**: Never commit secrets, `.env`, API keys, or tokens.
+- **File Length**: Keep repo-owned source files under 300 lines when practical; split focused concerns when it improves readability.
+
