@@ -1,0 +1,18 @@
+---
+description: React 19, TypeScript, and Vite agent rules for SmartTravel admin web application.
+globs: ["admin/src/**/*.ts", "admin/src/**/*.tsx", "admin/package.json"]
+alwaysApply: false
+---
+
+# React Admin Rules for SmartTravel
+
+## Guidelines
+- **Framework**: React 19, TypeScript (strict mode), Vite
+- **Architecture**: `src/features/`, `src/components/`, `src/core/`, `src/types/`
+- **Type Safety**: Strict TypeScript. No `any` types. TypeScript interfaces MUST match backend DTO definitions.
+- **API Client**: Service modules in `src/core/api.ts` or `src/features/<feature>/api.ts`.
+- **UI & Components**: Functional components with clear prop types. Follow modular design.
+
+## Verification
+- Always run `cd admin && npm run build` (runs `tsc -b` and Vite build) after modifying admin code.
+

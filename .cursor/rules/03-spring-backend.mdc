@@ -1,0 +1,22 @@
+---
+description: Java 21 and Spring Boot 3.5.5 agent rules for SmartTravel backend API.
+globs: ["backend/src/**/*.java", "backend/src/**/*.sql", "backend/pom.xml"]
+alwaysApply: false
+---
+
+# Spring Boot Backend Rules for SmartTravel
+
+## Guidelines
+- **Framework**: Java 21, Spring Boot 3.5.5, Spring Data JPA, Flyway, Spring Security
+- **Package Base**: `com.smarttravel.backend`
+- **Architecture**: `com.smarttravel.backend.features.<feature>.{api, domain, dto, repository, service}`
+- **Shared Package**: `com.smarttravel.backend.common` — `ApiResponse<T>`, `GlobalExceptionHandler`, `SecurityConfig`
+- **API Envelope**: Standard response wrapper `ApiResponse<T>` with `{ success, message, data, timestamp }`. All REST Controllers MUST return this envelope.
+- **DTO Validation**: Use `jakarta.validation` annotations (`@NotNull`, `@NotBlank`, `@Size`, etc.) on DTOs and `@Valid` on Controllers.
+- **Database Migrations**: Flyway scripts under `src/main/resources/db/migration/V<N>__<name>.sql`. Never alter existing migration files.
+- **Dependency Injection**: Use constructor injection with `final` fields. No field injection.
+- **Security**: Endpoint permits configured in `SecurityConfig.java`. Public endpoints explicitly permitted.
+
+## Verification
+- Always run `cd backend && mvn test` after modifying backend code.
+
