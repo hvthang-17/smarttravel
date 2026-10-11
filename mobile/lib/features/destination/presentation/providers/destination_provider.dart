@@ -3,10 +3,8 @@ import 'package:smarttravel_mobile/core/network/api_client.dart';
 import 'package:smarttravel_mobile/features/destination/data/models/destination_model.dart';
 import 'package:smarttravel_mobile/features/destination/data/repositories/destination_repository.dart';
 
-final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
-
 final destinationRepositoryProvider = Provider<DestinationRepository>((ref) {
-  final apiClient = ref.watch(apiClientProvider);
+  final apiClient = ApiClient(ref);
   return DestinationRepository(apiClient);
 });
 
@@ -23,4 +21,5 @@ final destinationDetailProvider =
   final repository = ref.watch(destinationRepositoryProvider);
   return repository.getDestinationById(id);
 });
+
 

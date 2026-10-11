@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smarttravel_mobile/features/destination/presentation/screens/destination_detail_screen.dart';
 import 'package:smarttravel_mobile/features/destination/presentation/screens/destination_list_screen.dart';
+import 'package:smarttravel_mobile/features/destination/presentation/screens/login_screen.dart';
+import 'package:smarttravel_mobile/features/destination/presentation/screens/register_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -9,6 +11,14 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/',
       builder: (context, state) => const RootNavigationScreen(),
+    ),
+    GoRoute(
+      path: '/login',
+      builder: (context, state) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: '/register',
+      builder: (context, state) => const RegisterScreen(),
     ),
     GoRoute(
       path: '/destinations',
@@ -33,7 +43,16 @@ class RootNavigationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('SmartTravel Đà Nẵng')),
+      appBar: AppBar(
+        title: const Text('SmartTravel Đà Nẵng'),
+        actions: [
+          TextButton.icon(
+            onPressed: () => context.push('/login'),
+            icon: const Icon(Icons.login, color: Colors.white),
+            label: const Text('Đăng nhập', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
@@ -47,7 +66,7 @@ class RootNavigationScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           FilledButton.icon(
-            onPressed: () {},
+            onPressed: () => context.push('/login'),
             icon: const Icon(Icons.auto_awesome),
             label: const Text('Tạo lịch trình'),
           ),
@@ -62,4 +81,5 @@ class RootNavigationScreen extends StatelessWidget {
     );
   }
 }
+
 
