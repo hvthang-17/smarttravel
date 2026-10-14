@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smarttravel_mobile/features/destination/presentation/screens/destination_detail_screen.dart';
 import 'package:smarttravel_mobile/features/destination/presentation/screens/destination_list_screen.dart';
+import 'package:smarttravel_mobile/features/destination/presentation/screens/trip_wizard_screen.dart';
+
 import 'package:smarttravel_mobile/features/destination/presentation/screens/login_screen.dart';
 import 'package:smarttravel_mobile/features/destination/presentation/screens/register_screen.dart';
 
@@ -20,6 +22,11 @@ final GoRouter appRouter = GoRouter(
       path: '/register',
       builder: (context, state) => const RegisterScreen(),
     ),
+    GoRoute(
+      path: '/trip-wizard',
+      builder: (context, state) => const TripWizardScreen(),
+    ),
+
     GoRoute(
       path: '/destinations',
       builder: (context, state) => const DestinationListScreen(),
