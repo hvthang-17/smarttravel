@@ -1,0 +1,1 @@
+import 'package:flutter/material.dart'; import 'package:flutter_riverpod/flutter_riverpod.dart'; class TripWizardScreen extends ConsumerWidget { const TripWizardScreen({super.key}); @override Widget build(BuildContext context, WidgetRef ref) { return Scaffold(appBar: AppBar(title: const Text('T?o l?ch trình')), body: const Center(child: Text('Trip Wizard Screen'))); } }

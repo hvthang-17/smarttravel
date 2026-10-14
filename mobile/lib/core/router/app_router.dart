@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smarttravel_mobile/features/destination/presentation/screens/destination_detail_screen.dart';
 import 'package:smarttravel_mobile/features/destination/presentation/screens/destination_list_screen.dart';
-import 'package:smarttravel_mobile/features/destination/presentation/screens/trip_wizard_screen.dart';
+import '../features/destination/presentation/screens/trip_wizard_screen.dart';
 
 import 'package:smarttravel_mobile/features/destination/presentation/screens/login_screen.dart';
 import 'package:smarttravel_mobile/features/destination/presentation/screens/register_screen.dart';
