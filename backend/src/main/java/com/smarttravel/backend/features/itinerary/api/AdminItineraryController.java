@@ -36,7 +36,7 @@ public class AdminItineraryController {
         genReq.setPace(request.getPace() != null ? request.getPace() : "balanced");
         genReq.setPreferredCategories(request.getPreferredCategories());
 
-        Itinerary itinerary = itineraryService.generateItinerary(email, genReq);
-        return ResponseEntity.ok(ApiResponse.success(ItineraryMapper.toDto(itinerary), "Tạo lịch trình thành công"));
+        ItineraryResponseDto dto = itineraryService.generateItineraryDto(email, genReq);
+        return ResponseEntity.ok(ApiResponse.success(dto, "Tạo lịch trình thành công"));
     }
 }
