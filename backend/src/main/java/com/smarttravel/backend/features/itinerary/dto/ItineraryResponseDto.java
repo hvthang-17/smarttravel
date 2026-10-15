@@ -15,12 +15,20 @@ public class ItineraryResponseDto {
     private String pace;
     private Long totalEstimatedCost;
     private String status;
+    private String shareToken;
+    private Integer version = 1;
+    private java.util.Map<String, Long> categoryBreakdown;
+    private Double budgetUtilizationPercent;
+    private String budgetHealth;
     private List<ItineraryDayDto> days;
 
     public static class ItineraryDayDto {
         private Long id;
         private Integer dayNumber;
         private LocalDate date;
+        private Long dayCostVnd;
+        private Double totalDistanceKm;
+        private Integer totalDurationMinutes;
         private List<ItineraryItemDto> items;
 
         public Long getId() { return id; }
@@ -29,6 +37,12 @@ public class ItineraryResponseDto {
         public void setDayNumber(Integer dayNumber) { this.dayNumber = dayNumber; }
         public LocalDate getDate() { return date; }
         public void setDate(LocalDate date) { this.date = date; }
+        public Long getDayCostVnd() { return dayCostVnd; }
+        public void setDayCostVnd(Long dayCostVnd) { this.dayCostVnd = dayCostVnd; }
+        public Double getTotalDistanceKm() { return totalDistanceKm; }
+        public void setTotalDistanceKm(Double totalDistanceKm) { this.totalDistanceKm = totalDistanceKm; }
+        public Integer getTotalDurationMinutes() { return totalDurationMinutes; }
+        public void setTotalDurationMinutes(Integer totalDurationMinutes) { this.totalDurationMinutes = totalDurationMinutes; }
         public List<ItineraryItemDto> getItems() { return items; }
         public void setItems(List<ItineraryItemDto> items) { this.items = items; }
     }
@@ -40,6 +54,8 @@ public class ItineraryResponseDto {
         private Integer durationMinutes;
         private Long estimatedCostVnd;
         private String notes;
+        private Double travelDistanceKm;
+        private Integer travelMinutes;
         private DestinationSummaryDto destination;
 
         public Long getId() { return id; }
@@ -54,6 +70,10 @@ public class ItineraryResponseDto {
         public void setEstimatedCostVnd(Long estimatedCostVnd) { this.estimatedCostVnd = estimatedCostVnd; }
         public String getNotes() { return notes; }
         public void setNotes(String notes) { this.notes = notes; }
+        public Double getTravelDistanceKm() { return travelDistanceKm; }
+        public void setTravelDistanceKm(Double travelDistanceKm) { this.travelDistanceKm = travelDistanceKm; }
+        public Integer getTravelMinutes() { return travelMinutes; }
+        public void setTravelMinutes(Integer travelMinutes) { this.travelMinutes = travelMinutes; }
         public DestinationSummaryDto getDestination() { return destination; }
         public void setDestination(DestinationSummaryDto destination) { this.destination = destination; }
     }
@@ -103,6 +123,16 @@ public class ItineraryResponseDto {
     public void setTotalEstimatedCost(Long totalEstimatedCost) { this.totalEstimatedCost = totalEstimatedCost; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getShareToken() { return shareToken; }
+    public void setShareToken(String shareToken) { this.shareToken = shareToken; }
+    public Integer getVersion() { return version; }
+    public void setVersion(Integer version) { this.version = version; }
+    public java.util.Map<String, Long> getCategoryBreakdown() { return categoryBreakdown; }
+    public void setCategoryBreakdown(java.util.Map<String, Long> categoryBreakdown) { this.categoryBreakdown = categoryBreakdown; }
+    public Double getBudgetUtilizationPercent() { return budgetUtilizationPercent; }
+    public void setBudgetUtilizationPercent(Double budgetUtilizationPercent) { this.budgetUtilizationPercent = budgetUtilizationPercent; }
+    public String getBudgetHealth() { return budgetHealth; }
+    public void setBudgetHealth(String budgetHealth) { this.budgetHealth = budgetHealth; }
     public List<ItineraryDayDto> getDays() { return days; }
     public void setDays(List<ItineraryDayDto> days) { this.days = days; }
 }

@@ -46,6 +46,12 @@ public class Itinerary {
     @Column(nullable = false, length = 30)
     private String status = "ACTIVE";
 
+    @Column(name = "share_token", unique = true, length = 100)
+    private String shareToken;
+
+    @Column(nullable = false)
+    private Integer version = 1;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
@@ -79,6 +85,10 @@ public class Itinerary {
     public void setTotalEstimatedCost(Long totalEstimatedCost) { this.totalEstimatedCost = totalEstimatedCost; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getShareToken() { return shareToken; }
+    public void setShareToken(String shareToken) { this.shareToken = shareToken; }
+    public Integer getVersion() { return version; }
+    public void setVersion(Integer version) { this.version = version; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
