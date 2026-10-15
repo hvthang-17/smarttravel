@@ -57,7 +57,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/v1/health", "/actuator/health", "/api/v1/auth/**").permitAll()
+                .requestMatchers("/api/v1/health", "/actuator/health", "/api/v1/auth/**", "/api/v1/itineraries/shared/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/destinations", "/api/v1/destinations/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/destinations", "/api/v1/destinations/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/v1/destinations", "/api/v1/destinations/**").hasRole("ADMIN")
