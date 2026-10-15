@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:smarttravel_mobile/features/destination/data/models/destination_model.dart';
 import 'package:smarttravel_mobile/features/destination/presentation/providers/destination_provider.dart';
 
 class DestinationDetailScreen extends ConsumerStatefulWidget {
@@ -44,11 +43,11 @@ class _DestinationDetailScreenState extends ConsumerState<DestinationDetailScree
                         Container(
                           height: 320,
                           width: double.infinity,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                const Color(0xFF0077B6),
-                                const Color(0xFF03045E),
+                                Color(0xFF0077B6),
+                                Color(0xFF03045E),
                               ],
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
@@ -64,7 +63,7 @@ class _DestinationDetailScreenState extends ConsumerState<DestinationDetailScree
                                           ? Icons.restaurant
                                           : Icons.landscape,
                               size: 80,
-                              color: Colors.white.withOpacity(0.6),
+                              color: Colors.white.withValues(alpha: 0.6),
                             ),
                           ),
                         ),
@@ -80,7 +79,7 @@ class _DestinationDetailScreenState extends ConsumerState<DestinationDetailScree
                               gradient: LinearGradient(
                                 colors: [
                                   Colors.transparent,
-                                  Colors.black.withOpacity(0.5),
+                                  Colors.black.withValues(alpha: 0.5),
                                 ],
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
@@ -99,11 +98,11 @@ class _DestinationDetailScreenState extends ConsumerState<DestinationDetailScree
                             child: Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.9),
+                                color: Colors.white.withValues(alpha: 0.9),
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
+                                    color: Colors.black.withValues(alpha: 0.1),
                                     blurRadius: 8,
                                   ),
                                 ],
@@ -129,11 +128,11 @@ class _DestinationDetailScreenState extends ConsumerState<DestinationDetailScree
                             child: Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.9),
+                                color: Colors.white.withValues(alpha: 0.9),
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
+                                    color: Colors.black.withValues(alpha: 0.1),
                                     blurRadius: 8,
                                   ),
                                 ],
@@ -156,7 +155,7 @@ class _DestinationDetailScreenState extends ConsumerState<DestinationDetailScree
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.65),
+                              color: Colors.black.withValues(alpha: 0.65),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: const Row(
@@ -183,7 +182,7 @@ class _DestinationDetailScreenState extends ConsumerState<DestinationDetailScree
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.65),
+                              color: Colors.black.withValues(alpha: 0.65),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: const Row(
@@ -443,7 +442,7 @@ class _DestinationDetailScreenState extends ConsumerState<DestinationDetailScree
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: RichText(
-                                    text: TextSpan(
+                                    text: const TextSpan(
                                       style: TextStyle(fontSize: 13, color: Color(0xFF9A3412), height: 1.5),
                                       children: [
                                         TextSpan(
@@ -478,7 +477,7 @@ class _DestinationDetailScreenState extends ConsumerState<DestinationDetailScree
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
+                        color: Colors.black.withValues(alpha: 0.08),
                         blurRadius: 16,
                         offset: const Offset(0, -4),
                       ),

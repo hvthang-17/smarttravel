@@ -19,7 +19,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   int _selectedPace = 1; // 0 = Thư thả, 1 = Cân bằng, 2 = Dày đặc
   int _selectedVehicle = 0; // 0 = Xe máy, 1 = Ô tô, 2 = Đi bộ
-  int _selectedBudget = 1; // 0 = Tiết kiệm, 1 = Tiêu chuẩn, 2 = Thoải mái
   bool _weatherAlert = true;
 
   @override
@@ -60,10 +59,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   children: [
                     Stack(
                       children: [
-                        CircleAvatar(
+                        const CircleAvatar(
                           radius: 36,
-                          backgroundColor: const Color(0xFFE0F2FE),
-                          child: const Icon(
+                          backgroundColor: Color(0xFFE0F2FE),
+                          child: Icon(
                             Icons.person,
                             size: 42,
                             color: Color(0xFF0077B6),
@@ -383,7 +382,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   title: const Text('Cảnh báo thời tiết & mưa', style: TextStyle(fontWeight: FontWeight.w500)),
                   subtitle: const Text('Thông báo trước 1 giờ khi trời chuyển mưa', style: TextStyle(fontSize: 12)),
                   value: _weatherAlert,
-                  activeColor: const Color(0xFF0077B6),
+                  activeThumbColor: const Color(0xFF0077B6),
                   onChanged: (val) => setState(() => _weatherAlert = val),
                 ),
                 const Divider(height: 1, indent: 64, color: Color(0xFFF1F5F9)),

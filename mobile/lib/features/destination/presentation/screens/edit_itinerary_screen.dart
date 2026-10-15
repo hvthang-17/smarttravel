@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smarttravel_mobile/features/destination/data/models/destination_model.dart';
 import 'package:smarttravel_mobile/features/destination/data/models/itinerary_model.dart';
-import 'package:smarttravel_mobile/features/destination/data/repositories/destination_repository.dart';
 import 'package:smarttravel_mobile/features/destination/data/repositories/itinerary_repository.dart';
 import 'package:smarttravel_mobile/features/destination/presentation/providers/destination_provider.dart';
 
@@ -67,16 +66,6 @@ class _EditItineraryScreenState extends ConsumerState<EditItineraryScreen> {
         });
       }
     }
-  }
-
-  int _calculateTotalEstimatedCost() {
-    int total = 0;
-    for (final day in _dayItems) {
-      for (final it in day) {
-        total += it.estimatedCostVnd ?? 0;
-      }
-    }
-    return total;
   }
 
   int _calculateDayCost(int dayIndex) {
@@ -661,7 +650,7 @@ class _EditItineraryScreenState extends ConsumerState<EditItineraryScreen> {
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),

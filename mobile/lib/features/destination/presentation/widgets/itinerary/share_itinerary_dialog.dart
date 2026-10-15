@@ -74,14 +74,14 @@ class _ShareItineraryDialogState extends ConsumerState<ShareItineraryDialog> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(16)),
       ),
-      title: Row(
+      title: const Row(
         children: [
-          const Icon(Icons.share, color: Color(0xFF0077B6), size: 22),
-          const SizedBox(width: 8),
+          Icon(Icons.share, color: Color(0xFF0077B6), size: 22),
+          SizedBox(width: 8),
           Expanded(
             child: Text(
               'Chia sẻ chuyến đi',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
           ),
         ],
