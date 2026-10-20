@@ -175,48 +175,43 @@ class _ItineraryDetailScreenState extends ConsumerState<ItineraryDetailScreen> {
 
           // Main View (Timeline vs Map)
           Expanded(
-            child: IndexedStack(
-              index: _activeViewIndex,
-              children: [
-                // View 0: Timeline Plan View
-                SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Budget Health Meter (Task 4.3)
-                      BudgetHealthMeter(
-                        totalEstimatedCost: itinerary.totalEstimatedCost,
-                        maxBudgetVnd: itinerary.maxBudgetVnd,
-                        budgetUtilizationPercent:
-                            itinerary.budgetUtilizationPercent,
-                        budgetHealth: itinerary.budgetHealth,
-                        categoryBreakdown: itinerary.categoryBreakdown,
-                      ),
-                      const SizedBox(height: 16),
+            child: _activeViewIndex == 0
+                ? SingleChildScrollView(
+                    key: const ValueKey('timeline_view'),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Budget Health Meter (Task 4.3)
+                        BudgetHealthMeter(
+                          totalEstimatedCost: itinerary.totalEstimatedCost,
+                          maxBudgetVnd: itinerary.maxBudgetVnd,
+                          budgetUtilizationPercent:
+                              itinerary.budgetUtilizationPercent,
+                          budgetHealth: itinerary.budgetHealth,
+                          categoryBreakdown: itinerary.categoryBreakdown,
+                        ),
+                        const SizedBox(height: 16),
 
-                      // Daily Summary Card
-                      _buildDailySummaryCard(activeDay),
-                      const SizedBox(height: 16),
+                        // Daily Summary Card
+                        _buildDailySummaryCard(activeDay),
+                        const SizedBox(height: 16),
 
-                      // Timeline Activity Cards with Travel Leg Connectors
-                      ..._buildTimelineItems(activeDay.items),
-                      const SizedBox(height: 20),
-                    ],
+                        // Timeline Activity Cards with Travel Leg Connectors
+                        ..._buildTimelineItems(activeDay.items),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
+                  )
+                : ItineraryMapView(
+                    key: ValueKey('map_view_day_${activeDay.id}'),
+                    items: activeDay.items,
+                    onItemTap: (item) {
+                      if (item.destination != null) {
+                        context.push('/destinations/${item.destination!.id}');
+                      }
+                    },
                   ),
-                ),
-
-                // View 1: Map View (Task 4.2)
-                ItineraryMapView(
-                  items: activeDay.items,
-                  onItemTap: (item) {
-                    if (item.destination != null) {
-                      context.push('/destinations/${item.destination!.id}');
-                    }
-                  },
-                ),
-              ],
-            ),
           ),
 
           // Sticky Bottom Bar
