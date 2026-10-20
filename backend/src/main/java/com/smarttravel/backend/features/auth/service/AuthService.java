@@ -53,4 +53,23 @@ public class AuthService {
 
         return new AuthResponse(token, user.getId(), user.getEmail(), user.getFullName(), user.getRole());
     }
+
+    public AuthResponse getProfile(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng với email: " + email));
+        String token = tokenProvider.generateToken(user.getEmail(), user.getRole());
+        return new AuthResponse(token, user.getId(), user.getEmail(), user.getFullName(), user.getRole());
+    }
+
+    @Transactional
+    public AuthResponse updateProfile(String email, UpdateProfileRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng với email: " + email));
+
+        user.setFullName(request.getFullName().trim());
+        User saved = userRepository.save(user);
+
+        String token = tokenProvider.generateToken(saved.getEmail(), saved.getRole());
+        return new AuthResponse(token, saved.getId(), saved.getEmail(), saved.getFullName(), saved.getRole());
+    }
 }

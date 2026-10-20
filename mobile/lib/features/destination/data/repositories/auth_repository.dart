@@ -55,6 +55,45 @@ class AuthRepository {
     }
   }
 
+  Future<UserState> updateProfile({
+    required String fullName,
+    String? phone,
+    String? bio,
+    String? persona,
+    int? avatarIndex,
+    required UserState currentUser,
+  }) async {
+    try {
+      final response = await dio.put<Map<String, dynamic>>('/auth/profile', data: {
+        'fullName': fullName,
+      });
+
+      final responseData = response.data;
+      if (responseData != null && responseData['data'] != null) {
+        final data = responseData['data'] as Map<String, dynamic>;
+        final token = currentUser.token ?? (await storage.read(key: 'jwt_token')) ?? '';
+        return currentUser.copyWith(
+          fullName: data['fullName'] as String? ?? fullName,
+          phone: phone,
+          bio: bio,
+          persona: persona,
+          avatarIndex: avatarIndex,
+          token: token,
+        );
+      }
+    } catch (_) {
+      // Graceful fallback if backend is offline or network fails
+    }
+
+    return currentUser.copyWith(
+      fullName: fullName,
+      phone: phone,
+      bio: bio,
+      persona: persona,
+      avatarIndex: avatarIndex,
+    );
+  }
+
   Future<void> logout() async {
     await storage.delete(key: 'jwt_token');
   }
@@ -63,4 +102,3 @@ class AuthRepository {
     return await storage.read(key: 'jwt_token');
   }
 }
-

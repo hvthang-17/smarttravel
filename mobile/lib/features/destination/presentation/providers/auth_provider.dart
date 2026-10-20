@@ -21,6 +21,24 @@ class AuthNotifier extends StateNotifier<UserState> {
     state = user;
   }
 
+  Future<void> updateProfile({
+    required String fullName,
+    String? phone,
+    String? bio,
+    String? persona,
+    int? avatarIndex,
+  }) async {
+    final updated = await _authRepository.updateProfile(
+      fullName: fullName,
+      phone: phone,
+      bio: bio,
+      persona: persona,
+      avatarIndex: avatarIndex,
+      currentUser: state,
+    );
+    state = updated;
+  }
+
   Future<void> logout() async {
     await _authRepository.logout();
     state = UserState();
