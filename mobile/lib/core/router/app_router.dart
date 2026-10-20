@@ -11,10 +11,20 @@ import 'package:smarttravel_mobile/features/destination/presentation/screens/tri
 import 'package:smarttravel_mobile/features/destination/presentation/screens/itinerary_detail_screen.dart';
 import 'package:smarttravel_mobile/features/destination/presentation/screens/login_screen.dart';
 import 'package:smarttravel_mobile/features/destination/presentation/screens/register_screen.dart';
+import 'package:smarttravel_mobile/features/destination/presentation/screens/splash_screen.dart';
+import 'package:smarttravel_mobile/features/destination/presentation/screens/onboarding_screen.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/',
+  initialLocation: '/splash',
   routes: [
+    GoRoute(
+      path: '/splash',
+      builder: (context, state) => const SplashScreen(),
+    ),
+    GoRoute(
+      path: '/onboarding',
+      builder: (context, state) => const OnboardingScreen(),
+    ),
     GoRoute(
       path: '/',
       builder: (context, state) => const RootNavigationScreen(),
@@ -57,12 +67,10 @@ final GoRouter appRouter = GoRouter(
         return EditItineraryScreen(id: id, initialData: initialData);
       },
     ),
-
     GoRoute(
       path: '/profile',
       builder: (context, state) => const ProfileScreen(),
     ),
-
     GoRoute(
       path: '/destinations',
       builder: (context, state) => const DestinationListScreen(),
@@ -126,13 +134,17 @@ class _RootNavigationScreenState extends State<RootNavigationScreen> {
               label: 'Khám phá',
             ),
             NavigationDestination(
-              icon: Icon(Icons.add_location_alt_outlined, color: Color(0xFF64748B)),
-              selectedIcon: Icon(Icons.add_location_alt, color: Color(0xFF0077B6)),
+              icon: Icon(Icons.add_location_alt_outlined,
+                  color: Color(0xFF64748B)),
+              selectedIcon:
+                  Icon(Icons.add_location_alt, color: Color(0xFF0077B6)),
               label: 'Tạo chuyến đi',
             ),
             NavigationDestination(
-              icon: Icon(Icons.calendar_month_outlined, color: Color(0xFF64748B)),
-              selectedIcon: Icon(Icons.calendar_month, color: Color(0xFF0077B6)),
+              icon:
+                  Icon(Icons.calendar_month_outlined, color: Color(0xFF64748B)),
+              selectedIcon:
+                  Icon(Icons.calendar_month, color: Color(0xFF0077B6)),
               label: 'Lịch trình',
             ),
             NavigationDestination(
@@ -146,5 +158,3 @@ class _RootNavigationScreenState extends State<RootNavigationScreen> {
     );
   }
 }
-
-
