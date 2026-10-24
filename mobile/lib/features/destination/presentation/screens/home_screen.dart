@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:smarttravel_mobile/features/destination/data/models/destination_model.dart';
 import 'package:smarttravel_mobile/features/destination/presentation/providers/auth_provider.dart';
 import 'package:smarttravel_mobile/features/destination/presentation/providers/destination_provider.dart';
+import 'package:smarttravel_mobile/features/weather/presentation/widgets/weather_pill.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -192,28 +193,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                         ],
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE0F2FE),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: const Color(0xFFBAE6FD)),
-                        ),
-                        child: const Row(
-                          children: [
-                            Text(
-                              '28°C Đà Nẵng',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF0284C7),
-                              ),
-                            ),
-                            SizedBox(width: 4),
-                            Text('☀️', style: TextStyle(fontSize: 14)),
-                          ],
-                        ),
-                      ),
+                      const WeatherPill(),
                     ],
                   ),
                 ),
