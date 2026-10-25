@@ -33,7 +33,10 @@ class _SplashScreenState extends State<SplashScreen>
     // Tự động chuyển tiếp sang màn hình Onboarding sau 2.5 giây
     _redirectTimer = Timer(const Duration(milliseconds: 2500), () {
       if (!mounted) return;
-      context.go('/onboarding');
+
+      if (context.mounted) {
+        context.go('/onboarding');
+      }
     });
   }
 
