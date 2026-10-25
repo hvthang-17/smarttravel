@@ -22,12 +22,39 @@ public class DestinationService {
 
     @Transactional(readOnly = true)
     public List<DestinationDto> getDestinations(String category) {
+        return getDestinations(category, "ACTIVE", null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<DestinationDto> getDestinations(String category, String status, String search) {
         List<Destination> destinations;
-        if (category != null && !category.trim().isEmpty()) {
-            destinations = destinationRepository.findByCategoryAndStatus(category.trim(), "ACTIVE");
+        boolean hasCategory = category != null && !category.trim().isEmpty() && !category.equalsIgnoreCase("Tất cả");
+        boolean isAllStatus = status != null && status.equalsIgnoreCase("ALL");
+        String effectiveStatus = (status != null && !status.trim().isEmpty()) ? status.trim() : "ACTIVE";
+
+        if (hasCategory) {
+            if (isAllStatus) {
+                destinations = destinationRepository.findByCategory(category.trim());
+            } else {
+                destinations = destinationRepository.findByCategoryAndStatus(category.trim(), effectiveStatus);
+            }
         } else {
-            destinations = destinationRepository.findByStatus("ACTIVE");
+            if (isAllStatus) {
+                destinations = destinationRepository.findAll();
+            } else {
+                destinations = destinationRepository.findByStatus(effectiveStatus);
+            }
         }
+
+        if (search != null && !search.trim().isEmpty()) {
+            String query = search.trim().toLowerCase();
+            destinations = destinations.stream()
+                    .filter(d -> (d.getName() != null && d.getName().toLowerCase().contains(query))
+                            || (d.getAddress() != null && d.getAddress().toLowerCase().contains(query))
+                            || (d.getDescription() != null && d.getDescription().toLowerCase().contains(query)))
+                    .collect(Collectors.toList());
+        }
+
         return destinations.stream().map(this::toDto).collect(Collectors.toList());
     }
 
@@ -55,6 +82,18 @@ public class DestinationService {
         existing.setName(dto.getName());
         existing.setCategory(dto.getCategory());
         existing.setDescription(dto.getDescription());
+        existing.setAddress(dto.getAddress());
+        existing.setOpeningHours(dto.getOpeningHours());
+        existing.setPhone(dto.getPhone());
+        existing.setWebsite(dto.getWebsite());
+        existing.setImageUrl(dto.getImageUrl());
+        if (dto.getRating() != null) {
+            existing.setRating(dto.getRating());
+        }
+        if (dto.getReviewCount() != null) {
+            existing.setReviewCount(dto.getReviewCount());
+        }
+        existing.setOsmId(dto.getOsmId());
         existing.setLatitude(dto.getLatitude());
         existing.setLongitude(dto.getLongitude());
         existing.setPriceMinVnd(dto.getPriceMinVnd());
@@ -68,12 +107,27 @@ public class DestinationService {
         return toDto(saved);
     }
 
-    private DestinationDto toDto(Destination entity) {
+    @Transactional
+    public void deleteDestination(Long id) {
+        Destination existing = destinationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Destination", "id", id));
+        destinationRepository.delete(existing);
+    }
+
+    public DestinationDto toDto(Destination entity) {
         DestinationDto dto = new DestinationDto();
         dto.setId(entity.getId());
         dto.setName(entity.getName());
         dto.setCategory(entity.getCategory());
         dto.setDescription(entity.getDescription());
+        dto.setAddress(entity.getAddress());
+        dto.setOpeningHours(entity.getOpeningHours());
+        dto.setPhone(entity.getPhone());
+        dto.setWebsite(entity.getWebsite());
+        dto.setImageUrl(entity.getImageUrl());
+        dto.setRating(entity.getRating());
+        dto.setReviewCount(entity.getReviewCount());
+        dto.setOsmId(entity.getOsmId());
         dto.setLatitude(entity.getLatitude());
         dto.setLongitude(entity.getLongitude());
         dto.setPriceMinVnd(entity.getPriceMinVnd());
@@ -82,11 +136,23 @@ public class DestinationService {
         return dto;
     }
 
-    private Destination toEntity(DestinationDto dto) {
+    public Destination toEntity(DestinationDto dto) {
         Destination entity = new Destination();
         entity.setName(dto.getName());
         entity.setCategory(dto.getCategory());
         entity.setDescription(dto.getDescription());
+        entity.setAddress(dto.getAddress());
+        entity.setOpeningHours(dto.getOpeningHours());
+        entity.setPhone(dto.getPhone());
+        entity.setWebsite(dto.getWebsite());
+        entity.setImageUrl(dto.getImageUrl());
+        if (dto.getRating() != null) {
+            entity.setRating(dto.getRating());
+        }
+        if (dto.getReviewCount() != null) {
+            entity.setReviewCount(dto.getReviewCount());
+        }
+        entity.setOsmId(dto.getOsmId());
         entity.setLatitude(dto.getLatitude());
         entity.setLongitude(dto.getLongitude());
         entity.setPriceMinVnd(dto.getPriceMinVnd());
@@ -95,4 +161,3 @@ public class DestinationService {
         return entity;
     }
 }
-

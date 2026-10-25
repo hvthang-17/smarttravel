@@ -20,8 +20,11 @@ public class DestinationController {
     }
 
     @GetMapping
-    public ApiResponse<List<DestinationDto>> getDestinations(@RequestParam(required = false) String category) {
-        return ApiResponse.success(destinationService.getDestinations(category));
+    public ApiResponse<List<DestinationDto>> getDestinations(
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String search) {
+        return ApiResponse.success(destinationService.getDestinations(category, status, search));
     }
 
     @GetMapping("/{id}")
@@ -36,8 +39,15 @@ public class DestinationController {
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<DestinationDto> updateDestination(@PathVariable Long id, @Valid @RequestBody DestinationDto dto) {
+    public ApiResponse<DestinationDto> updateDestination(
+            @PathVariable Long id,
+            @Valid @RequestBody DestinationDto dto) {
         return ApiResponse.success(destinationService.updateDestination(id, dto), "Destination updated successfully");
     }
-}
 
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> deleteDestination(@PathVariable Long id) {
+        destinationService.deleteDestination(id);
+        return ApiResponse.success(null, "Destination deleted successfully");
+    }
+}

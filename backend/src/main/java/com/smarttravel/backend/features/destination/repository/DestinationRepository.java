@@ -10,4 +10,5 @@ import java.util.List;
 public interface DestinationRepository extends JpaRepository<Destination, Long> {
     List<Destination> findByCategoryAndStatus(String category, String status);
     List<Destination> findByStatus(String status);
+    List<Destination> findByCategory(String category);
 }
