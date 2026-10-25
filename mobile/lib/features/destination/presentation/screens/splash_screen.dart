@@ -11,8 +11,9 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _fadeAnimation;
+  late final AnimationController _controller;
+  late final Animation<double> _fadeAnimation;
+  Timer? _redirectTimer;
 
   @override
   void initState() {
@@ -29,15 +30,15 @@ class _SplashScreenState extends State<SplashScreen>
     _controller.forward();
 
     // Tự động chuyển tiếp sang màn hình Onboarding sau 2.5 giây
-    Timer(const Duration(milliseconds: 2500), () {
-      if (mounted) {
-        context.go('/onboarding');
-      }
+    _redirectTimer = Timer(const Duration(milliseconds: 2500), () {
+      if (!mounted) return;
+      context.go('/onboarding');
     });
   }
 
   @override
   void dispose() {
+    _redirectTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }
