@@ -24,4 +24,6 @@ admin/dist/
 
 # Cline AI Agent skills (local tools)
 .cline/
-
+.anti-slop/
+anti-slop/
+backend/uploads/

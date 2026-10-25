@@ -144,3 +144,13 @@ Task/requirement files live in `./tasks/`:
 ```
 
 **IMPORTANT:** MUST READ and MUST COMPLY all INSTRUCTIONS in this `CLAUDE.md`, especially the WORKFLOWS section. This rule is MANDATORY. NON-NEGOTIABLE. NO EXCEPTIONS.
+
+<!-- antislop:start -->
+## antislop
+For UI, copy, people, mobile layout, or code comments work, read `.claude/skills/antislop/SKILL.md` (core) and then the skill for the task:
+- UI / visual: `.claude/skills/antislop-ui/SKILL.md`
+- Copy & text: `.claude/skills/antislop-copywriting/SKILL.md`
+- People: `.claude/skills/antislop-human/SKILL.md`
+- Mobile / responsive: `.claude/skills/antislop-layoutmobile/SKILL.md`
+- Code comments: `.claude/skills/antislop-code/SKILL.md`
+<!-- antislop:end -->
