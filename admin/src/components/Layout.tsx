@@ -1,25 +1,86 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { TopBar } from './TopBar';
+import { Sidebar, AdminTab } from './Sidebar';
+import { AuthUser } from '../types/auth';
 
 interface LayoutProps {
+  currentTab: AdminTab;
+  onTabChange: (tab: AdminTab) => void;
+  destinationCount: number;
+  onSearch?: (query: string) => void;
+  currentUser?: AuthUser | null;
+  onLogout?: () => void;
   children: React.ReactNode;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ children }) => {
+const TAB_NAMES: Record<AdminTab, string> = {
+  dashboard: 'Tổng quan Dashboard',
+  destinations: 'Quản lý địa điểm',
+  categories: 'Quản lý danh mục',
+  users: 'Quản lý tài khoản',
+  audit: 'Nhật ký thao tác hệ thống',
+};
+
+export const Layout: React.FC<LayoutProps> = ({
+  currentTab,
+  onTabChange,
+  destinationCount,
+  onSearch,
+  currentUser,
+  onLogout,
+  children,
+}) => {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
   return (
-    <div style={{ fontFamily: 'system-ui, -apple-system, sans-serif', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <header style={{ backgroundColor: '#004d40', color: '#fff', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 style={{ margin: 0 }}>SmartTravel Admin</h2>
-        <nav style={{ display: 'flex', gap: '16px' }}>
-          <span style={{ cursor: 'pointer', fontWeight: 600 }}>Điểm đến</span>
-          <span style={{ cursor: 'pointer', opacity: 0.8 }}>Lịch trình</span>
-        </nav>
-      </header>
-      <main style={{ flex: 1, padding: '32px', backgroundColor: '#f4f6f8' }}>
-        {children}
-      </main>
-      <footer style={{ padding: '16px 32px', backgroundColor: '#e0e0e0', textAlign: 'center', fontSize: '14px', color: '#666' }}>
-        SmartTravel Admin Portal © 2026 - Da Nang Tourism Platform
-      </footer>
+    <div
+      style={{
+        display: 'flex',
+        height: '100vh',
+        overflow: 'hidden',
+        backgroundColor: '#f8fafc',
+      }}
+    >
+      {/* 1. Sidebar fixed full-height on the left */}
+      <Sidebar
+        currentTab={currentTab}
+        onTabChange={onTabChange}
+        destinationCount={destinationCount}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
+        currentUser={currentUser}
+        onLogout={onLogout}
+      />
+
+      {/* 2. Right workspace: TopBar on top + independently scrollable Main content */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          flex: 1,
+          minWidth: 0,
+          overflow: 'hidden',
+        }}
+      >
+        <TopBar
+          currentTabName={TAB_NAMES[currentTab]}
+          isSidebarCollapsed={isSidebarCollapsed}
+          onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
+          onSearch={onSearch}
+          currentUser={currentUser}
+        />
+        <main
+          style={{
+            flex: 1,
+            padding: '24px 32px',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            backgroundColor: '#f8fafc',
+          }}
+        >
+          {children}
+        </main>
+      </div>
     </div>
   );
 };

@@ -11,6 +11,14 @@ export interface Destination {
   name: string;
   category: string;
   description?: string;
+  address?: string;
+  openingHours?: string;
+  phone?: string;
+  website?: string;
+  imageUrl?: string;
+  rating?: number;
+  reviewCount?: number;
+  osmId?: string;
   latitude: number;
   longitude: number;
   priceMinVnd?: number;
