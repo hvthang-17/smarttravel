@@ -58,16 +58,12 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/v1/health", "/actuator/health", "/api/v1/auth/**", "/api/v1/weather/**", "/api/v1/itineraries/shared/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v1/destinations", "/api/v1/destinations/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/v1/destinations", "/api/v1/destinations/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/v1/destinations", "/api/v1/destinations/**").hasRole("ADMIN")
+                .requestMatchers("/api/v1/destinations", "/api/v1/destinations/**").permitAll()
+                .requestMatchers("/api/v1/categories", "/api/v1/categories/**", "/uploads/**").permitAll()
+                .requestMatchers("/api/v1/admin/users", "/api/v1/admin/users/**").permitAll()
                 .anyRequest().authenticated())
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 }
-
-
-
-
