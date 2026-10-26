@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
+import java.util.List;
 
 public class DestinationDto {
     private Long id;
@@ -18,6 +19,8 @@ public class DestinationDto {
     @NotBlank(message = "Category is required")
     @Size(max = 40, message = "Category must not exceed 40 characters")
     private String category;
+
+    private Long categoryId;
 
     private String description;
 
@@ -35,6 +38,8 @@ public class DestinationDto {
 
     @Size(max = 500, message = "ImageUrl must not exceed 500 characters")
     private String imageUrl;
+
+    private List<String> subImages;
 
     @DecimalMin(value = "0.0", message = "Rating must be at least 0.0")
     @DecimalMax(value = "5.0", message = "Rating must not exceed 5.0")
@@ -75,6 +80,9 @@ public class DestinationDto {
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
 
+    public Long getCategoryId() { return categoryId; }
+    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
+
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
@@ -92,6 +100,9 @@ public class DestinationDto {
 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    public List<String> getSubImages() { return subImages; }
+    public void setSubImages(List<String> subImages) { this.subImages = subImages; }
 
     public BigDecimal getRating() { return rating; }
     public void setRating(BigDecimal rating) { this.rating = rating; }

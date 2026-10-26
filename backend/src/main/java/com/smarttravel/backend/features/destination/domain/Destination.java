@@ -18,6 +18,9 @@ public class Destination {
     @Column(nullable = false, length = 40)
     private String category;
 
+    @Column(name = "category_id")
+    private Long categoryId;
+
     @Column(columnDefinition = "TEXT")
     private String description;
 
@@ -35,6 +38,9 @@ public class Destination {
 
     @Column(name = "image_url", length = 500)
     private String imageUrl;
+
+    @Column(name = "sub_images", columnDefinition = "TEXT")
+    private String subImages;
 
     @Column(precision = 2, scale = 1)
     private BigDecimal rating = BigDecimal.valueOf(4.5);
@@ -68,6 +74,19 @@ public class Destination {
 
     public Destination() {}
 
+    @PrePersist
+    protected void onCreate() {
+        if (this.createdAt == null) {
+            this.createdAt = Instant.now();
+        }
+        this.updatedAt = Instant.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = Instant.now();
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -76,6 +95,9 @@ public class Destination {
 
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
+
+    public Long getCategoryId() { return categoryId; }
+    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
@@ -94,6 +116,9 @@ public class Destination {
 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    public String getSubImages() { return subImages; }
+    public void setSubImages(String subImages) { this.subImages = subImages; }
 
     public BigDecimal getRating() { return rating; }
     public void setRating(BigDecimal rating) { this.rating = rating; }

@@ -1,5 +1,7 @@
 package com.smarttravel.backend.features.destination.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smarttravel.backend.common.ResourceNotFoundException;
 import com.smarttravel.backend.features.destination.domain.Destination;
 import com.smarttravel.backend.features.destination.dto.DestinationDto;
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,9 +18,11 @@ import java.util.stream.Collectors;
 public class DestinationService {
 
     private final DestinationRepository destinationRepository;
+    private final ObjectMapper objectMapper;
 
-    public DestinationService(DestinationRepository destinationRepository) {
+    public DestinationService(DestinationRepository destinationRepository, ObjectMapper objectMapper) {
         this.destinationRepository = destinationRepository;
+        this.objectMapper = objectMapper;
     }
 
     @Transactional(readOnly = true)
@@ -81,12 +86,16 @@ public class DestinationService {
 
         existing.setName(dto.getName());
         existing.setCategory(dto.getCategory());
+        existing.setCategoryId(dto.getCategoryId());
         existing.setDescription(dto.getDescription());
         existing.setAddress(dto.getAddress());
         existing.setOpeningHours(dto.getOpeningHours());
         existing.setPhone(dto.getPhone());
         existing.setWebsite(dto.getWebsite());
         existing.setImageUrl(dto.getImageUrl());
+        if (dto.getSubImages() != null) {
+            existing.setSubImages(serializeSubImages(dto.getSubImages()));
+        }
         if (dto.getRating() != null) {
             existing.setRating(dto.getRating());
         }
@@ -119,12 +128,14 @@ public class DestinationService {
         dto.setId(entity.getId());
         dto.setName(entity.getName());
         dto.setCategory(entity.getCategory());
+        dto.setCategoryId(entity.getCategoryId());
         dto.setDescription(entity.getDescription());
         dto.setAddress(entity.getAddress());
         dto.setOpeningHours(entity.getOpeningHours());
         dto.setPhone(entity.getPhone());
         dto.setWebsite(entity.getWebsite());
         dto.setImageUrl(entity.getImageUrl());
+        dto.setSubImages(parseSubImages(entity.getSubImages()));
         dto.setRating(entity.getRating());
         dto.setReviewCount(entity.getReviewCount());
         dto.setOsmId(entity.getOsmId());
@@ -140,12 +151,14 @@ public class DestinationService {
         Destination entity = new Destination();
         entity.setName(dto.getName());
         entity.setCategory(dto.getCategory());
+        entity.setCategoryId(dto.getCategoryId());
         entity.setDescription(dto.getDescription());
         entity.setAddress(dto.getAddress());
         entity.setOpeningHours(dto.getOpeningHours());
         entity.setPhone(dto.getPhone());
         entity.setWebsite(dto.getWebsite());
         entity.setImageUrl(dto.getImageUrl());
+        entity.setSubImages(serializeSubImages(dto.getSubImages()));
         if (dto.getRating() != null) {
             entity.setRating(dto.getRating());
         }
@@ -159,5 +172,27 @@ public class DestinationService {
         entity.setPriceMaxVnd(dto.getPriceMaxVnd());
         entity.setStatus(dto.getStatus() != null ? dto.getStatus() : "ACTIVE");
         return entity;
+    }
+
+    private List<String> parseSubImages(String json) {
+        if (json == null || json.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+        try {
+            return objectMapper.readValue(json, new TypeReference<List<String>>() {});
+        } catch (Exception e) {
+            return Collections.emptyList();
+        }
+    }
+
+    private String serializeSubImages(List<String> list) {
+        if (list == null || list.isEmpty()) {
+            return null;
+        }
+        try {
+            return objectMapper.writeValueAsString(list);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

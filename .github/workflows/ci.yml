@@ -2,10 +2,11 @@
 name: SmartTravel CI
 
 on:
-  push:
-    branches: ["main", "development"]
-  pull_request:
-    branches: ["main", "development"]
+  workflow_dispatch: # Cho phép bấm chạy thủ công từ giao diện GitHub
+  # push:
+  #   branches: ["main", "development"]
+  # pull_request:
+  #   branches: ["main", "development"]
 
 jobs:
   backend:
