@@ -10,12 +10,14 @@ export interface Destination {
   id?: number;
   name: string;
   category: string;
+  categoryId?: number;
   description?: string;
   address?: string;
   openingHours?: string;
   phone?: string;
   website?: string;
   imageUrl?: string;
+  subImages?: string[];
   rating?: number;
   reviewCount?: number;
   osmId?: string;
