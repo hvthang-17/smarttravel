@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:smarttravel_mobile/features/destination/data/models/itinerary_model.dart';
-import 'package:smarttravel_mobile/features/destination/presentation/screens/home_screen.dart';
-import 'package:smarttravel_mobile/features/destination/presentation/screens/profile_screen.dart';
+import 'package:smarttravel_mobile/features/auth/presentation/screens/login_screen.dart';
+import 'package:smarttravel_mobile/features/auth/presentation/screens/onboarding_screen.dart';
+import 'package:smarttravel_mobile/features/profile/presentation/screens/profile_screen.dart';
+import 'package:smarttravel_mobile/features/auth/presentation/screens/register_screen.dart';
+import 'package:smarttravel_mobile/features/auth/presentation/screens/splash_screen.dart';
 import 'package:smarttravel_mobile/features/destination/presentation/screens/destination_detail_screen.dart';
 import 'package:smarttravel_mobile/features/destination/presentation/screens/destination_list_screen.dart';
-import 'package:smarttravel_mobile/features/destination/presentation/screens/edit_itinerary_screen.dart';
-import 'package:smarttravel_mobile/features/destination/presentation/screens/my_trips_screen.dart';
-import 'package:smarttravel_mobile/features/destination/presentation/screens/trip_wizard_screen.dart';
-import 'package:smarttravel_mobile/features/destination/presentation/screens/itinerary_detail_screen.dart';
-import 'package:smarttravel_mobile/features/destination/presentation/screens/login_screen.dart';
-import 'package:smarttravel_mobile/features/destination/presentation/screens/register_screen.dart';
-import 'package:smarttravel_mobile/features/destination/presentation/screens/splash_screen.dart';
-import 'package:smarttravel_mobile/features/destination/presentation/screens/onboarding_screen.dart';
+import 'package:smarttravel_mobile/features/home/presentation/screens/home_screen.dart';
+import 'package:smarttravel_mobile/features/itinerary/data/models/itinerary_model.dart';
+import 'package:smarttravel_mobile/features/itinerary/presentation/screens/edit_itinerary_screen.dart';
+import 'package:smarttravel_mobile/features/itinerary/presentation/screens/itinerary_detail_screen.dart';
+import 'package:smarttravel_mobile/features/itinerary/presentation/screens/my_trips_screen.dart';
+import 'package:smarttravel_mobile/features/itinerary/presentation/screens/trip_wizard_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/splash',

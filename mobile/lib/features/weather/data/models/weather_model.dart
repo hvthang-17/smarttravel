@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class DailyForecast {
   final String date;
   final double minTemp;
@@ -27,6 +29,24 @@ class DailyForecast {
       condition: json['condition'] as String? ?? 'Nắng ráo',
       icon: json['icon'] as String? ?? '🌤️',
     );
+  }
+
+  IconData get materialIcon {
+    if (weatherCode == 0) return Icons.wb_sunny_rounded;
+    if (weatherCode <= 2) return Icons.wb_sunny_outlined;
+    if (weatherCode == 3) return Icons.cloud_outlined;
+    if (weatherCode == 45 || weatherCode == 48) return Icons.foggy;
+    if (weatherCode >= 51 && weatherCode <= 55) return Icons.grain;
+    if (weatherCode >= 61 && weatherCode <= 65) return Icons.water_drop_outlined;
+    if (weatherCode >= 80) return Icons.thunderstorm_outlined;
+    return Icons.wb_sunny_outlined;
+  }
+
+  Color get materialIconColor {
+    if (weatherCode <= 2) return const Color(0xFFF59E0B);
+    if (weatherCode >= 51 && weatherCode <= 65) return const Color(0xFF0284C7);
+    if (weatherCode >= 80) return const Color(0xFF4F46E5);
+    return const Color(0xFF0284C7);
   }
 }
 
@@ -66,6 +86,25 @@ class WeatherData {
   String get tempFormatted => '${temperature.round()}°C';
   String get apparentTempFormatted => '${apparentTemperature.round()}°C';
   String get pillText => '$tempFormatted • ${isFromGps ? cityName : 'Đà Nẵng'}';
+
+  IconData get materialIcon {
+    if (weatherCode == 0) return isDay ? Icons.wb_sunny_rounded : Icons.nightlight_round;
+    if (weatherCode <= 2) return isDay ? Icons.wb_sunny_outlined : Icons.cloud_outlined;
+    if (weatherCode == 3) return Icons.cloud_outlined;
+    if (weatherCode == 45 || weatherCode == 48) return Icons.foggy;
+    if (weatherCode >= 51 && weatherCode <= 55) return Icons.grain;
+    if (weatherCode >= 61 && weatherCode <= 65) return Icons.water_drop_outlined;
+    if (weatherCode >= 80 && weatherCode <= 82) return Icons.thunderstorm_outlined;
+    if (weatherCode >= 95) return Icons.flash_on;
+    return Icons.wb_sunny_outlined;
+  }
+
+  Color get materialIconColor {
+    if (weatherCode <= 2) return const Color(0xFFF59E0B);
+    if (weatherCode >= 51 && weatherCode <= 65) return const Color(0xFF0284C7);
+    if (weatherCode >= 80) return const Color(0xFF4F46E5);
+    return const Color(0xFF0284C7);
+  }
 
   WeatherData copyWith({
     String? cityName,
@@ -210,7 +249,7 @@ class WeatherData {
 
   static String _mapCodeToIcon(int code, bool isDay) {
     if (code == 0) return isDay ? '☀️' : '🌙';
-    if (code == 1 || code == 2) return isDay ? '🌤️' : '☁️';
+    if (code <= 2) return isDay ? '🌤️' : '☁️';
     if (code == 3) return '☁️';
     if (code == 45 || code == 48) return '🌫️';
     if (code >= 51 && code <= 55) return '🌦️';
@@ -222,18 +261,18 @@ class WeatherData {
 
   static String _generateAdvice(int code, double temp, int rainProb) {
     if (code >= 80 || rainProb >= 70) {
-      return 'Thời tiết có thể có mưa to hoặc dông. Bạn nên ưu tiên các điểm tham quan trong nhà như Bảo tàng Điêu khắc Chăm, Chợ Cồn hoặc các quán cà phê ngắm cảnh sông Hàn.';
+      return 'Thời tiết có thể có mưa to hoặc dông. Ưu tiên các điểm tham quan trong nhà như Bảo tàng Chăm, Chợ Cồn.';
     }
     if (code >= 51 && code <= 65) {
-      return 'Có mưa nhẹ hoặc mưa rào rải rác. Hãy mang theo ô/áo mưa khi dạo phố Bạch Đằng và lưu ý đường trơn khi lên Bán đảo Sơn Trà.';
+      return 'Có mưa rào rải rác. Hãy mang theo ô/áo mưa khi dạo phố Bạch Đằng và chú ý đường dốc Sơn Trà.';
     }
     if (temp >= 34) {
-      return 'Thời tiết nắng nóng, thích hợp tắm biển Mỹ Khê vào sáng sớm hoặc chiều mát. Buổi trưa nên ghé các không gian nghỉ mát hoặc thưởng thức đặc sản Đà Nẵng.';
+      return 'Thời tiết nắng nóng, thích hợp tắm biển Mỹ Khê vào sáng sớm hoặc chiều mát.';
     }
     if (code <= 2) {
-      return 'Thời tiết nắng ráo rất đẹp! Rất thích hợp để tham quan Bán đảo Sơn Trà, Ngũ Hành Sơn, Bà Nà Hills và ngắm hoàng hôn biển Mỹ Khê.';
+      return 'Thời tiết nắng ráo rất đẹp! Thích hợp tham quan Bán đảo Sơn Trà, Ngũ Hành Sơn, Bà Nà Hills.';
     }
-    return 'Thời tiết mát mẻ dễ chịu, rất thích hợp cho mọi hoạt động khám phá và dạo phố Đà Nẵng hôm nay.';
+    return 'Thời tiết mát mẻ dễ chịu, thích hợp cho mọi hoạt động khám phá Đà Nẵng hôm nay.';
   }
 
   static WeatherData fallback({bool isFromGps = false}) {
@@ -248,56 +287,9 @@ class WeatherData {
       condition: 'Nắng ráo dịu nhẹ',
       icon: '🌤️',
       isDay: true,
-      travelAdvice:
-          'Thời tiết nắng ráo rất đẹp! Rất thích hợp để tham quan Bán đảo Sơn Trà, Ngũ Hành Sơn, Bà Nà Hills và ngắm hoàng hôn biển Mỹ Khê.',
-      dailyForecast: const [
-        DailyForecast(
-          date: 'Hôm nay',
-          minTemp: 24.0,
-          maxTemp: 31.0,
-          precipitationProbability: 10,
-          weatherCode: 1,
-          condition: 'Nắng ráo',
-          icon: '🌤️',
-        ),
-        DailyForecast(
-          date: 'Ngày mai',
-          minTemp: 24.5,
-          maxTemp: 30.5,
-          precipitationProbability: 20,
-          weatherCode: 2,
-          condition: 'Ít mây',
-          icon: '⛅',
-        ),
-        DailyForecast(
-          date: 'Hôm kia',
-          minTemp: 24.0,
-          maxTemp: 29.5,
-          precipitationProbability: 40,
-          weatherCode: 51,
-          condition: 'Mưa rào nhẹ',
-          icon: '🌦️',
-        ),
-        DailyForecast(
-          date: 'Thứ sáu',
-          minTemp: 23.5,
-          maxTemp: 29.0,
-          precipitationProbability: 30,
-          weatherCode: 2,
-          condition: 'Dịu mát',
-          icon: '⛅',
-        ),
-        DailyForecast(
-          date: 'Thứ bảy',
-          minTemp: 24.0,
-          maxTemp: 30.0,
-          precipitationProbability: 15,
-          weatherCode: 1,
-          condition: 'Nắng đẹp',
-          icon: '☀️',
-        ),
-      ],
-      updatedAt: 'Hôm nay',
+      travelAdvice: 'Thời tiết nắng ráo, rất thích hợp tham quan Bán đảo Sơn Trà và biển Mỹ Khê.',
+      dailyForecast: const [],
+      updatedAt: 'Vừa xong',
       isFromGps: isFromGps,
     );
   }
