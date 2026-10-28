@@ -16,11 +16,16 @@ public class DestinationDto {
     @Size(max = 180, message = "Name must not exceed 180 characters")
     private String name;
 
-    @NotBlank(message = "Category is required")
     @Size(max = 40, message = "Category must not exceed 40 characters")
     private String category;
 
     private Long categoryId;
+
+    private String categoryCode;
+
+    private String categoryIcon;
+
+    private String categoryColor;
 
     private String description;
 
@@ -82,6 +87,15 @@ public class DestinationDto {
 
     public Long getCategoryId() { return categoryId; }
     public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
+
+    public String getCategoryCode() { return categoryCode; }
+    public void setCategoryCode(String categoryCode) { this.categoryCode = categoryCode; }
+
+    public String getCategoryIcon() { return categoryIcon; }
+    public void setCategoryIcon(String categoryIcon) { this.categoryIcon = categoryIcon; }
+
+    public String getCategoryColor() { return categoryColor; }
+    public void setCategoryColor(String categoryColor) { this.categoryColor = categoryColor; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }

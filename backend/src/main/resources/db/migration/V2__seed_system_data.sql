@@ -1,20 +1,9 @@
-CREATE TABLE IF NOT EXISTS categories (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    code VARCHAR(50) NOT NULL UNIQUE COMMENT 'Mã danh mục hệ thống (VD: BEACH, FOOD, CULTURE)',
-    slug VARCHAR(100) NOT NULL UNIQUE COMMENT 'Đường dẫn URL thân thiện (VD: bien-thien-nhien)',
-    name VARCHAR(100) NOT NULL COMMENT 'Tên tiếng Việt hiển thị',
-    name_en VARCHAR(100) NULL COMMENT 'Tên tiếng Anh cho khách quốc tế',
-    description TEXT NULL COMMENT 'Mô tả chi tiết về danh mục',
-    image_url VARCHAR(500) NULL COMMENT 'Đường dẫn ảnh bìa tải lên từ máy tính',
-    icon VARCHAR(50) NOT NULL DEFAULT 'tag' COMMENT 'Mã icon đại diện (palmtree, utensils, landmark...)',
-    color_hex VARCHAR(10) DEFAULT '#0077B6' COMMENT 'Mã màu HEX đại diện cho badge',
-    display_order INT NOT NULL DEFAULT 0 COMMENT 'Thứ tự ưu tiên sắp xếp (số nhỏ xếp trước)',
-    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE' COMMENT 'Trạng thái: ACTIVE hoặc INACTIVE',
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_categories_status_order (status, display_order)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- =============================================================================
+-- V2__seed_system_data.sql
+-- Seed system categories and initial accounts
+-- =============================================================================
 
+-- 1. Seed Categories (7 danh mục du lịch chính của Đà Nẵng)
 INSERT INTO categories (code, slug, name, name_en, description, image_url, icon, color_hex, display_order, status) 
 VALUES
 (
@@ -100,30 +89,9 @@ VALUES
     '#D97706', 
     7, 
     'ACTIVE'
-)
-ON DUPLICATE KEY UPDATE 
-    name = VALUES(name),
-    icon = VALUES(icon),
-    color_hex = VALUES(color_hex);
+);
 
-SET @dbname = DATABASE();
-SET @tablename = 'destinations';
-SET @columnname = 'category_id';
-SET @preparedStatement = (SELECT IF(
-    (
-        SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-        WHERE TABLE_SCHEMA = @dbname
-          AND TABLE_NAME = @tablename
-          AND COLUMN_NAME = @columnname
-    ) > 0,
-    'SELECT 1',
-    'ALTER TABLE destinations ADD COLUMN category_id BIGINT NULL AFTER category'
-));
-PREPARE alterIfNotExists FROM @preparedStatement;
-EXECUTE alterIfNotExists;
-DEALLOCATE PREPARE alterIfNotExists;
-
-UPDATE destinations SET category_id = (SELECT id FROM categories WHERE code = 'BEACH') WHERE category = 'Beach';
-UPDATE destinations SET category_id = (SELECT id FROM categories WHERE code = 'CULTURE') WHERE category = 'Culture';
-UPDATE destinations SET category_id = (SELECT id FROM categories WHERE code = 'FOOD') WHERE category = 'Food';
-UPDATE destinations SET category_id = (SELECT id FROM categories WHERE code = 'HOTEL') WHERE category = 'Hotel';
+-- 2. Seed Initial Users (Tài khoản mẫu ban đầu: Admin & User)
+INSERT INTO users (email, password_hash, full_name, role, status) VALUES
+('thang@gmail.com', '$2a$10$LmMIWCBX6Y7l7vLAEk.DzOjVZ0HAmzcUREi7nr34lsi1Yj3YyMksW', 'Thang', 'ROLE_ADMIN', 'ACTIVE'),
+('hi@gmail.com', '$2a$10$6UoXYVsSgf0LscRQOpE.Ceh0LYjhCwEkw3HcGz9fRSNvHFRR3HEmS', 'hi', 'ROLE_USER', 'ACTIVE');

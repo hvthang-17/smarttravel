@@ -1,5 +1,6 @@
 package com.smarttravel.backend.features.destination.domain;
 
+import com.smarttravel.backend.features.category.domain.Category;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -15,11 +16,9 @@ public class Destination {
     @Column(nullable = false, length = 180)
     private String name;
 
-    @Column(nullable = false, length = 40)
-    private String category;
-
-    @Column(name = "category_id")
-    private Long categoryId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 
     @Column(columnDefinition = "TEXT")
     private String description;
@@ -93,11 +92,13 @@ public class Destination {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
+    public Category getCategory() { return category; }
+    public void setCategory(Category category) { this.category = category; }
 
-    public Long getCategoryId() { return categoryId; }
-    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
+    @Transient
+    public Long getCategoryId() {
+        return category != null ? category.getId() : null;
+    }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }

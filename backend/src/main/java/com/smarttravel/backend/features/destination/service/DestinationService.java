@@ -3,6 +3,8 @@ package com.smarttravel.backend.features.destination.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smarttravel.backend.common.ResourceNotFoundException;
+import com.smarttravel.backend.features.category.domain.Category;
+import com.smarttravel.backend.features.category.repository.CategoryRepository;
 import com.smarttravel.backend.features.destination.domain.Destination;
 import com.smarttravel.backend.features.destination.dto.DestinationDto;
 import com.smarttravel.backend.features.destination.repository.DestinationRepository;
@@ -18,26 +20,41 @@ import java.util.stream.Collectors;
 public class DestinationService {
 
     private final DestinationRepository destinationRepository;
+    private final CategoryRepository categoryRepository;
     private final ObjectMapper objectMapper;
 
-    public DestinationService(DestinationRepository destinationRepository, ObjectMapper objectMapper) {
+    public DestinationService(
+            DestinationRepository destinationRepository,
+            CategoryRepository categoryRepository,
+            ObjectMapper objectMapper) {
         this.destinationRepository = destinationRepository;
+        this.categoryRepository = categoryRepository;
         this.objectMapper = objectMapper;
     }
 
     @Transactional(readOnly = true)
     public List<DestinationDto> getDestinations(String category) {
-        return getDestinations(category, "ACTIVE", null);
+        return getDestinations(category, null, "ACTIVE", null);
     }
 
     @Transactional(readOnly = true)
     public List<DestinationDto> getDestinations(String category, String status, String search) {
+        return getDestinations(category, null, status, search);
+    }
+
+    @Transactional(readOnly = true)
+    public List<DestinationDto> getDestinations(String category, Long categoryId, String status, String search) {
         List<Destination> destinations;
-        boolean hasCategory = category != null && !category.trim().isEmpty() && !category.equalsIgnoreCase("Tất cả");
         boolean isAllStatus = status != null && status.equalsIgnoreCase("ALL");
         String effectiveStatus = (status != null && !status.trim().isEmpty()) ? status.trim() : "ACTIVE";
 
-        if (hasCategory) {
+        if (categoryId != null && categoryId > 0) {
+            if (isAllStatus) {
+                destinations = destinationRepository.findByCategoryId(categoryId);
+            } else {
+                destinations = destinationRepository.findByCategoryIdAndStatus(categoryId, effectiveStatus);
+            }
+        } else if (category != null && !category.trim().isEmpty() && !category.equalsIgnoreCase("Tất cả")) {
             if (isAllStatus) {
                 destinations = destinationRepository.findByCategory(category.trim());
             } else {
@@ -84,9 +101,12 @@ public class DestinationService {
         Destination existing = destinationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Destination", "id", id));
 
+        Category category = resolveCategory(dto);
+        if (category != null) {
+            existing.setCategory(category);
+        }
+
         existing.setName(dto.getName());
-        existing.setCategory(dto.getCategory());
-        existing.setCategoryId(dto.getCategoryId());
         existing.setDescription(dto.getDescription());
         existing.setAddress(dto.getAddress());
         existing.setOpeningHours(dto.getOpeningHours());
@@ -127,8 +147,13 @@ public class DestinationService {
         DestinationDto dto = new DestinationDto();
         dto.setId(entity.getId());
         dto.setName(entity.getName());
-        dto.setCategory(entity.getCategory());
-        dto.setCategoryId(entity.getCategoryId());
+        if (entity.getCategory() != null) {
+            dto.setCategoryId(entity.getCategory().getId());
+            dto.setCategory(entity.getCategory().getName());
+            dto.setCategoryCode(entity.getCategory().getCode());
+            dto.setCategoryIcon(entity.getCategory().getIcon());
+            dto.setCategoryColor(entity.getCategory().getColorHex());
+        }
         dto.setDescription(entity.getDescription());
         dto.setAddress(entity.getAddress());
         dto.setOpeningHours(entity.getOpeningHours());
@@ -150,8 +175,13 @@ public class DestinationService {
     public Destination toEntity(DestinationDto dto) {
         Destination entity = new Destination();
         entity.setName(dto.getName());
-        entity.setCategory(dto.getCategory());
-        entity.setCategoryId(dto.getCategoryId());
+
+        Category category = resolveCategory(dto);
+        if (category == null) {
+            throw new IllegalArgumentException("Valid categoryId or category is required");
+        }
+        entity.setCategory(category);
+
         entity.setDescription(dto.getDescription());
         entity.setAddress(dto.getAddress());
         entity.setOpeningHours(dto.getOpeningHours());
@@ -172,6 +202,26 @@ public class DestinationService {
         entity.setPriceMaxVnd(dto.getPriceMaxVnd());
         entity.setStatus(dto.getStatus() != null ? dto.getStatus() : "ACTIVE");
         return entity;
+    }
+
+    private Category resolveCategory(DestinationDto dto) {
+        if (dto.getCategoryId() != null) {
+            return categoryRepository.findById(dto.getCategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Category", "id", dto.getCategoryId()));
+        }
+        if (dto.getCategory() != null && !dto.getCategory().trim().isEmpty()) {
+            String catStr = dto.getCategory().trim();
+            return categoryRepository.findByCodeIgnoreCase(catStr)
+                    .or(() -> categoryRepository.findByNameIgnoreCase(catStr))
+                    .or(() -> categoryRepository.findBySlug(catStr))
+                    .or(() -> categoryRepository.findAll().stream()
+                            .filter(c -> c.getName().equalsIgnoreCase(catStr)
+                                    || c.getCode().equalsIgnoreCase(catStr)
+                                    || (c.getNameEn() != null && c.getNameEn().equalsIgnoreCase(catStr)))
+                            .findFirst())
+                    .orElseThrow(() -> new ResourceNotFoundException("Category", "name/code", catStr));
+        }
+        return null;
     }
 
     private List<String> parseSubImages(String json) {

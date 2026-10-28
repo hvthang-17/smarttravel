@@ -107,7 +107,7 @@ public class ItineraryMapper {
                 if (item.getEstimatedCostVnd() != null) {
                     dayCost += item.getEstimatedCostVnd();
                     if (currDest != null && currDest.getCategory() != null) {
-                        String cat = currDest.getCategory();
+                        String cat = currDest.getCategory().getName();
                         globalCategoryBreakdown.put(cat, globalCategoryBreakdown.getOrDefault(cat, 0L) + item.getEstimatedCostVnd());
                     }
                 }
@@ -142,7 +142,7 @@ public class ItineraryMapper {
         ItineraryResponseDto.DestinationSummaryDto dto = new ItineraryResponseDto.DestinationSummaryDto();
         dto.setId(dest.getId());
         dto.setName(dest.getName());
-        dto.setCategory(dest.getCategory());
+        dto.setCategory(dest.getCategory() != null ? dest.getCategory().getName() : null);
         dto.setLatitude(dest.getLatitude() != null ? dest.getLatitude().doubleValue() : null);
         dto.setLongitude(dest.getLongitude() != null ? dest.getLongitude().doubleValue() : null);
         dto.setPriceMinVnd(dest.getPriceMinVnd());

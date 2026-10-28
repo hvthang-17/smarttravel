@@ -128,11 +128,7 @@ public class CategoryService {
     private CategoryResponseDto toDto(Category c) {
         int count = 0;
         try {
-            // Count destinations matching category code or name
-            count = destinationRepository.findByCategory(c.getCode()).size();
-            if (count == 0 && c.getName() != null) {
-                count = destinationRepository.findByCategory(c.getName()).size();
-            }
+            count = (int) destinationRepository.countByCategoryId(c.getId());
         } catch (Exception ignored) {
             count = 0;
         }

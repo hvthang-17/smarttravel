@@ -53,7 +53,13 @@ public class ItineraryService {
         List<Destination> candidateDestinations = allDestinations;
         if (request.getPreferredCategories() != null && !request.getPreferredCategories().isEmpty()) {
             candidateDestinations = allDestinations.stream()
-                    .filter(d -> request.getPreferredCategories().contains(d.getCategory()))
+                    .filter(d -> {
+                        if (d.getCategory() == null) return false;
+                        String name = d.getCategory().getName();
+                        String code = d.getCategory().getCode();
+                        return request.getPreferredCategories().stream()
+                                .anyMatch(pref -> pref.equalsIgnoreCase(name) || pref.equalsIgnoreCase(code));
+                    })
                     .collect(Collectors.toList());
             if (candidateDestinations.isEmpty()) candidateDestinations = allDestinations;
         }
@@ -103,7 +109,8 @@ public class ItineraryService {
 
                 long itemCost = (dest.getPriceMinVnd() != null ? dest.getPriceMinVnd() : 0L) * request.getTravelersCount();
                 item.setEstimatedCostVnd(itemCost);
-                item.setNotes("Khám phá " + dest.getName() + " (" + dest.getCategory() + ")");
+                String catName = dest.getCategory() != null ? dest.getCategory().getName() : "";
+                item.setNotes("Khám phá " + dest.getName() + (!catName.isEmpty() ? " (" + catName + ")" : ""));
 
                 totalCost += itemCost;
                 items.add(item);
@@ -268,4 +275,3 @@ public class ItineraryService {
         return ItineraryMapper.toDto(itinerary);
     }
 }
-

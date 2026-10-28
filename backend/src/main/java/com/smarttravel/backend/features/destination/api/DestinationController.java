@@ -29,9 +29,10 @@ public class DestinationController {
     @GetMapping
     public ApiResponse<List<DestinationDto>> getDestinations(
             @RequestParam(required = false) String category,
+            @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String search) {
-        return ApiResponse.success(destinationService.getDestinations(category, status, search));
+        return ApiResponse.success(destinationService.getDestinations(category, categoryId, status, search));
     }
 
     @GetMapping("/{id}")
