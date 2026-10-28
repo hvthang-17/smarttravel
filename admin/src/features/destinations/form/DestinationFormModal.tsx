@@ -53,9 +53,13 @@ export const DestinationFormModal: React.FC<Props> = ({
   useEffect(() => {
     if (!isOpen) return;
     const isEdit = mode === 'edit' && !!destination;
+    const defaultCat = categoriesList[0];
+    const matchedCat = isEdit
+      ? categoriesList.find((c) => c.id === destination.categoryId || c.name === destination.category || c.code === destination.category) || defaultCat
+      : defaultCat;
     setName(isEdit ? destination.name || '' : '');
-    setCategory(isEdit ? destination.category || (categoriesList[0]?.name || 'Culture') : (categoriesList[0]?.name || 'Culture'));
-    setCategoryId(isEdit ? destination.categoryId : categoriesList[0]?.id);
+    setCategory(matchedCat ? matchedCat.name : (destination?.category || ''));
+    setCategoryId(matchedCat?.id ?? destination?.categoryId);
     setDescription(isEdit ? destination.description || '' : '');
     setAddress(isEdit ? destination.address || '' : '');
     setLatitude(String(isEdit ? destination.latitude ?? '16.0610' : '16.0610'));

@@ -132,11 +132,11 @@ export const DestinationTableRow: React.FC<Props> = ({
             <span>{Number(d.latitude).toFixed(4)}, {Number(d.longitude).toFixed(4)}</span>
             <ExternalLinkIcon size={11} color="#0369a1" />
           </a>
-          {d.osmId && (
+          {/* {d.osmId && (
             <span style={{ fontSize: '11px', color: '#64748b', paddingLeft: '2px' }}>
               OSM: {d.osmId}
             </span>
-          )}
+          )} */}
         </div>
       </td>
 
@@ -197,7 +197,7 @@ export const DestinationTableRow: React.FC<Props> = ({
             </span>
           ) : (
             <span style={{ fontSize: '12px', fontWeight: 600, color: isActive ? '#15803d' : '#475569' }}>
-              {isActive ? 'Hoạt động' : 'Tạm ẩn'}
+              {isActive ? '' : ''}
             </span>
           )}
         </div>

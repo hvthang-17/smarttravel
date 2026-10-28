@@ -1,5 +1,6 @@
-import React, { StrictMode, useState } from 'react';
+import React, { StrictMode, useState, useMemo } from 'react';
 import { createRoot } from 'react-dom/client';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { AdminTab } from './components/Sidebar';
 import { DestinationList } from './features/destinations/DestinationList';
@@ -15,9 +16,19 @@ import './style.css';
 
 const AdminApp: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => getStoredUser());
-  const [currentTab, setCurrentTab] = useState<AdminTab>('destinations');
-  const [destinationCount, setDestinationCount] = useState<number>(148);
+  const [destinationCount, setDestinationCount] = useState<number>(18);
   const [globalSearch, setGlobalSearch] = useState('');
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Derive currentTab from location.pathname (e.g. /destinations -> 'destinations')
+  const currentTab = useMemo<AdminTab>(() => {
+    const segment = location.pathname.replace(/^\/+/, '').split('/')[0];
+    if (['dashboard', 'destinations', 'categories', 'users', 'audit'].includes(segment)) {
+      return segment as AdminTab;
+    }
+    return 'destinations';
+  }, [location.pathname]);
 
   const handleLogout = () => {
     clearStoredAuth();
@@ -32,7 +43,7 @@ const AdminApp: React.FC = () => {
     if (tab === 'audit' && !canViewAuditLogs(currentUser?.role)) {
       return;
     }
-    setCurrentTab(tab);
+    navigate(`/${tab}`);
   };
 
   // 1. Unauthenticated: Render Auth Page with Scenic Da Nang Hero & Smooth Transitions
@@ -60,7 +71,7 @@ const AdminApp: React.FC = () => {
     );
   }
 
-  // 3. Authenticated Admin / Moderator: Render Full Admin Layout with RBAC
+  // 3. Authenticated Admin / Moderator: Render Full Admin Layout with React Router Routes & RBAC
   return (
     <Layout
       currentTab={currentTab}
@@ -70,28 +81,58 @@ const AdminApp: React.FC = () => {
       currentUser={currentUser}
       onLogout={handleLogout}
     >
-      {currentTab === 'destinations' && (
-        <DestinationList
-          onTotalCountChange={setDestinationCount}
-          externalSearchQuery={globalSearch}
-          userRole={currentUser.role}
+      <Routes>
+        <Route path="/" element={<Navigate to="/destinations" replace />} />
+        <Route
+          path="/destinations"
+          element={
+            <DestinationList
+              onTotalCountChange={setDestinationCount}
+              externalSearchQuery={globalSearch}
+              userRole={currentUser.role}
+            />
+          }
         />
-      )}
-      {currentTab === 'dashboard' && (
-        <DashboardView
-          destinationCount={destinationCount}
-          onNavigateDestinations={() => setCurrentTab('destinations')}
+        <Route
+          path="/dashboard"
+          element={
+            <DashboardView
+              destinationCount={destinationCount}
+              onNavigateDestinations={() => navigate('/destinations')}
+            />
+          }
         />
-      )}
-      {currentTab === 'categories' && <CategoriesView />}
-      {currentTab === 'users' && canManageUsers(currentUser.role) && <UsersView currentUser={currentUser} />}
-      {currentTab === 'audit' && canViewAuditLogs(currentUser.role) && <AuditLogsView />}
+        <Route path="/categories" element={<CategoriesView />} />
+        <Route
+          path="/users"
+          element={
+            canManageUsers(currentUser.role) ? (
+              <UsersView currentUser={currentUser} />
+            ) : (
+              <Navigate to="/destinations" replace />
+            )
+          }
+        />
+        <Route
+          path="/audit"
+          element={
+            canViewAuditLogs(currentUser.role) ? (
+              <AuditLogsView />
+            ) : (
+              <Navigate to="/destinations" replace />
+            )
+          }
+        />
+        <Route path="*" element={<Navigate to="/destinations" replace />} />
+      </Routes>
     </Layout>
   );
 };
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AdminApp />
+    <BrowserRouter>
+      <AdminApp />
+    </BrowserRouter>
   </StrictMode>
 );

@@ -11,6 +11,9 @@ export interface Destination {
   name: string;
   category: string;
   categoryId?: number;
+  categoryCode?: string;
+  categoryIcon?: string;
+  categoryColor?: string;
   description?: string;
   address?: string;
   openingHours?: string;
