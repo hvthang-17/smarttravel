@@ -22,43 +22,43 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   };
 
   void _showNotificationsSheet() {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(20),
+      builder: (ctx) => const Padding(
+        padding: EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
                 Icon(Icons.notifications_active, color: Color(0xFF0077B6)),
                 SizedBox(width: 8),
                 Text('Thông báo & Cập nhật', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const CircleAvatar(
+              leading: CircleAvatar(
                 backgroundColor: Color(0xFFE0F2FE),
                 child: Icon(Icons.wb_sunny, color: Color(0xFF0077B6), size: 20),
               ),
-              title: const Text('Thời tiết Đà Nẵng hôm nay', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-              subtitle: const Text('Trời nắng nhẹ, thuận lợi tham quan Bán đảo Sơn Trà và Bà Nà Hills.', style: TextStyle(fontSize: 12)),
+              title: Text('Thời tiết Đà Nẵng hôm nay', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              subtitle: Text('Trời nắng nhẹ, thuận lợi tham quan Bán đảo Sơn Trà và Bà Nà Hills.', style: TextStyle(fontSize: 12)),
             ),
-            const Divider(),
+            Divider(),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const CircleAvatar(
+              leading: CircleAvatar(
                 backgroundColor: Color(0xFFFEF3C7),
                 child: Icon(Icons.event, color: Color(0xFFD97706), size: 20),
               ),
-              title: const Text('Cầu Rồng phun lửa cuối tuần', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-              subtitle: const Text('21:00 Thứ Bảy & Chủ Nhật hàng tuần tại bờ Đông Cầu Rồng.', style: TextStyle(fontSize: 12)),
+              title: Text('Cầu Rồng phun lửa cuối tuần', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              subtitle: Text('21:00 Thứ Bảy & Chủ Nhật hàng tuần tại bờ Đông Cầu Rồng.', style: TextStyle(fontSize: 12)),
             ),
           ],
         ),
@@ -67,7 +67,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   void _showQuickSettingsDialog() {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Cài đặt ứng dụng'),

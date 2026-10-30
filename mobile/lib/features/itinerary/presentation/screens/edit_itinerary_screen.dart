@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smarttravel_mobile/core/theme/app_theme.dart';
-import 'package:smarttravel_mobile/features/destination/data/models/destination_model.dart';
 import 'package:smarttravel_mobile/features/destination/presentation/providers/destination_provider.dart';
 import 'package:smarttravel_mobile/features/itinerary/data/models/itinerary_model.dart';
 import 'package:smarttravel_mobile/features/itinerary/data/repositories/itinerary_repository.dart';

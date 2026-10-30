@@ -21,7 +21,7 @@ const List<InterestPreferenceItem> availableInterests = [
 
 class ProfileTravelPreferences extends ConsumerStatefulWidget {
   final Set<String> initialInterests;
-  final Function(Set<String>) onInterestsChanged;
+  final void Function(Set<String>) onInterestsChanged;
 
   const ProfileTravelPreferences({
     super.key,
@@ -87,15 +87,22 @@ class _ProfileTravelPreferencesState extends ConsumerState<ProfileTravelPreferen
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Row(
-              children: [
-                Icon(Icons.auto_awesome, size: 18, color: AppTheme.primaryBlue),
-                SizedBox(width: 6),
-                Text('Sở thích trải nghiệm Đà Nẵng', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
-              ],
+            const Icon(Icons.auto_awesome, size: 18, color: AppTheme.primaryBlue),
+            const SizedBox(width: 6),
+            const Expanded(
+              child: Text(
+                'Sở thích trải nghiệm Đà Nẵng',
+                style: TextStyle(
+                  fontSize: 15.5,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
+            const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(color: const Color(0xFFE0F2FE), borderRadius: BorderRadius.circular(10)),
@@ -119,7 +126,18 @@ class _ProfileTravelPreferencesState extends ConsumerState<ProfileTravelPreferen
           children: [
             Icon(Icons.speed_outlined, size: 18, color: AppTheme.primaryBlue),
             SizedBox(width: 6),
-            Text('Phong cách & Nhịp độ chuyến đi', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+            Expanded(
+              child: Text(
+                'Phong cách & Nhịp độ chuyến đi',
+                style: TextStyle(
+                  fontSize: 15.5,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 12),

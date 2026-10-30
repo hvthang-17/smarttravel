@@ -96,18 +96,21 @@ class ProfileStatsRow extends ConsumerWidget {
   }
 
   Widget _buildStatItem(String number, String label, Color numColor) {
-    return Column(
-      children: [
-        Text(
-          number,
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: numColor),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
-        ),
-      ],
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            number,
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: numColor),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+          ),
+        ],
+      ),
     );
   }
 }

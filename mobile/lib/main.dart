@@ -12,10 +12,9 @@ class SmartTravelApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'SmartTravel',
+      debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       routerConfig: appRouter,
     );
   }
 }
-
-

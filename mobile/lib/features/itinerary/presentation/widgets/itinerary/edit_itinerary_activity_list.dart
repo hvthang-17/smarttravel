@@ -8,7 +8,7 @@ class EditItineraryActivityList extends StatelessWidget {
   final int selectedDayIndex;
   final List<ItineraryItemModel> currentItems;
   final int dayCost;
-  final Function(int oldIndex, int newIndex) onMoveItem;
+  final void Function(int oldIndex, int newIndex) onMoveItem;
   final ValueChanged<int> onRemoveItem;
   final VoidCallback onAddDestination;
 

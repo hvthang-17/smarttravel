@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smarttravel_mobile/core/theme/app_theme.dart';
+import 'package:smarttravel_mobile/features/auth/data/models/user_model.dart';
 import 'package:smarttravel_mobile/features/auth/presentation/providers/auth_provider.dart';
 import 'package:smarttravel_mobile/features/itinerary/data/models/itinerary_model.dart';
 import 'package:smarttravel_mobile/features/itinerary/data/repositories/itinerary_repository.dart';
+import 'package:smarttravel_mobile/features/itinerary/presentation/widgets/itinerary/itinerary_guest_view.dart';
 import 'package:smarttravel_mobile/features/itinerary/presentation/widgets/itinerary/my_trip_card.dart';
 import 'package:smarttravel_mobile/features/itinerary/presentation/widgets/itinerary/my_trips_empty_state.dart';
 import 'package:smarttravel_mobile/features/itinerary/presentation/widgets/itinerary/my_trips_summer_tip.dart';
@@ -24,7 +26,18 @@ class _MyTripsScreenState extends ConsumerState<MyTripsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadTrips();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final auth = ref.read(authNotifierProvider);
+      if (auth.isAuthenticated) {
+        _loadTrips();
+      } else {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
+    });
   }
 
   Future<void> _loadTrips() async {
@@ -65,7 +78,7 @@ class _MyTripsScreenState extends ConsumerState<MyTripsScreen> {
   }
 
   void _showNotificationsSheet() {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => Padding(
@@ -103,6 +116,34 @@ class _MyTripsScreenState extends ConsumerState<MyTripsScreen> {
   @override
   Widget build(BuildContext context) {
     final userState = ref.watch(authNotifierProvider);
+
+    ref.listen<UserState>(authNotifierProvider, (previous, next) {
+      if (previous?.isAuthenticated != true && next.isAuthenticated) {
+        _loadTrips();
+      } else if (previous?.isAuthenticated == true && !next.isAuthenticated) {
+        setState(() {
+          _trips = [];
+          _errorMessage = null;
+          _isLoading = false;
+        });
+      }
+    });
+
+    if (!userState.isAuthenticated) {
+      return Scaffold(
+        backgroundColor: AppTheme.bgCanvas,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          title: const Text(
+            'Lịch Trình',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+          ),
+        ),
+        body: const ItineraryGuestView(),
+      );
+    }
+
     final userName = userState.fullName?.isNotEmpty == true ? userState.fullName! : 'Minh';
 
     return Scaffold(
@@ -203,16 +244,56 @@ class _MyTripsScreenState extends ConsumerState<MyTripsScreen> {
 
   Widget _buildErrorView() {
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(_errorMessage!),
-          const SizedBox(height: 12),
-          FilledButton(
-            onPressed: _loadTrips,
-            child: const Text('Thử lại'),
-          ),
-        ],
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: const BoxDecoration(
+                color: Color(0xFFFEE2E2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.cloud_off_rounded,
+                size: 36,
+                color: Color(0xFFDC2626),
+              ),
+            ),
+            const SizedBox(height: 18),
+            const Text(
+              'Không thể tải lịch trình',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF0F172A),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _errorMessage ?? 'Đã có lỗi xảy ra trong quá trình kết nối tới máy chủ.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 13.5,
+                color: Color(0xFF64748B),
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 20),
+            FilledButton.icon(
+              style: FilledButton.styleFrom(
+                backgroundColor: AppTheme.primaryBlue,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: _loadTrips,
+              icon: const Icon(Icons.refresh, size: 18),
+              label: const Text('Thử lại', style: TextStyle(fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -40,7 +40,7 @@ class _ProfileSettingsSectionState extends ConsumerState<ProfileSettingsSection>
 
   void _showFeedbackDialog() {
     final feedbackController = TextEditingController();
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Trợ giúp & Góp ý'),
@@ -94,7 +94,7 @@ class _ProfileSettingsSectionState extends ConsumerState<ProfileSettingsSection>
   }
 
   void _confirmLogout() {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Đăng xuất'),

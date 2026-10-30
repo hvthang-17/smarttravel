@@ -34,6 +34,14 @@ class ItineraryRepository {
       if (e.response?.statusCode == 401) {
         throw Exception('Vui lòng đăng nhập để tạo lịch trình');
       }
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        throw Exception('Quá thời gian kết nối tới máy chủ. Vui lòng thử lại sau.');
+      }
+      if (e.type == DioExceptionType.connectionError) {
+        throw Exception('Không thể kết nối tới máy chủ backend. Vui lòng kiểm tra kết nối mạng.');
+      }
       throw Exception('Lỗi kết nối máy chủ: ${e.message}');
     } catch (e) {
       throw Exception('Tạo lịch trình thất bại: ${e.toString()}');
@@ -51,6 +59,23 @@ class ItineraryRepository {
             .toList();
       }
       return [];
+    } on DioException catch (e) {
+      final errData = e.response?.data;
+      if (errData is Map && errData['message'] != null) {
+        throw Exception(errData['message']);
+      }
+      if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
+        throw Exception('Phiên đăng nhập đã hết hạn hoặc chưa đăng nhập. Vui lòng đăng nhập lại.');
+      }
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        throw Exception('Quá thời gian chờ phản hồi từ máy chủ (Timeout). Vui lòng kiểm tra kết nối mạng hoặc đảm bảo backend đang chạy.');
+      }
+      if (e.type == DioExceptionType.connectionError) {
+        throw Exception('Không thể kết nối tới máy chủ backend. Vui lòng kiểm tra mạng hoặc địa chỉ API.');
+      }
+      throw Exception('Lỗi kết nối máy chủ (${e.response?.statusCode ?? 'mạng'}): ${e.message}');
     } catch (e) {
       throw Exception('Không thể tải danh sách lịch trình: ${e.toString()}');
     }

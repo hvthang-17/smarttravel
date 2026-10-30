@@ -88,7 +88,12 @@ class ProfileHeaderCard extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 3),
-                    Text(email, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+                    Text(
+                      email,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+                    ),
                     const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

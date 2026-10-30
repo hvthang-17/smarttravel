@@ -51,7 +51,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   void _showForgotPasswordDialog() {
     final resetEmailController = TextEditingController(text: _emailController.text.trim());
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Đặt lại mật khẩu'),

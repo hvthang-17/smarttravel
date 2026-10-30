@@ -7,7 +7,7 @@ import 'package:smarttravel_mobile/features/itinerary/presentation/widgets/itine
 class MyTripCard extends StatelessWidget {
   final ItineraryResponseModel trip;
   final int index;
-  final Function(int tripId) onDelete;
+  final void Function(int tripId) onDelete;
 
   const MyTripCard({
     super.key,
@@ -31,7 +31,7 @@ class MyTripCard extends StatelessWidget {
   }
 
   void _showDeleteDialog(BuildContext context) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Xác nhận xóa'),
