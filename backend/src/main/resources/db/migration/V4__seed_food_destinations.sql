@@ -1,0 +1,1958 @@
+-- =============================================================================
+-- V4__seed_food_destinations.sql
+-- Seed 80 FOOD destinations covering all 7 mainland districts and 56 wards/communes of Da Nang
+-- Coordinates extracted directly from Google Maps POI pins (!3d<lat>!4d<lng>)
+-- =============================================================================
+
+INSERT INTO destinations (
+    name, category_id, description, address, opening_hours, phone, website,
+    image_url, sub_images, rating, review_count, osm_id, latitude, longitude,
+    price_min_vnd, price_max_vnd, status, created_at, updated_at
+) VALUES
+-- =============================================================================
+-- 1. QUẬN HẢI CHÂU (20 địa điểm - 13/13 phường)
+-- =============================================================================
+
+-- 1. Mì Quảng 1A (P. Thạch Thang)
+-- Google Maps: https://www.google.com/maps/place/M%C3%AC+Qu%E1%BA%A3ng+1A/@16.0723936,108.2088159,15z/data=!3m1!4b1!4m6!3m5!1s0x31421836d7dce35f:0x982758e60344283b!8m2!3d16.0723938!4d108.2191157!16s%2Fg%2F1tcw12ct?hl=vi
+(
+    'Mì Quảng 1A',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Thương hiệu mì Quảng gia truyền lâu đời bậc nhất tại trung tâm Đà Nẵng. Sợi mì dẻo dai chan nước nhân sánh đậm vị truyền thống với tôm, thịt heo, trứng cút hoặc gà ta, ăn kèm bánh tráng mè nướng giòn và đĩa rau sống tươi xanh.',
+    '5 Hải Phòng, P. Thạch Thang, Q. Hải Châu, Đà Nẵng',
+    '06:00 - 21:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.0,
+    2195,
+    'seed/food-mi-quang-1a',
+    16.0723938,
+    108.2191157,
+    35000,
+    60000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 2. Nhà hàng Madame Lân (P. Thạch Thang)
+-- Google Maps: https://www.google.com/maps/place/Nh%C3%A0+h%C3%A0ng+Madame+L%C3%A2n/@16.0800624,108.2238421,17z/data=!3m1!4b1!4m6!3m5!1s0x3142183b9e4a6461:0x41f3d4ef64febe3a!8m2!3d16.0800624!4d108.2238421!16s%2Fg%2F1tcxz040?hl=vi
+(
+    'Nhà hàng Madame Lân',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Nhà hàng ẩm thực Việt Nam nổi tiếng ven sông Hàn với kiến trúc Hội An cổ điển, đèn lồng rực rỡ và sân vườn thoáng đãng. Thực đơn quy tụ đặc sản Đà Nẵng như bánh tráng cuốn thịt heo hai đầu da, mì Quảng, bánh xèo và các món cơm gia đình ba miền.',
+    '04 Bạch Đằng, P. Thạch Thang, Q. Hải Châu, Đà Nẵng',
+    '06:30 - 21:30',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.2,
+    8154,
+    'seed/food-madame-lan',
+    16.0800624,
+    108.2238421,
+    100000,
+    300000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 3. Khu ẩm thực Chợ Hàn (P. Hải Châu I)
+-- Google Maps: https://www.google.com/maps/place/Ch%E1%BB%A3+H%C3%A0n/@16.068228,108.2241682,17z/data=!3m1!4b1!4m6!3m5!1s0x31421831878d6e35:0xa927c3eaadfa864f!8m2!3d16.068228!4d108.2241682!16s%2Fm%2F0110j5t_?hl=vi
+(
+    'Khu ẩm thực Chợ Hàn',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Thiên đường ẩm thực và đặc sản truyền thống ngay bên bờ sông Hàn, thu hút đông đảo du khách trong và ngoài nước. Tầng trệt tập trung dày đặc các quầy bánh xèo, nem lụi, mì Quảng, bánh bèo chén, chè xoa xoa hạt lựu cùng chả bò, mực rim và mắm nêm làm quà.',
+    '119 Trần Phú, P. Hải Châu I, Q. Hải Châu, Đà Nẵng',
+    '06:00 - 22:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.2,
+    40587,
+    'seed/food-cho-han',
+    16.0682280,
+    108.2241682,
+    15000,
+    60000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 4. Bún chả cá Hờn (P. Hải Châu I)
+-- Google Maps: https://www.google.com/maps/place/B%C3%BAn+ch%E1%BA%A3+c%C3%A1+H%E1%BB%9Dn/@16.0741012,108.221255,17z/data=!3m1!4b1!4m6!3m5!1s0x31421830bf37a769:0x8f1eba28598104ed!8m2!3d16.0741012!4d108.221255!16s%2Fg%2F11r8_gz51?hl=vi
+(
+    'Bún chả cá Hờn',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán bún chả cá trứ danh trong con hẻm phố Nguyễn Chí Thanh được người dân Đà Nẵng yêu thích qua nhiều thế hệ. Nước dùng ninh xương cá cùng bí đỏ và thơm thanh ngọt tự nhiên, kết hợp chả cá thu chiên/hấp dai thơm, bún riêu chả cá và bún cá ngừ.',
+    '113/3 Nguyễn Chí Thanh, P. Hải Châu I, Q. Hải Châu, Đà Nẵng',
+    '06:00 - 20:30',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.3,
+    1799,
+    'seed/food-bun-cha-ca-hon',
+    16.0741012,
+    108.2212550,
+    25000,
+    45000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 5. Bún Mắm Vân (P. Hải Châu II)
+-- Google Maps: https://www.google.com/maps/place/B%C3%BAn+M%E1%BA%AFm+V%C3%A2n/@16.0664426,108.2173516,17z/data=!3m1!4b1!4m6!3m5!1s0x31421834ee26b48d:0x221379db6e3faec5!8m2!3d16.0664426!4d108.2173516!16s%2Fg%2F1tdy0syg?hl=vi
+(
+    'Bún Mắm Vân',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Điểm dừng chân nổi tiếng nhất trong khu phố chuyên bún mắm Trần Kế Xương. Tô bún đầy đặn thịt heo quay da giòn rụm, ba chỉ luộc, tai heo, nem chua, chả bò và mít non trộn cùng mắm nêm pha tỏi ớt thơm nồng chuẩn vị Đà Nẵng.',
+    'K23/14 Trần Kế Xương, P. Hải Châu II, Q. Hải Châu, Đà Nẵng',
+    '06:30 - 22:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.3,
+    1676,
+    'seed/food-bun-mam-van',
+    16.0664426,
+    108.2173516,
+    25000,
+    40000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 6. Khu ẩm thực Chợ Cồn (P. Hải Châu II)
+-- Google Maps: https://www.google.com/maps/place/Ch%E1%BB%A3+C%E1%BB%93n/@16.0677927,108.2144834,17z/data=!3m1!4b1!4m6!3m5!1s0x314218358f50a1bb:0x4b451504a6ccd4df!8m2!3d16.0677927!4d108.2144834!16s%2Fg%2F12jsfsz42?hl=vi
+(
+    'Khu ẩm thực Chợ Cồn',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Biểu tượng ẩm thực đường phố Đà Nẵng với khu food court trong nhà và khu ăn vặt vỉa hè sầm uất từ sáng tới tối. Du khách có thể thưởng thức trọn vẹn bánh bột lọc, bánh bèo chén, ốc hút, bánh tráng kẹp, phá lấu, bún mắm và kem bơ trứ danh.',
+    '90 Hùng Vương, P. Hải Châu II, Q. Hải Châu, Đà Nẵng',
+    '07:00 - 19:30',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.3,
+    23533,
+    'seed/food-cho-con',
+    16.0677927,
+    108.2144834,
+    15000,
+    50000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 7. Mì Quảng Bà Ngân (P. Thuận Phước)
+-- Google Maps: https://www.google.com/maps/place/M%C3%AC+Qu%E1%BA%A3ng+B%C3%A0+Ng%C3%A2n/@16.0792341,108.2166687,17z/data=!3m1!4b1!4m6!3m5!1s0x3142183951f28731:0x2287cf872ee93c83!8m2!3d16.0792341!4d108.2166687!16s%2Fg%2F11b6_c2c4h?hl=vi
+(
+    'Mì Quảng Bà Ngân',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán mì Quảng lâu năm trên trục đường Đống Đa được người địa phương khu vực Thuận Phước thường xuyên lui tới. Nước nhưn nấu đậm đà từ tôm đất, thịt heo, gà ta hoặc sườn non, ăn kèm chả lụa, bánh tráng nướng giòn và ớt xanh cay nồng.',
+    '108 Đống Đa, P. Thuận Phước, Q. Hải Châu, Đà Nẵng',
+    '06:00 - 21:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.1,
+    239,
+    'seed/food-mi-quang-ba-ngan',
+    16.0792341,
+    108.2166687,
+    30000,
+    55000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 8. Mì Quảng Nhung (P. Thanh Bình)
+-- Google Maps: https://www.google.com/maps/place/M%C3%AC+Qu%E1%BA%A3ng+Nhung/@16.0829146,108.2131088,17z/data=!3m1!4b1!4m6!3m5!1s0x314219cc174643ab:0xcebe62287a9ecfa0!8m2!3d16.0829146!4d108.2131088!16s%2Fg%2F1tf7wcvd?hl=vi
+(
+    'Mì Quảng Nhung',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán mì Quảng bình dân được đánh giá cao ngay tuyến đường ven vịnh Nguyễn Tất Thành. Thực đơn đa dạng từ mì Quảng tôm thịt, mì gà đến mì ếch và mì cá lóc đồng kho nén thơm lừng, không gian sạch sẽ và phục vụ nhanh.',
+    '135 Nguyễn Tất Thành, P. Thanh Bình, Q. Hải Châu, Đà Nẵng',
+    '06:00 - 21:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.4,
+    276,
+    'seed/food-mi-quang-nhung',
+    16.0829146,
+    108.2131088,
+    30000,
+    50000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 9. Cơm gà A Hải (P. Phước Ninh)
+-- Google Maps: https://www.google.com/maps/place/C%C6%A1m+g%C3%A0+A+H%E1%BA%A3i/@16.0653555,108.2198541,17z/data=!3m1!4b1!4m6!3m5!1s0x31421834a6cb26e9:0xe672cf329924a1e6!8m2!3d16.0653555!4d108.2198541!16s%2Fg%2F1hc5jl5_3?hl=vi
+(
+    'Cơm gà A Hải',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Thương hiệu cơm gà xối mỡ nức tiếng giữa khu phố trung tâm Phan Châu Trinh - Thái Phiên. Hạt cơm nấu nước luộc gà vàng óng tơi xốp, đùi gà góc tư chiên da giòn rụm mà thịt vẫn mọng nước, ăn kèm dưa chua và nước sốt tỏi ớt đậm vị.',
+    '100 Thái Phiên, P. Phước Ninh, Q. Hải Châu, Đà Nẵng',
+    '08:00 - 23:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.0,
+    2211,
+    'seed/food-com-ga-a-hai',
+    16.0653555,
+    108.2198541,
+    50000,
+    100000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 10. Mì Quảng Ếch bếp Trang (P. Nam Dương)
+-- Google Maps: https://www.google.com/maps/place/M%C3%AC+Qu%E1%BA%A3ng+%E1%BA%BEch+b%E1%BA%BFp+Trang/@16.0628382,108.2160468,17z/data=!3m1!4b1!4m6!3m5!1s0x314219caeead191d:0x7bf5a315d7a2e786!8m2!3d16.0628382!4d108.2160468!16s%2Fg%2F11h4mpk4m1?hl=vi
+(
+    'Mì Quảng Ếch bếp Trang',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Nhà hàng tiên phong đưa món mì Quảng ếch om thố đất trình bày trên mẹt tre lót lá chuối trở thành nét ẩm thực đặc sắc của Đà Nẵng. Thịt ếch rim nghệ sả thấm vị ăn kèm sợi mì tươi, đậu phộng rang và bánh tráng cuốn thịt heo quay.',
+    '441 Ông Ích Khiêm, P. Nam Dương, Q. Hải Châu, Đà Nẵng',
+    '06:30 - 22:15',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.4,
+    3303,
+    'seed/food-bep-trang',
+    16.0628382,
+    108.2160468,
+    50000,
+    120000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 11. Chè Liên Đà Nẵng (P. Nam Dương)
+-- Google Maps: https://www.google.com/maps/place/Ch%C3%A8+Li%C3%AAn+%C4%90%C3%A0+N%E1%BA%B5ng/@16.0602729,108.2172477,17z/data=!3m1!4b1!4m6!3m5!1s0x3142194843ac4935:0xd8340f4852222e9f!8m2!3d16.0602729!4d108.2172477!16s%2Fg%2F11ght1wf47?hl=vi
+(
+    'Chè Liên Đà Nẵng',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Cơ sở nổi tiếng của món chè Thái sầu riêng trứ danh mà hầu như du khách nào đến Đà Nẵng cũng tìm thưởng thức. Hương vị béo ngậy của sầu riêng tươi hòa quyện cùng thạch dừa, mít chín, nhãn nhục và nước cốt dừa thanh mát.',
+    '189 Hoàng Diệu, P. Nam Dương, Q. Hải Châu, Đà Nẵng',
+    '07:30 - 23:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.1,
+    2148,
+    'seed/food-che-lien-hoang-dieu',
+    16.0602729,
+    108.2172477,
+    15000,
+    35000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 12. Bánh Xèo Bà Dưỡng (P. Bình Hiên)
+-- Google Maps: https://www.google.com/maps/place/B%C3%A1nh+X%C3%A8o+B%C3%A0+D%C6%B0%E1%BB%A1ng/@16.058877,108.2058662,15z/data=!3m1!4b1!4m6!3m5!1s0x314219ca278828ad:0xe50ace1cbe8f6f9f!8m2!3d16.0588772!4d108.216166!16s%2Fg%2F11csqxxgqn?hl=vi
+(
+    'Bánh Xèo Bà Dưỡng',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán bánh xèo và nem lụi huyền thoại nằm trong kiệt 280 Hoàng Diệu với hàng chục năm tuổi đời. Bánh xèo đúc khuôn nhỏ vỏ vàng ươm giòn rụm, nhân tôm thịt giá tươi, cuốn rau sống chấm thứ nước sốt gan đậu phộng béo bùi độc nhất vô nhị.',
+    '280/23 Hoàng Diệu, P. Bình Hiên, Q. Hải Châu, Đà Nẵng',
+    '09:30 - 21:30',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.3,
+    10887,
+    'seed/food-banh-xeo-ba-duong',
+    16.0588772,
+    108.2161660,
+    40000,
+    100000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 13. Bánh bèo Tâm (P. Bình Hiên)
+-- Google Maps: https://www.google.com/maps/place/B%C3%A1nh+b%C3%A8o+T%C3%A2m/@16.0617306,108.2198083,17z/data=!3m1!4b1!4m6!3m5!1s0x314219ce36a06653:0xc7934c9c1b359f13!8m2!3d16.0617306!4d108.2198083!16s%2Fg%2F1tdm_27q?hl=vi
+(
+    'Bánh bèo Tâm',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán bánh bèo chén gia truyền nổi tiếng khu vực trung tâm với hai lựa chọn nhân ướt sánh mịn và nhân khô tôm cháy thơm giòn. Ngoài bánh bèo, quán còn phục vụ bánh nậm, bánh bột lọc, bánh ít ram, chả cây và sữa bắp nhà nấu.',
+    '291 Nguyễn Chí Thanh, P. Bình Hiên, Q. Hải Châu, Đà Nẵng',
+    '12:00 - 20:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.3,
+    441,
+    'seed/food-banh-beo-tam',
+    16.0617306,
+    108.2198083,
+    20000,
+    50000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 14. Cơm nhà vui (P. Bình Thuận)
+-- Google Maps: https://www.google.com/maps/place/C%C6%A1m+nh%C3%A0+vui/@16.056965,108.2223838,17z/data=!3m1!4b1!4m6!3m5!1s0x31421946eb7fc06f:0x7ff73574163fc7d4!8m2!3d16.056965!4d108.2223838!16s%2Fg%2F11t7gq7_b1?hl=vi
+(
+    'Cơm nhà vui',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Nhà hàng cơm niêu và món ăn gia đình thuần Việt được thực khách đánh giá rất cao ngay gần Cầu Rồng. Nổi bật với cơm niêu dẻo thơm, cá bống kho tộ tiêu xanh, canh cua đồng cà pháo, sườn non rim mặn ngọt và thịt luộc chấm mắm tép.',
+    '86 Đường 2 Tháng 9, P. Bình Thuận, Q. Hải Châu, Đà Nẵng',
+    '10:00 - 21:30',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.8,
+    2201,
+    'seed/food-com-nha-vui',
+    16.0569650,
+    108.2223838,
+    50000,
+    150000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 15. Bánh Tráng Kẹp Dì Hoa (P. Hòa Thuận Đông)
+-- Google Maps: https://www.google.com/maps/place/B%C3%A1nh+Tr%C3%A1ng+K%E1%BA%B9p+D%C3%AC+Hoa/@16.0526019,108.2201997,17z/data=!3m1!4b1!4m6!3m5!1s0x314219c67ebfcde1:0x3cbe5be8bb9e62fe!8m2!3d16.0526019!4d108.2201997!16s%2Fg%2F11b6dchc92?hl=vi
+(
+    'Bánh Tráng Kẹp Dì Hoa',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán ăn vặt biểu tượng của giới trẻ Đà Thành nằm trong hẻm Núi Thành. Nổi tiếng với bánh tráng kẹp pate ốp la, bánh tráng nướng bò khô, gỏi gan rim, mít trộn mắm nêm và ốc hút nước cốt dừa cay thơm.',
+    '62/2A Núi Thành, P. Hòa Thuận Đông, Q. Hải Châu, Đà Nẵng',
+    '14:30 - 21:30',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.4,
+    1520,
+    'seed/food-banh-trang-kep-di-hoa',
+    16.0526019,
+    108.2201997,
+    10000,
+    30000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 16. Bếp Vừng (P. Hòa Thuận Đông)
+-- Google Maps: https://www.google.com/maps/place/B%E1%BA%BFp+V%E1%BB%ABng/@16.0531557,108.2140407,17z/data=!3m1!4b1!4m6!3m5!1s0x314219ea2e1b1065:0xd97c0c16999335f4!8m2!3d16.0531557!4d108.2140407!16s%2Fg%2F11tffg72r2?hl=vi
+(
+    'Bếp Vừng',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán cơm niêu mang phong vị ẩm thực miền Trung ấm cúng, sạch sẽ với điểm đánh giá gần tuyệt đối. Phục vụ các món kho tộ đất nung đậm đà, canh chua cá bớp, rau củ luộc chấm kho quẹt và mâm cơm truyền thống rất hợp cho gia đình.',
+    '58 Lê Đình Thám, P. Hòa Thuận Đông, Q. Hải Châu, Đà Nẵng',
+    '10:00 - 14:30, 16:30 - 21:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.9,
+    341,
+    'seed/food-bep-vung',
+    16.0531557,
+    108.2140407,
+    50000,
+    150000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 17. Bánh tráng thịt heo Bà Hường (P. Hòa Thuận Tây)
+-- Google Maps: https://www.google.com/maps/place/B%C3%A1nh+tr%C3%A1ng+th%E1%BB%8Bt+heo+B%C3%A0+H%C6%B0%E1%BB%9Dng/@16.048705,108.2147313,17z/data=!3m1!4b1!4m6!3m5!1s0x314219c011e0380f:0xbeaf06eb782629b3!8m2!3d16.048705!4d108.2147313!16s%2Fg%2F11b6jbbkff?hl=vi
+(
+    'Bánh tráng thịt heo Bà Hường',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Thương hiệu đặc sản bánh tráng cuốn thịt heo nổi tiếng gần sân bay Đà Nẵng. Thịt heo hai đầu da luộc vừa chín tới giữ độ ngọt mềm, cuốn cùng bánh tráng Đại Lộc, mỳ lá, hơn chục loại rau sống tươi và mắm nêm pha tỏi ớt thơm nồng.',
+    '126 Duy Tân, P. Hòa Thuận Tây, Q. Hải Châu, Đà Nẵng',
+    '09:00 - 22:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.2,
+    213,
+    'seed/food-banh-trang-ba-huong',
+    16.0487050,
+    108.2147313,
+    50000,
+    150000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 18. SOHO Buffet & Alacarte (P. Hòa Cường Bắc)
+-- Google Maps: https://www.google.com/maps/place/SOHO+Buffet+%26+Alacarte/@16.0463991,108.2238497,17z/data=!3m1!4b1!4m6!3m5!1s0x314219c629ad5913:0x39a13b5bf5e6a987!8m2!3d16.0463991!4d108.2238497!16s%2Fg%2F11b6_7_v9w?hl=vi
+(
+    'SOHO Buffet & Alacarte',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Nhà hàng buffet hải sản và nướng lẩu quy mô lớn tọa lạc ngay Công viên Bắc Tượng Đài đường 2 Tháng 9. Thực đơn hơn trăm món Á - Âu phong phú với ghẹ hấp, tôm càng nướng, hàu phô mai, sashimi cá hồi và hải sản tươi chọn tại quầy.',
+    'Lô 1+2 Công viên Bắc Tượng Đài, Đường 2 Tháng 9, P. Hòa Cường Bắc, Q. Hải Châu, Đà Nẵng',
+    '10:30 - 14:00, 16:30 - 22:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.1,
+    4298,
+    'seed/food-soho-buffet',
+    16.0463991,
+    108.2238497,
+    250000,
+    370000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 19. Đèn Dầu (P. Hòa Cường Bắc)
+-- Google Maps: https://www.google.com/maps/place/%C4%90%C3%A8n+D%E1%BA%A7u/@16.0435777,108.2223707,17z/data=!3m1!4b1!4m6!3m5!1s0x3142198c8c5ff2a1:0xa7b8cfd521d8b1f8!8m2!3d16.0435777!4d108.2223707!16s%2Fg%2F11y1wtb77j?hl=vi
+(
+    'Đèn Dầu',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán ẩm thực hải sản và đặc sản đồng quê mang phong cách hoài cổ mộc mạc ngay trục đường 2 Tháng 9. Thực khách đánh giá cao các món ốc xào sả ớt, mực một nắng nướng sa tế, lẩu hải sản và các món nhậu truyền thống miền Trung.',
+    '222 Đường 2 Tháng 9, P. Hòa Cường Bắc, Q. Hải Châu, Đà Nẵng',
+    '10:00 - 23:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.7,
+    972,
+    'seed/food-den-dau',
+    16.0435777,
+    108.2223707,
+    50000,
+    200000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 20. Nhà hàng Sơn Dương 2 Đà Nẵng (P. Hòa Cường Nam)
+-- Google Maps: https://www.google.com/maps/place/Nh%C3%A0+h%C3%A0ng+S%C6%A1n+D%C6%B0%C6%A1ng+2+%C4%90%C3%A0+N%E1%BA%B5ng/@16.0321956,108.2150888,17z/data=!3m1!4b1!4m6!3m5!1s0x31421929e711d1cb:0x39ac2b8f788a941f!8m2!3d16.0321956!4d108.2150888!16s%2Fg%2F11p67fm30_?hl=vi
+(
+    'Nhà hàng Sơn Dương 2 Đà Nẵng',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Nhà hàng chuyên đặc sản thịt dê núi tươi nổi tiếng khu vực phía Nam quận Hải Châu. Thực đơn nổi bật với dê tái chanh, dê nướng tảng thơm lừng, sườn dê nướng và lẩu dê hầm thuốc bắc cùng không gian rộng rãi cho đoàn khách.',
+    '202-204 Xô Viết Nghệ Tĩnh, P. Hòa Cường Nam, Q. Hải Châu, Đà Nẵng',
+    '08:30 - 22:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.1,
+    375,
+    'seed/food-son-duong-2',
+    16.0321956,
+    108.2150888,
+    100000,
+    250000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- =============================================================================
+-- 2. QUẬN THANH KHÊ (12 địa điểm - 10/10 phường)
+-- =============================================================================
+
+-- 21. Quán Bún Chả Cá Bà Lữ (P. Vĩnh Trung)
+-- Google Maps: https://www.google.com/maps/place/Qu%C3%A1n+B%C3%BAn+Ch%E1%BA%A3+C%C3%A1+B%C3%A0+L%E1%BB%AF/@16.0665921,108.2111437,17z/data=!3m1!4b1!4m6!3m5!1s0x3142184aa3a78923:0xa9c9e8316c1ea596!8m2!3d16.0665921!4d108.2111437
+(
+    'Quán Bún Chả Cá Bà Lữ',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Địa chỉ bún chả cá gia truyền mở cửa xuyên suốt cả ngày trên trục đường Hùng Vương, rất thuận tiện cho mọi khung giờ lịch trình. Chả cá thu và thát lát dai ngon, nước dùng ninh từ xương cá cùng bí đỏ, ăn kèm mắm ruốc và ớt tỏi xay.',
+    '319 Hùng Vương, P. Vĩnh Trung, Q. Thanh Khê, Đà Nẵng',
+    'Mở cả ngày (24/24)',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.3,
+    425,
+    'seed/food-bun-cha-ca-ba-lu',
+    16.0665921,
+    108.2111437,
+    30000,
+    50000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 22. Chè Liên - CN Hải Phòng (P. Tân Chính)
+-- Google Maps: https://www.google.com/maps/place/Ch%C3%A8+Li%C3%AAn+-+CN+H%E1%BA%A3i+Ph%C3%B2ng/@16.0715146,108.2127379,17z/data=!3m1!4b1!4m6!3m5!1s0x314218357fbb4609:0x4642c75f0a0d4b67!8m2!3d16.0715146!4d108.2127379
+(
+    'Chè Liên - CN Hải Phòng',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Chi nhánh rộng rãi nằm ngay gần Ga Đà Nẵng, nổi danh với món chè Thái sầu riêng trứ danh. Ngoài chè sầu riêng, quán còn phục vụ chè khúc bạch, tàu hũ sầu riêng và rau câu dừa mát lạnh giải nhiệt.',
+    '175 Hải Phòng, P. Tân Chính, Q. Thanh Khê, Đà Nẵng',
+    '08:00 - 22:30',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.1,
+    1437,
+    'seed/food-che-lien-hai-phong',
+    16.0715146,
+    108.2127379,
+    20000,
+    45000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 23. Năm Hiền - Nam Hìn | Bánh Xèo Tôm Nhảy (P. Thạc Gián)
+-- Google Maps: https://www.google.com/maps/place/N%C4%83m+Hi%E1%BB%81n+-+Nam+H%C3%ACn+%7C+B%C3%A1nh+X%C3%A8o+T%C3%B4m+Nh%E1%BA%A3y/@16.0620894,108.2096362,17z/data=!3m1!4b1!4m6!3m5!1s0x314219b4916a2b85:0x8fae84e56598c454!8m2!3d16.0620894!4d108.2096362
+(
+    'Năm Hiền - Nam Hìn | Bánh Xèo Tôm Nhảy',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán bánh xèo tôm nhảy nổi tiếng nhất khu phố Phan Thanh. Vỏ bánh mỏng giòn rụm đổ từ bột gạo xay, nhân tôm đất tươi ngọt và thịt bò mềm, cuốn bánh tráng rau rừng cùng nem lụi nướng than hoa và bánh hỏi thịt nướng.',
+    '46 Phan Thanh, P. Thạc Gián, Q. Thanh Khê, Đà Nẵng',
+    '10:00 - 21:30',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.0,
+    1015,
+    'seed/food-banh-xeo-nam-hien',
+    16.0620894,
+    108.2096362,
+    40000,
+    100000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 24. Quán Bún Bà Diệu (P. Thạc Gián / P. Vĩnh Trung)
+-- Google Maps: https://www.google.com/maps/place/Qu%C3%A1n+B%C3%BAn+B%C3%A0+Di%E1%BB%87u/@16.0617511,108.2104992,17z/data=!3m1!4b1!4m6!3m5!1s0x314219b4c092a015:0x51c76251b5c2a13!8m2!3d16.0617511!4d108.2104992
+(
+    'Quán Bún Bà Diệu',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán bún bò buổi chiều nức tiếng khu vực Phan Thanh - Trần Tống với tô bún đầy ắp giò heo, gân bò, lưỡi bò và chả cua thơm béo. Nước dùng đậm mùi mắm ruốc sả ớt đặc trưng miền Trung, luôn đông kín thực khách bản địa.',
+    '17 Trần Tống, P. Vĩnh Trung, Q. Thanh Khê, Đà Nẵng',
+    '13:00 - 19:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.1,
+    504,
+    'seed/food-bun-ba-dieu',
+    16.0617511,
+    108.2104992,
+    40000,
+    65000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 25. Bún Riêu Cua Đồng Út Phương (P. Chính Gián)
+-- Google Maps: https://www.google.com/maps/place/B%C3%BAn+Ri%C3%AAu+Cua+%C4%90%E1%BB%93ng+%C3%9At+Ph%C6%B0%C6%A1ng/@16.0673419,108.2023594,17z/data=!3m1!4b1!4m6!3m5!1s0x314219abf17c4fe7:0x5cf15dc5947ec837!8m2!3d16.0673419!4d108.2023594
+(
+    'Bún Riêu Cua Đồng Út Phương',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán ăn sáng được đánh giá cao tại phường Chính Gián với món bún riêu cua đồng nguyên chất. Tảng riêu cua thơm béo quyện nước dùng cà chua thanh ngọt, ăn kèm đậu phụ mơ rán vàng và chả ốc nhồi giòn sần sật.',
+    '84/4 Võ Văn Tần, P. Chính Gián, Q. Thanh Khê, Đà Nẵng',
+    '06:00 - 11:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.7,
+    39,
+    'seed/food-bun-rieu-ut-phuong',
+    16.0673419,
+    108.2023594,
+    25000,
+    40000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 26. Khu Văn hóa Du lịch Không Gian Xưa (P. Hòa Khê)
+-- Google Maps: https://www.google.com/maps/place/Khu+V%C4%83n+h%C3%B3a+Du+l%E1%BB%8Bch+Kh%C3%B4ng+Gian+X%C6%B0a/@16.0645009,108.1887373,17z/data=!3m1!4b1!4m6!3m5!1s0x314219036c8411d7:0xa19c1184a4ef6e88!8m2!3d16.0645009!4d108.1887373
+(
+    'Khu Văn hóa Du lịch Không Gian Xưa',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Tổ hợp nhà hàng nhà rường cổ truyền rộng lớn tái hiện kiến trúc làng quê Việt Nam trên trục Điện Biên Phủ. Chuyên phục vụ ẩm thực truyền thống miền Trung và cung đình như lẩu cua đồng, cá bống kho tộ, cơm niêu và các món đặc sản Đà Nẵng.',
+    '402 Điện Biên Phủ, P. Hòa Khê, Q. Thanh Khê, Đà Nẵng',
+    '06:30 - 22:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.2,
+    2135,
+    'seed/food-khong-gian-xua',
+    16.0645009,
+    108.1887373,
+    50000,
+    250000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 27. Quán bún Liên (P. An Khê)
+-- Google Maps: https://www.google.com/maps/place/Qu%C3%A1n+b%C3%BAn+Li%C3%AAn/@16.0560867,108.1800266,17z/data=!3m1!4b1!4m6!3m5!1s0x3142191b2c45a6c3:0x1bbf141ecf3747cb!8m2!3d16.0560867!4d108.1800266
+(
+    'Quán bún Liên',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán ăn bình dân lâu năm tại cửa ngõ phía Tây quận Thanh Khê, nổi tiếng với các tô bún chả cá Đà Nẵng, bún riêu cua và bún giò bò đậm đà, khẩu phần đầy đặn với mức giá địa phương dễ chịu từ sáng sớm đến tối.',
+    '466 Trường Chinh, P. An Khê, Q. Thanh Khê, Đà Nẵng',
+    '05:30 - 21:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.2,
+    80,
+    'seed/food-quan-bun-lien-an-khe',
+    16.0560867,
+    108.1800266,
+    25000,
+    45000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 28. Nhà hàng hải sản Sơn Biển Đông (P. Xuân Hà)
+-- Google Maps: https://www.google.com/maps/place/Nh%C3%A0+h%C3%A0ng+h%E1%BA%A3i+s%E1%BA%A3n+S%C6%A1n+Bi%E1%BB%83n+%C4%90%C3%B4ng/@16.0744781,108.1969242,17z/data=!3m1!4b1!4m6!3m5!1s0x314219717d5e683b:0x5e1657c7cb934be9!8m2!3d16.0744781!4d108.1969242
+(
+    'Nhà hàng hải sản Sơn Biển Đông',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Nhà hàng hải sản tươi sống nằm ngay mặt tiền đường biển Nguyễn Tất Thành hướng ra vịnh Đà Nẵng. Thực khách chọn trực tiếp ghẹ, tôm tít rang muối tiêu, mực một nắng nướng sa tế và cá mú hấp xì dầu với không gian thoáng mát lộng gió biển.',
+    '619 Nguyễn Tất Thành, P. Xuân Hà, Q. Thanh Khê, Đà Nẵng',
+    '09:00 - 23:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.6,
+    211,
+    'seed/food-hai-san-son-bien-dong',
+    16.0744781,
+    108.1969242,
+    100000,
+    300000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 29. Gỏi cá 6 Hào (P. Tam Thuận)
+-- Google Maps: https://www.google.com/maps/place/G%E1%BB%8Fi+c%C3%A1+6+H%C3%A0o/@16.0720081,108.2059634,17z/data=!3m1!4b1!4m6!3m5!1s0x3142184e9157b231:0x50dcfdab0134e68b!8m2!3d16.0720081!4d108.2059634
+(
+    'Gỏi cá 6 Hào',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Địa chỉ thưởng thức đặc sản gỏi cá trích Nam Ô ngay gần trung tâm thành phố mà không cần đi xa. Phục vụ đủ gỏi cá ướt cay nồng và gỏi cá khô bùi thơm cuốn bánh tráng cùng hàng chục loại rau rừng, bên cạnh món cá lạc nướng và gỏi ốc.',
+    '232 Trần Cao Vân, P. Tam Thuận, Q. Thanh Khê, Đà Nẵng',
+    '09:00 - 22:30',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.3,
+    201,
+    'seed/food-goi-ca-6-hao',
+    16.0720081,
+    108.2059634,
+    50000,
+    150000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 30. Cơm Gà Hảo Lù (P. Tam Thuận)
+-- Google Maps: https://www.google.com/maps/place/C%C6%A1m+G%C3%A0+H%E1%BA%A3o+L%C3%B9/@16.071526,108.2045657,17z/data=!3m1!4b1!4m6!3m5!1s0x314219b987242dcf:0x3e2d86b89fd5473c!8m2!3d16.071526!4d108.2045657
+(
+    'Cơm Gà Hảo Lù',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán cơm gà rất được lòng người dân địa phương với điểm đánh giá cao trên trục Trần Cao Vân. Nổi bật với cơm gà quay xối mỡ giòn tan, cơm gà luộc hạt dẻo óng vàng, cơm xá xíu và món dưa hành tím ngâm chua ngọt gia truyền.',
+    '119 Trần Cao Vân, P. Tam Thuận, Q. Thanh Khê, Đà Nẵng',
+    '09:30 - 21:30',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.7,
+    377,
+    'seed/food-com-ga-hao-lu',
+    16.0715260,
+    108.2045657,
+    35000,
+    65000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 31. Ốc đêm Trần Cao Vân (P. Thanh Khê Đông)
+-- Google Maps: https://www.google.com/maps/place/%E1%BB%90c+%C4%91%C3%AAm+Tr%E1%BA%A7n+Cao+V%C3%A2n/@16.0713945,108.1934495,17z/data=!3m1!4b1!4m6!3m5!1s0x3142190a416ed959:0x5f1c3a0684dfadf3!8m2!3d16.0713945!4d108.1934495
+(
+    'Ốc đêm Trần Cao Vân',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Điểm ăn đêm bình dân quen thuộc của giới trẻ Thanh Khê chuyên các món ốc và hải sản chế biến tại chỗ. Thực đơn hấp dẫn với ốc bươu xào sả ớt, ốc cà na bơ tỏi, hàu nướng mỡ hành, tôm tít và càng ghẹ rang muối đậm đà.',
+    '566 Trần Cao Vân, P. Thanh Khê Đông, Q. Thanh Khê, Đà Nẵng',
+    '16:00 - 23:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.2,
+    39,
+    'seed/food-oc-dem-tran-cao-van',
+    16.0713945,
+    108.1934495,
+    40000,
+    80000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 32. PHỐ NƯỚNG (Dũng Sĩ Thanh Khê) (P. Thanh Khê Tây)
+-- Google Maps: https://www.google.com/maps/place/PH%E1%BB%90+N%C6%AF%E1%BB%9ANG+(+D%C5%A9ng+S%C4%A9+Thanh+Kh%C3%AA)/@16.0714182,108.1791751,17z/data=!3m1!4b1!4m6!3m5!1s0x31421968b95ca9bf:0x84b0d8f020762535!8m2!3d16.0714182!4d108.1791751
+(
+    'PHỐ NƯỚNG (Dũng Sĩ Thanh Khê)',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán nướng than hoa bình dân sôi động ven sông Phú Lộc thu hút đông đảo sinh viên và du khách thích ăn khuya. Nổi tiếng với bò nướng sốt cay, ba chỉ ướp kim chi, chân gà nướng sa tế và các nồi lẩu nóng hổi giá mềm.',
+    '43 Dũng Sĩ Thanh Khê, P. Thanh Khê Tây, Q. Thanh Khê, Đà Nẵng',
+    '16:30 - 23:30',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.7,
+    517,
+    'seed/food-pho-nuong-thanh-khe',
+    16.0714182,
+    108.1791751,
+    50000,
+    150000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- =============================================================================
+-- 3. QUẬN SƠN TRÀ (12 địa điểm - 7/7 phường)
+-- =============================================================================
+
+-- 33. Hải sản Năm Đảnh (P. Thọ Quang)
+-- Google Maps: https://www.google.com/maps/place/H%E1%BA%A3i+s%E1%BA%A3n+N%C4%83m+%C4%90%E1%BA%A3nh/@16.1022965,108.2430988,15z/data=!3m1!4b1!4m6!3m5!1s0x314217e3980e8991:0xe10070aa2c0a3e13!8m2!3d16.1022967!4d108.2533986!16s%2Fg%2F11dfjyg4kt?hl=vi
+(
+    'Hải sản Năm Đảnh',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán hải sản "quốc dân" ẩn mình trong kiệt nhỏ phường Thọ Quang nhưng luôn chật kín khách du lịch và dân địa phương nhờ mức giá bình dân và hải sản tươi rói. Nổi bật với ghẹ hấp, mực cơm chiên mắm, hàu nướng và các món ốc xào đồng giá.',
+    '139/59/38 Trần Quang Khải, P. Thọ Quang, Q. Sơn Trà, Đà Nẵng',
+    '10:00 - 22:30',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.1,
+    7037,
+    'seed/food-hai-san-nam-danh',
+    16.1022967,
+    108.2533986,
+    60000,
+    150000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 34. Hải sản tươi sống Bà Rô (P. Thọ Quang)
+-- Google Maps: https://www.google.com/maps/place/H%E1%BA%A3i+s%E1%BA%A3n+t%C6%B0%C6%A1i+s%E1%BB%91ng+B%C3%A0+R%C3%B4/@16.1030064,108.2496229,17z/data=!3m1!4b1!4m6!3m5!1s0x314217e6005d5cb3:0xa29eb62ff7150cbb!8m2!3d16.1030064!4d108.2521978!16s%2Fg%2F11b6q7w_v4?hl=vi
+(
+    'Hải sản tươi sống Bà Rô',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán hải sản nổi tiếng bậc nhất vùng bán đảo Sơn Trà với nguồn hải sản tươi sống nuôi trực tiếp tại bể để khách tự chọn và cân ký. Món tủ gồm tôm tít rang muối, chíp chíp xào lá quế, mực nang chiên mắm và cá nướng muối ớt.',
+    '115 Lý Tử Tấn, P. Thọ Quang, Q. Sơn Trà, Đà Nẵng',
+    '10:00 - 22:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.2,
+    3923,
+    'seed/food-hai-san-ba-ro',
+    16.1030064,
+    108.2521978,
+    60000,
+    250000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 35. Hải sản Quang Trường (P. Mân Thái)
+-- Google Maps: https://www.google.com/maps/place/H%E1%BA%A3i+s%E1%BA%A3n+Quang+Tr%C6%B0%E1%BB%9Dng/@16.0825316,108.243229,17z/data=!3m1!4b1!4m6!3m5!1s0x3142174360eebfa9:0xc75492d6cfba7599!8m2!3d16.0825316!4d108.2458039!16s%2Fg%2F11q2_mft4k?hl=vi
+(
+    'Hải sản Quang Trường',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán hải sản bình dân chất lượng cao ngay làng chài Mân Thái được thực khách đánh giá 4.7 sao. Phục vụ hải sản đánh bắt trong ngày như chíp chíp hấp sả, sò điệp nướng mỡ hành, tôm sú nướng mọi, mực cơm hấp gừng và lẩu cá bớp.',
+    '04 Hồ Thấu, P. Mân Thái, Q. Sơn Trà, Đà Nẵng',
+    '09:30 - 23:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.7,
+    173,
+    'seed/food-hai-san-quang-truong',
+    16.0825316,
+    108.2458039,
+    50000,
+    220000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 36. Mộc quán Seafood Đà Nẵng (P. Phước Mỹ)
+-- Google Maps: https://www.google.com/maps/place/M%E1%BB%99c+qu%C3%A1n+Seafood+%C4%90%C3%A0+N%E1%BA%B5ng/@16.0601362,108.2396753,17z/data=!3m1!4b1!4m6!3m5!1s0x3142177faee7c191:0xd9eb943dddf24a59!8m2!3d16.0601362!4d108.2422502!16s%2Fg%2F11b6f001_s?hl=vi
+(
+    'Mộc quán Seafood Đà Nẵng',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Một trong những nhà hàng hải sản sở hữu lượng đánh giá kỷ lục và điểm xếp hạng 4.8 sao tại khu biển Mỹ Khê. Nổi tiếng với cua sốt trứng muối, cua sốt Singapore, tôm tích chiên bơ tỏi, nghêu hấp sả lá quế và không gian trang trí mộc mạc ấn tượng.',
+    '26 Tô Hiến Thành, P. Phước Mỹ, Q. Sơn Trà, Đà Nẵng',
+    '10:30 - 23:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.8,
+    32503,
+    'seed/food-moc-quan-seafood',
+    16.0601362,
+    108.2422502,
+    80000,
+    350000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 37. Hải sản My Hanh Seafood (P. Phước Mỹ)
+-- Google Maps: https://www.google.com/maps/place/H%E1%BA%A3i+s%E1%BA%A3n+My+Hanh+Seafood/@16.0683058,108.2438982,17z/data=!3m1!4b1!4m6!3m5!1s0x3142177f152d5b63:0x1b452e89d1b6cf1b!8m2!3d16.0683058!4d108.2464731!16s%2Fg%2F11bz3y74n0?hl=vi
+(
+    'Hải sản My Hanh Seafood',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Nhà hàng hải sản lâu đời ngay mặt tiền bãi biển Mỹ Khê với tầm nhìn trực diện ra biển và không gian sang trọng tiếp đón các đoàn khách du lịch. Chuyên tôm hùm nướng mọi, tu hài nướng mỡ hành, cua rang me và cá mú hấp xì dầu.',
+    '03-05 Võ Nguyên Giáp, P. Phước Mỹ, Q. Sơn Trà, Đà Nẵng',
+    '09:30 - 22:30',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.4,
+    4049,
+    'seed/food-my-hanh-seafood',
+    16.0683058,
+    108.2464731,
+    150000,
+    600000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 38. Bếp Cuốn Đà Nẵng (P. Phước Mỹ)
+-- Google Maps: https://www.google.com/maps/place/B%E1%BA%BFp+Cu%E1%BB%91n+%C4%90%C3%A0+N%E1%BA%B5ng/@16.0579628,108.2451505,17z/data=!3m1!4b1!4m6!3m5!1s0x314217f4632748f9:0xdc14dcdba4c73425!8m2!3d16.0579628!4d108.2451505!16s%2Fg%2F11hz90gsyw?hl=vi
+(
+    'Bếp Cuốn Đà Nẵng',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Nhà hàng chuyên các món cuốn đặc sản miền Trung đạt 4.9 sao với hơn 18.000 lượt đánh giá gần bãi biển Mỹ Khê. Nổi tiếng nhất là mẹt cuốn thập cẩm, bánh tráng cuốn thịt heo hai đầu da, bánh xèo tôm nhảy giòn và nem lụi nướng sả.',
+    '31-33 Trần Bạch Đằng, P. Phước Mỹ, Q. Sơn Trà, Đà Nẵng',
+    '10:30 - 21:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.9,
+    18867,
+    'seed/food-bep-cuon-da-nang',
+    16.0579628,
+    108.2451505,
+    45000,
+    165000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 39. Nhà Hàng Lão Đại (P. An Hải Đông)
+-- Google Maps: https://www.google.com/maps/place/Nh%C3%A0+H%C3%A0ng+L%C3%A3o+%C4%90%E1%BA%A1i/@16.0620191,108.235918,17z/data=!3m1!4b1!4m6!3m5!1s0x314219d5305a5279:0x1e7b79f26dff1c9d!8m2!3d16.0620191!4d108.235918!16s%2Fg%2F11cjp585f9?hl=vi
+(
+    'Nhà Hàng Lão Đại',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán hải sản quy mô lớn trên đại lộ Võ Văn Kiệt nối thẳng từ Cầu Rồng ra biển Mỹ Khê, mở cửa linh hoạt phục vụ cả thực khách ăn khuya. Nổi bật với tôm chiên hoàng bào, cá chìa vôi nướng, cua gạch hấp và chíp chíp xào cay.',
+    '100 Võ Văn Kiệt, P. An Hải Đông, Q. Sơn Trà, Đà Nẵng',
+    'Mở cả ngày (24/24)',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.0,
+    3062,
+    'seed/food-nha-hang-lao-dai',
+    16.0620191,
+    108.2359180,
+    70000,
+    300000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 40. Mỳ Quảng Bé Liên (P. An Hải Đông)
+-- Google Maps: https://www.google.com/maps/place/M%E1%BB%B3+Qu%E1%BA%A3ng+B%C3%A9+Li%C3%AAn/@16.0585217,108.2366992,17z/data=!3m1!4b1!4m6!3m5!1s0x314219f06b1f671d:0x7c071cf15bdcfee!8m2!3d16.0585217!4d108.2366992!16s%2Fg%2F11sb3fm8s7?hl=vi
+(
+    'Mỳ Quảng Bé Liên',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán mì Quảng chuẩn vị gia truyền xứ Quảng nằm bên bờ Đông sông Hàn được đánh giá 4.9 sao. Nổi bật với mì Quảng gà ta rút xương, mì ếch, mì tôm thịt trứng nấu đậm đà và món ram cuốn chiên giòn ăn kèm rau sống tươi.',
+    '192 Phạm Cự Lượng, P. An Hải Đông, Q. Sơn Trà, Đà Nẵng',
+    '06:00 - 22:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.9,
+    78,
+    'seed/food-my-quang-be-lien',
+    16.0585217,
+    108.2366992,
+    25000,
+    45000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 41. Bánh Canh Ruộng (P. An Hải Tây)
+-- Google Maps: https://www.google.com/maps/place/B%C3%A1nh+Canh+Ru%E1%BB%99ng/@16.0586762,108.2318439,17z/data=!3m1!4b1!4m6!3m5!1s0x3142196930eab33d:0x49116ee973284dfc!8m2!3d16.0586762!4d108.2318439!16s%2Fg%2F11fqc9d1vx?hl=vi
+(
+    'Bánh Canh Ruộng',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Thương hiệu bánh canh ruộng nổi tiếng lâu đời ở khu vực gần Cầu Rồng bờ Đông. Sợi bánh canh bột gạo và bột lọc mềm dai kết hợp cá nướng phồng cay, chả cây, trứng cút và bánh mì nướng giòn chấm nước lèo đậm đà.',
+    '20 Hà Thị Thân, P. An Hải Tây, Q. Sơn Trà, Đà Nẵng',
+    '11:00 - 21:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.1,
+    545,
+    'seed/food-banh-canh-ruong-ha-thi-than',
+    16.0586762,
+    108.2318439,
+    15000,
+    35000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 42. Cơm lâuphai (lâu phai) - Hue Traditional Restaurant (P. An Hải Tây)
+-- Google Maps: https://www.google.com/maps/place/C%C6%A1m+l%C3%A2uphai+(l%C3%A2u+phai)+-+Hue+Traditional+Restaurant/@16.0659343,108.2297965,17z/data=!3m1!4b1!4m6!3m5!1s0x31421925c2d93673:0x540708b02f1e52c9!8m2!3d16.0659343!4d108.2297965!16s%2Fg%2F11yq9jvzfm?hl=vi
+(
+    'Cơm lâuphai (lâu phai) - Hue Traditional Restaurant',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Nhà hàng cơm niêu truyền thống Huế và miền Trung tọa lạc ngay bờ Đông sông Hàn gần Cầu Rồng và cầu tình yêu. Thực đơn ấn tượng với cá bống kho tộ, thịt luộc chấm tôm chua mắm ruốc, vả trộn tôm thịt, canh hến và ram Huế.',
+    '401-405 Đường Trần Hưng Đạo, P. An Hải Tây, Q. Sơn Trà, Đà Nẵng',
+    '07:00 - 22:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.7,
+    2064,
+    'seed/food-com-lau-phai',
+    16.0659343,
+    108.2297965,
+    50000,
+    180000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 43. Nhà An - Vietnamese local food restaurant and vegan (P. An Hải Bắc)
+-- Google Maps: https://www.google.com/maps/place/Nh%C3%A0+An+-+Vietnamese+local+food+restaurant+and+vegan/@16.0749852,108.2430715,17z/data=!3m1!4b1!4m6!3m5!1s0x3142170d14f5ea4f:0x1eaf14f4ee0f185f!8m2!3d16.0749852!4d108.2430715!16s%2Fg%2F11m5rzc793?hl=vi
+(
+    'Nhà An - Vietnamese local food restaurant and vegan',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Nhà hàng ẩm thực Việt Nam và thực đơn chay thuần Việt được đánh giá 4.8 sao với hơn 4.300 lượt review gần công viên Biển Đông. Phục vụ bánh xèo giòn, cá bớp kho tộ, canh chua cá lóc cùng nhiều món thuần chay tinh tế cho khách quốc tế.',
+    '101 Hồ Nghinh, P. An Hải Bắc, Q. Sơn Trà, Đà Nẵng',
+    '10:00 - 23:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.8,
+    4356,
+    'seed/food-nha-an-vietnamese',
+    16.0749852,
+    108.2430715,
+    50000,
+    180000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 44. Bánh canh Cô Cúc (P. Nại Hiên Đông)
+-- Google Maps: https://www.google.com/maps/place/B%C3%A1nh+canh+C%C3%B4+C%C3%BAc/@16.089997,108.2288699,17z/data=!3m1!4b1!4m6!3m5!1s0x314219005dcfaf55:0xacdefebf346322b4!8m2!3d16.089997!4d108.2288699!16s%2Fg%2F11yd95sf8l?hl=vi
+(
+    'Bánh canh Cô Cúc',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán bánh canh ruộng cá nướng nổi tiếng dưới chân cầu Thuận Phước thuộc phường Nại Hiên Đông. Tô bánh canh nóng hổi gồm sợi bột gạo dẻo dai, cá nướng róc xương thơm nức, chả chiên giòn, trứng cút và bánh mì chấm nước súp đậm vị.',
+    '82 Bùi Dương Lịch, P. Nại Hiên Đông, Q. Sơn Trà, Đà Nẵng',
+    '14:00 - 23:30',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.6,
+    340,
+    'seed/food-banh-canh-co-cuc',
+    16.0899970,
+    108.2288699,
+    15000,
+    30000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- =============================================================================
+-- 4. QUẬN NGŨ HÀNH SƠN (8 địa điểm - 4/4 phường)
+-- =============================================================================
+
+-- 45. Kem Bơ Cô Vân - Chợ Bắc Mỹ An (P. Mỹ An)
+-- Google Maps: https://www.google.com/maps/place/Kem+B%C6%A1+C%C3%B4+V%C3%A2n+-+Ch%E1%BB%A3+B%E1%BA%AFc+M%E1%BB%B9+An/@16.0463945,108.2393308,17z/data=!3m1!4b1!4m6!3m5!1s0x314217615967f6bb:0x1b43924bf63337a6!8m2!3d16.0463945!4d108.2419057!16s%2Fg%2F11b_2yv78q?hl=vi
+(
+    'Kem Bơ Cô Vân - Chợ Bắc Mỹ An',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán ăn vặt huyền thoại trong lòng chợ Bắc Mỹ An mà bất kỳ food tour Đà Nẵng nào cũng nhắc đến. Ly kem bơ xay sánh mịn béo ngậy phủ kem dừa tươi, dừa khô giòn và đậu phộng rang cực kỳ thanh mát với mức giá bình dân.',
+    'Chợ Bắc Mỹ An, Đường Nguyễn Bá Lân, P. Mỹ An, Q. Ngũ Hành Sơn, Đà Nẵng',
+    '07:00 - 18:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.4,
+    1842,
+    'seed/food-kem-bo-co-van',
+    16.0463945,
+    108.2419057,
+    15000,
+    30000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 46. Hải Sản Thời Cổ (P. Mỹ An)
+-- Google Maps: https://www.google.com/maps/place/H%E1%BA%A3i+S%E1%BA%A3n+Th%E1%BB%9Di+C%E1%BB%95/@16.0449553,108.2458422,17z/data=!3m1!4b1!4m6!3m5!1s0x3142176378e9b06f:0xa7d825c942918bb1!8m2!3d16.0449553!4d108.2458422!16s%2Fg%2F11f44t8z90?hl=vi
+(
+    'Hải Sản Thời Cổ',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán hải sản tươi sống bình dân rất đông khách gần khu phố du lịch An Thượng và bãi biển Bắc Mỹ An. Nổi tiếng với tôm hùm sốt bơ tỏi, cua sốt trứng muối, ốc hương nướng mọi và nghêu hấp sả lá chanh niêm yết giá rõ ràng.',
+    '354/1 Võ Nguyên Giáp, P. Mỹ An, Q. Ngũ Hành Sơn, Đà Nẵng',
+    '10:30 - 23:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.6,
+    2906,
+    'seed/food-hai-san-thoi-co',
+    16.0449553,
+    108.2458422,
+    100000,
+    250000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 47. Mì Quảng Dung (P. Mỹ An)
+-- Google Maps: https://www.google.com/maps/place/M%C3%AC+Qu%E1%BA%A3ng+Dung/@16.0494421,108.2435552,17z/data=!3m1!4b1!4m6!3m5!1s0x314217643e26cf81:0xab350e9fcb9a30f7!8m2!3d16.0494421!4d108.2461301!16s%2Fg%2F11b6v5r_wt?hl=vi
+(
+    'Mì Quảng Dung',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán mì Quảng chuẩn vị địa phương rất được ưa chuộng ngay khu phố Tây An Thượng - Bắc Mỹ An. Phục vụ mì Quảng gà ta, mì tôm thịt, mì cá lóc và mì ếch xào củ nén thơm nồng cùng không gian sạch sẽ, giá bình dân.',
+    '121 Đỗ Bá, P. Mỹ An, Q. Ngũ Hành Sơn, Đà Nẵng',
+    '05:30 - 13:00, 16:30 - 21:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.4,
+    1148,
+    'seed/food-mi-quang-dung',
+    16.0494421,
+    108.2461301,
+    30000,
+    50000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 48. Nhà Hàng Nhà Bếp Khuê Mỹ (P. Khuê Mỹ)
+-- Google Maps: https://www.google.com/maps/place/Nh%C3%A0+H%C3%A0ng+Nh%C3%A0+B%E1%BA%BFp+Khu%C3%AA+M%E1%BB%B9/@16.038411,108.2471802,17z/data=!3m1!4b1!4m6!3m5!1s0x31421759082337d1:0x39a3f25b273b4e69!8m2!3d16.038411!4d108.2497551!16s%2Fg%2F11txj9732x?hl=vi
+(
+    'Nhà Hàng Nhà Bếp Khuê Mỹ',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Nhà hàng ẩm thực Việt và hải sản tươi sống được đánh giá 4.8 sao trên trục đường biển Võ Nguyên Giáp đoạn Khuê Mỹ. Nổi tiếng với mâm cơm gia đình truyền thống, lẩu cá bớp nấu măng chua, cá kho tộ và mực lá nướng muối ớt.',
+    '416 Võ Nguyên Giáp, P. Khuê Mỹ, Q. Ngũ Hành Sơn, Đà Nẵng',
+    '10:00 - 22:30',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.8,
+    327,
+    'seed/food-nha-bep-khue-my',
+    16.0384110,
+    108.2497551,
+    120000,
+    300000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 49. QUÁN CÂY NGÔ ĐỒNG (P. Khuê Mỹ)
+-- Google Maps: https://www.google.com/maps/place/QU%C3%81N+C%C3%82Y+NG%C3%94+%C4%90%E1%BB%92NG/@16.0315267,108.2407511,17z/data=!3m1!4b1!4m6!3m5!1s0x31421750567ebfe7:0xeb64e9a18d1f2fb8!8m2!3d16.0315267!4d108.243326!16s%2Fg%2F11bzsgqf64?hl=vi
+(
+    'QUÁN CÂY NGÔ ĐỒNG',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Địa chỉ thưởng thức đặc sản bê thui Cầu Mống trứ danh ngay tuyến đường Lê Văn Hiến. Thịt bê non thui rơm da vàng giòn, thớ thịt hồng mềm ngọt tự nhiên cuốn bánh tráng, chuối chát và chấm mắm nêm cá cơm nguyên chất.',
+    '223 Đường Lê Văn Hiến, P. Khuê Mỹ, Q. Ngũ Hành Sơn, Đà Nẵng',
+    '08:30 - 22:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.4,
+    187,
+    'seed/food-quan-cay-ngo-dong',
+    16.0315267,
+    108.2433260,
+    80000,
+    200000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 50. Cua Đất Hải Sản Tươi Sống Bình Dân (P. Hòa Hải)
+-- Google Maps: https://www.google.com/maps/place/Cua+%C4%90%E1%BA%A5t+H%E1%BA%A3i+S%E1%BA%A3n+T%C6%B0%C6%A1i+S%E1%BB%91ng+B%C3%ACnh+D%C3%A2n/@16.0076214,108.2612948,17z/data=!3m1!4b1!4m6!3m5!1s0x31421110034a7db7:0xdb24b3e64f7b6fcb!8m2!3d16.0076214!4d108.2638697!16s%2Fg%2F11q8t5l09_?hl=vi
+(
+    'Cua Đất Hải Sản Tươi Sống Bình Dân',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán hải sản bình dân chất lượng dọc đường Trường Sa gần chuỗi resort và bãi biển Non Nước. Chuyên cua gạch xào me chua ngọt, ghẹ biển hấp sả, tôm tít sốt tỏi và mực nướng sa tế phù hợp dừng chân sau khi tham quan Ngũ Hành Sơn.',
+    '320 Trường Sa, P. Hòa Hải, Q. Ngũ Hành Sơn, Đà Nẵng',
+    '09:00 - 23:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.2,
+    230,
+    'seed/food-cua-dat-hai-san',
+    16.0076214,
+    108.2638697,
+    150000,
+    300000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 51. Mỳ quảng Cô Hoa since 1976 (P. Hòa Hải)
+-- Google Maps: https://www.google.com/maps/place/M%E1%BB%B3+qu%E1%BA%A3ng+C%C3%B4+Hoa+since+1976/@16.0128795,108.2515082,17z/data=!3m1!4b1!4m6!3m5!1s0x314211516e811c75:0x1b419b489d4d5e86!8m2!3d16.0128795!4d108.2540831!16s%2Fg%2F11j_7m97m4?hl=vi
+(
+    'Mỳ quảng Cô Hoa since 1976',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán mì Quảng gia truyền gần nửa thế kỷ tọa lạc ngay gần khu danh thắng Ngũ Hành Sơn. Tô mì nóng hổi chuẩn hương vị Quảng với gà ta, tôm thịt, ếch đồng cùng bánh tráng mè nướng giòn, rất lý tưởng cho bữa sáng trước khi leo núi.',
+    '10 Sơn Thủy 3, P. Hòa Hải, Q. Ngũ Hành Sơn, Đà Nẵng',
+    '06:00 - 21:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.6,
+    70,
+    'seed/food-my-quang-co-hoa-1976',
+    16.0128795,
+    108.2540831,
+    25000,
+    40000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 52. Quán Ăn Vặt Bà Tám (P. Hòa Quý)
+-- Google Maps: https://www.google.com/maps/place/Qu%C3%A1n+%C4%82n+V%E1%BA%B7t+B%C3%A0+T%C3%A1m/@15.9910685,108.2380557,15z/data=!3m1!4b1!4m6!3m5!1s0x3142109835289cb7:0x516bb21517b8b81f!8m2!3d15.9910687!4d108.2483555!16s%2Fg%2F11gfjw11tf?hl=vi
+(
+    'Quán Ăn Vặt Bà Tám',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán ăn vặt bình dân nổi tiếng khu vực Hòa Quý gần làng đại học và khu đô thị Nam Hòa Xuân. Phục vụ bánh tráng nướng, cá viên chiên sốt mắm tỏi ớt, nem chua rán và các thức uống giải nhiệt buổi chiều tối.',
+    '245 Đường Mai Đăng Chơn, P. Hòa Quý, Q. Ngũ Hành Sơn, Đà Nẵng',
+    '17:00 - 21:30',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.5,
+    33,
+    'seed/food-an-vat-ba-tam',
+    15.9910687,
+    108.2483555,
+    15000,
+    40000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- =============================================================================
+-- 5. QUẬN LIÊN CHIỂU (9 địa điểm - 5/5 phường)
+-- =============================================================================
+
+-- 53. Lẩu Nấm Trần Phố - Liên Chiểu (P. Hòa Minh)
+-- Google Maps: https://www.google.com/maps/place/L%E1%BA%A9u+N%E1%BA%A5m+Tr%E1%BA%A7n+Ph%E1%BB%91+-+Li%C3%AAn+Chi%E1%BB%83u/@16.0660006,108.1448995,15z/data=!3m1!4b1!4m6!3m5!1s0x314219c245ae2c2d:0xa45133114521ac78!8m2!3d16.0660008!4d108.1551993!16s%2Fg%2F11rpdd61mc?hl=vi
+(
+    'Lẩu Nấm Trần Phố - Liên Chiểu',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Nhà hàng chuyên lẩu nấm thanh đạm tọa lạc ngay trục đường Nguyễn Sinh Sắc hướng ra biển Liên Chiểu. Nước dùng hầm rau củ ngọt thanh kết hợp hàng chục loại nấm thiên nhiên và đồ nhúng tươi sống, không gian rộng rãi cho gia đình.',
+    '1 Nguyễn Sinh Sắc, P. Hòa Minh, Q. Liên Chiểu, Đà Nẵng',
+    '10:00 - 21:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.4,
+    128,
+    'seed/food-lau-nam-tran-pho',
+    16.0660008,
+    108.1551993,
+    100000,
+    250000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 54. Quán Vân (Bánh Bèo Nậm Lọc Cô Vân) (P. Hòa Minh)
+-- Google Maps: https://www.google.com/maps/place/Qu%C3%A1n+V%C3%A2n/@16.0609931,108.1625571,15z/data=!3m1!4b1!4m6!3m5!1s0x3142191b69aad3d9:0xb596e6b002ed9734!8m2!3d16.0609933!4d108.1728569!16s%2Fg%2F1pzx88x98?hl=vi
+(
+    'Quán Vân (Bánh Bèo Nậm Lọc Cô Vân)',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán bánh Huế lâu đời cực kỳ nổi tiếng gần bến xe trung tâm Đà Nẵng. Thực đơn quen thuộc với bánh bèo chén nhân tôm ướt béo mịn, bánh nậm, bánh bột lọc gói lá, nem chả và sữa chua phô mai giá bình dân.',
+    '57-59 Thanh Tịnh, P. Hòa Minh, Q. Liên Chiểu, Đà Nẵng',
+    '08:00 - 18:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.3,
+    832,
+    'seed/food-quan-van-thanh-tinh',
+    16.0609933,
+    108.1728569,
+    15000,
+    40000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 55. Quán Mì Quảng Bà Bích (P. Hòa Khánh Bắc)
+-- Google Maps: https://www.google.com/maps/place/Qu%C3%A1n+M%C3%AC+Qu%E1%BA%A3ng+B%C3%A0+B%C3%ADch/@16.0712348,108.1398033,15z/data=!3m1!4b1!4m6!3m5!1s0x314218d613423463:0xb37aff93e09215f8!8m2!3d16.071235!4d108.1501031!16s%2Fg%2F1wcx9kr6?hl=vi
+(
+    'Quán Mì Quảng Bà Bích',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Thương hiệu mì Quảng lâu đời từ năm 1981 nổi danh bậc nhất quận Liên Chiểu với hơn 1.300 lượt đánh giá. Quán phục vụ mì Quảng gà quê, sườn heo, bò, tôm thịt và ếch đồng cùng sợi mì mềm dai và nước nhưn đậm đà.',
+    '1 Đặng Dung, P. Hòa Khánh Bắc, Q. Liên Chiểu, Đà Nẵng',
+    '05:00 - 21:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.1,
+    1383,
+    'seed/food-mi-quang-ba-bich',
+    16.0712350,
+    108.1501031,
+    25000,
+    50000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 56. Cơm Gà Gia Vĩnh - Âu Cơ (P. Hòa Khánh Bắc)
+-- Google Maps: https://www.google.com/maps/place/C%C6%A1m+G%C3%A0+Gia+V%C4%A9nh+-+C%C6%A1m+Chi%C3%AAn+Gi%C3%B2n+Ngon+-+%C3%82u+C%C6%A1,+Li%C3%AAn+Chi%E1%BB%83u/@16.0704469,108.1376166,15z/data=!3m1!4b1!4m6!3m5!1s0x3142194d7f8861a9:0x65f21716880219e0!8m2!3d16.0704471!4d108.1479164!16s%2Fg%2F11v6895y5q?hl=vi
+(
+    'Cơm Gà Gia Vĩnh - Âu Cơ',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Chi nhánh cơm gà xối mỡ và cơm chiên giòn nổi tiếng tại trung tâm Hòa Khánh gần chợ Hòa Khánh và Đại học Bách khoa. Cơm chiên tơi xốp ăn cùng đùi gà chiên mắm, gà xé, gà sốt cay hoặc sườn giòn rất được ưa chuộng.',
+    '37 Âu Cơ, P. Hòa Khánh Bắc, Q. Liên Chiểu, Đà Nẵng',
+    '09:30 - 21:30',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.4,
+    214,
+    'seed/food-com-ga-gia-vinh-au-co',
+    16.0704471,
+    108.1479164,
+    35000,
+    65000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 57. Quán Cơm Gà 3 Lu (P. Hòa Khánh Nam)
+-- Google Maps: https://www.google.com/maps/place/Qu%C3%A1n+C%C6%A1m+G%C3%A0+3+Lu/@16.0683739,108.1410033,15z/data=!3m1!4b1!4m6!3m5!1s0x31421929b1192499:0x4668e86025924cdf!8m2!3d16.0683741!4d108.1513031!16s%2Fg%2F11b67p28d5?hl=vi
+(
+    'Quán Cơm Gà 3 Lu',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán cơm gà nướng lu đặc sắc ở Hòa Khánh Nam với phương pháp nướng gà và thịt heo trong lu đất giúp da vàng giòn mà thịt vẫn mềm ngọt. Ăn kèm cơm nấu thơm, đồ chua và canh rau má giải nhiệt.',
+    '105 Đặng Dung, P. Hòa Khánh Nam, Q. Liên Chiểu, Đà Nẵng',
+    '08:00 - 22:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.1,
+    325,
+    'seed/food-com-ga-3-lu',
+    16.0683741,
+    108.1513031,
+    35000,
+    60000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 58. Quán Hoa - Bánh Canh Vịt (P. Hòa Khánh Nam)
+-- Google Maps: https://www.google.com/maps/place/Qu%C3%A1n+Hoa+-+B%C3%A1nh+Canh+V%E1%BB%8Bt/@16.0681845,107.9864877,11z/data=!4m10!1m2!2m1!1zcXXDoW4gxINuIFBo4bqhbSBOaMawIFjGsMahbmcgxJDDoCBO4bq1bmc!3m6!1s0x31421925eed59739:0xe66354c60a20b8ba!8m2!3d16.0637727!4d108.1541893!16s%2Fg%2F11g88bhbqp?hl=vi
+(
+    'Quán Hoa - Bánh Canh Vịt',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán đặc sản bánh canh vịt được đánh giá 4.6 sao nằm trên con phố ẩm thực Phạm Như Xương. Nước lèo ninh xương vịt ngọt béo đậm đà, thịt vịt cỏ mềm thơm chấm nước mắm gừng cay tê cùng món gỏi vịt bóp thấu hấp dẫn.',
+    '56 Phạm Như Xương, P. Hòa Khánh Nam, Q. Liên Chiểu, Đà Nẵng',
+    '11:00 - 20:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.6,
+    237,
+    'seed/food-quan-hoa-banh-canh-vit',
+    16.0637727,
+    108.1541893,
+    25000,
+    50000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 59. Gỏi Cá Thanh Hương - Nam Ô (P. Hòa Hiệp Nam)
+-- Google Maps: https://www.google.com/maps/place/G%E1%BB%8Fi+C%C3%A1+Thanh+H%C6%B0%C6%A1ng+-+Nam+%C3%94/@16.1153684,108.1159306,15z/data=!3m1!4b1!4m6!3m5!1s0x31421f58a9dcaa95:0xa074421fbbaefb83!8m2!3d16.1153686!4d108.1262304!16s%2Fg%2F1tgmsrpb?hl=vi
+(
+    'Gỏi Cá Thanh Hương - Nam Ô',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Một trong những quán gỏi cá trích Nam Ô chính gốc trứ danh nhất Đà Nẵng nằm gần làng chài và Rạn Nam Ô. Thực khách được thưởng thức đủ hai loại gỏi cá ướt chấm nước cốt cá cay nồng và gỏi cá khô rắc mè cuốn bánh tráng cùng rau rừng đặc trưng.',
+    '1029 Nguyễn Lương Bằng, P. Hòa Hiệp Nam, Q. Liên Chiểu, Đà Nẵng',
+    '10:00 - 21:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.1,
+    898,
+    'seed/food-goi-ca-thanh-huong',
+    16.1153686,
+    108.1262304,
+    60000,
+    150000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 60. HẢI LÂM CHÂN CẦU QUÁN (P. Hòa Hiệp Bắc)
+-- Google Maps: https://www.google.com/maps/place/H%E1%BA%A2I+L%C3%82M+CH%C3%82N+C%E1%BA%A6U+QU%C3%81N/@16.1226351,108.1121601,15z/data=!3m1!4b1!4m6!3m5!1s0x314221033746cbd9:0xddb03c6f24ff3545!8m2!3d16.1226353!4d108.1224599!16s%2Fg%2F11g20j7160?hl=vi
+(
+    'HẢI LÂM CHÂN CẦU QUÁN',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán ẩm thực ven sông Cu Đê và vịnh Kim Liên tọa lạc ngay bờ Bắc cầu Nam Ô dưới chân đèo Hải Vân. Nổi tiếng với gỏi cá Nam Ô truyền thống, tôm nướng muối ớt, cua ghẹ hấp và hải sản đánh bắt tươi sống hàng ngày.',
+    'Bờ Bắc cầu Nam Ô, QL1A Kim Liên, P. Hòa Hiệp Bắc, Q. Liên Chiểu, Đà Nẵng',
+    '07:00 - 21:30',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.2,
+    466,
+    'seed/food-hai-lam-chan-cau',
+    16.1226353,
+    108.1224599,
+    80000,
+    220000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 61. Quán Hải Sản Ngọc Giỏi (P. Hòa Hiệp Bắc)
+-- Google Maps: https://www.google.com/maps/place/Qu%C3%A1n+H%E1%BA%A3i+S%E1%BA%A3n+Ng%E1%BB%8Dc+Gi%E1%BB%8Fi/@16.1224378,108.1086395,15z/data=!4m10!1m2!2m1!1zaOG6o2kgc-G6o24gSMOyYSBIaeG7h3AgQuG6r2MgTGnDqm4gQ2hp4buDdQ!3m6!1s0x31421f7858ffb977:0xd51a63b9a858582b!8m2!3d16.1168306!4d108.114372!16s%2Fg%2F11v5b86zk_?hl=vi
+(
+    'Quán Hải Sản Ngọc Giỏi',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Điểm dừng chân ẩm thực ven sông Cu Đê khu vực Thủy Tú - Hòa Hiệp Bắc trên cung đường khám phá vịnh Đà Nẵng và đèo Hải Vân. Chuyên bún sông Nam Ô, gỏi sứa bóp xoài, mực hấp gừng giòn ngọt và lẩu cá biển tươi sống.',
+    'Đường Ngô Xuân Thu, P. Hòa Hiệp Bắc, Q. Liên Chiểu, Đà Nẵng',
+    'Mở cả ngày (24/7)',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.2,
+    174,
+    'seed/food-hai-san-ngoc-gioi',
+    16.1168306,
+    108.1143720,
+    80000,
+    200000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- =============================================================================
+-- 6. QUẬN CẨM LỆ (8 địa điểm - 6/6 phường)
+-- =============================================================================
+
+-- 62. Hải Sản Tự Do (P. Khuê Trung)
+-- Google Maps: https://www.google.com/maps/place/H%E1%BA%A3i+S%E1%BA%A3n+T%E1%BB%B1+Do/@16.0226099,108.1920836,15z/data=!3m1!4b1!4m6!3m5!1s0x314219c2485f8e11:0xeb47d44cdc4b3228!8m2!3d16.0226101!4d108.2023834!16s%2Fg%2F11rdc3trp6?hl=vi
+(
+    'Hải Sản Tự Do',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán hải sản bình dân nhộn nhịp bậc nhất quận Cẩm Lệ trên tuyến phố Lê Đại Hành. Chuyên phục vụ hải sản tươi sống nướng, hấp, xào như hàu nướng mỡ hành phô mai, sò điệp, mực tươi và cá biển nướng giá phải chăng.',
+    '149-151 Lê Đại Hành, P. Khuê Trung, Q. Cẩm Lệ, Đà Nẵng',
+    '10:00 - 23:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.0,
+    344,
+    'seed/food-hai-san-tu-do-cam-le',
+    16.0226101,
+    108.2023834,
+    100000,
+    300000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 63. NHÀ HÀNG THỐNG GIA (P. Khuê Trung)
+-- Google Maps: https://www.google.com/maps/place/NH%C3%80+H%C3%80NG+TH%E1%BB%90NG+GIA/@16.0225939,108.1199811,12z/data=!4m10!1m2!2m1!1zRMOqIE5naMSpYSBUaMSDbmcgTG9uZyDEkMOgIE7hurVuZw!3m6!1s0x31421a2106d4a139:0x3f47fa5ec19211a4!8m2!3d16.0123492!4d108.20753!16s%2Fg%2F11c1t5gngs?hl=vi
+(
+    'NHÀ HÀNG THỐNG GIA',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Nhà hàng sân vườn ven sông Cẩm Lệ trên đường Thăng Long với không gian yên tĩnh, lịch sự phù hợp cho các bữa tiệc gia đình và tiếp khách. Thực đơn chuyên đặc sản đồng quê, cá sông Cẩm Lệ và các món rừng biển.',
+    '432 Thăng Long, P. Khuê Trung, Q. Cẩm Lệ, Đà Nẵng',
+    '09:00 - 22:30',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.1,
+    340,
+    'seed/food-nha-hang-thong-gia',
+    16.0123492,
+    108.2075300,
+    150000,
+    350000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 64. Nhà Hàng Cham (P. Hòa Xuân)
+-- Google Maps: https://www.google.com/maps/place/Nh%C3%A0+H%C3%A0ng+Cham/@16.0240986,108.2145731,15z/data=!3m1!4b1!4m6!3m5!1s0x314219930f2708d3:0xba8e7d85fa88abcb!8m2!3d16.0240988!4d108.2248729!16s%2Fg%2F11n7cr4td9?hl=vi
+(
+    'Nhà Hàng Cham',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Nhà hàng ven sông thuộc khu đô thị sinh thái Hòa Xuân với khuôn viên rộng đẹp mang nét kiến trúc Chăm Pa giao hòa hiện đại. Phục vụ buffet nướng lẩu, đặc sản xứ Quảng và ẩm thực gia đình kết hợp nghỉ dưỡng thư giãn.',
+    '3 Lê Quang Hòa, P. Hòa Xuân, Q. Cẩm Lệ, Đà Nẵng',
+    '07:00 - 22:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.4,
+    181,
+    'seed/food-nha-hang-cham-hoa-xuan',
+    16.0240988,
+    108.2248729,
+    99000,
+    250000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 65. Bánh Bèo Lò Củi (P. Hòa Xuân)
+-- Google Maps: https://www.google.com/maps/place/B%C3%A1nh+B%C3%A8o+L%C3%B2+C%E1%BB%A7i/@16.0078854,108.2139049,16z/data=!4m10!1m2!2m1!1zQsOhbmggQsOobyBMw7IgQ-G7p2kgSMOyYSBYdcOibiBD4bqpbSBM4buHIMSQw6AgTuG6tW5n!3m6!1s0x31421b2fc3fccb87:0xcd31e7010b15548f!8m2!3d16.0027455!4d108.2193322!16s%2Fg%2F11sj5l8hg9?hl=vi
+(
+    'Bánh Bèo Lò Củi',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán bánh bèo chén nóng hấp trực tiếp bằng lò củi truyền thống rất được ưa chuộng tại khu Hòa Xuân từ chiều tối đến khuya. Chén bánh dẻo nóng hổi phủ nhân tôm thịt ướt sánh mịn hoặc nhân khô đậu phộng hành phi kèm chả que, bánh nậm lọc.',
+    '14 Cồn Dầu 6, P. Hòa Xuân, Q. Cẩm Lệ, Đà Nẵng',
+    '16:00 - 00:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.5,
+    182,
+    'seed/food-banh-beo-lo-cui',
+    16.0027455,
+    108.2193322,
+    18000,
+    35000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 66. Quán nhậu Bé Mùi (P. Hòa Thọ Đông)
+-- Google Maps: https://www.google.com/maps/place/Qu%C3%A1n+nh%E1%BA%ADu+B%C3%A9+M%C3%B9i/@16.0085794,108.1910962,15z/data=!3m1!4b1!4m6!3m5!1s0x31421be3ac41f697:0x2d643ae6def3e080!8m2!3d16.0085796!4d108.201396!16s%2Fg%2F11ghtd7x0l?hl=vi
+(
+    'Quán nhậu Bé Mùi',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán ăn ven bờ sông đường Thăng Long thuộc phường Hòa Thọ Đông chuyên hải sản sông biển và các món đồng quê bình dân. Thực đơn nổi bật với cá nướng, tôm hấp, mực xào, nghêu hấp sả và các món lẩu nóng hổi.',
+    'Đường Thăng Long (bờ sông Cẩm Lệ), P. Hòa Thọ Đông, Q. Cẩm Lệ, Đà Nẵng',
+    '07:00 - 23:00 (CN: 08:30 - 23:00)',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.1,
+    145,
+    'seed/food-quan-be-mui',
+    16.0085796,
+    108.2013960,
+    80000,
+    200000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 67. Bánh xèo Cô Luyến (P. Hòa Thọ Tây)
+-- Google Maps: https://www.google.com/maps/place/B%C3%A1nh+x%C3%A8o+C%C3%B4+Luy%E1%BA%BFn/@16.0084373,108.1783408,15z/data=!3m1!4b1!4m6!3m5!1s0x31421bd2c81f3719:0xe05f54b99158cd87!8m2!3d16.0084375!4d108.1886406!16s%2Fg%2F11mvm7_vml?hl=vi
+(
+    'Bánh xèo Cô Luyến',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán bánh xèo địa phương được đánh giá 4.8 sao tại khu vực Hòa Thọ Tây gần Cầu Đỏ và trục QL14B. Bánh xèo đúc khuôn gang nóng giòn rụm kèm nem lụi nướng sả thơm lừng, cuốn rau rừng chấm nước tương đậu mè béo bùi.',
+    'Tổ 15 (khu vực Cầu Đỏ - Trường Sơn), P. Hòa Thọ Tây, Q. Cẩm Lệ, Đà Nẵng',
+    '10:00 - 21:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.8,
+    15,
+    'seed/food-banh-xeo-co-luyen',
+    16.0084375,
+    108.1886406,
+    15000,
+    40000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 68. Quán Bê Thui Nóng 7 Nga (P. Hòa An)
+-- Google Maps: https://www.google.com/maps/place/Qu%C3%A1n+B%C3%AA+Thui+N%C3%B3ng+7+Nga/@16.0544853,108.1422288,13z/data=!4m10!1m2!2m1!1zcXXDoW4gxINuIFnDqm4gVGjhur8gxJDDoCBO4bq1bmc!3m6!1s0x31421910790014a9:0x3245a03f9099b5ea!8m2!3d16.0544853!4d108.1772477!16s%2Fg%2F11c5ssmd2v?hl=vi
+(
+    'Quán Bê Thui Nóng 7 Nga',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán bê thui Cầu Mống nổi tiếng trên trục ẩm thực Yên Thế, phường Hòa An gần Bến xe Trung tâm. Bê thui tái da giòn thịt mềm ngọt cuốn bánh tráng rau sống, chuối chát, khế chua chấm mắm nêm cá cơm đậm đà cùng cháo bê, xáo bê nóng.',
+    '71 Yên Thế, P. Hòa An, Q. Cẩm Lệ, Đà Nẵng',
+    '07:30 - 20:30',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.1,
+    323,
+    'seed/food-be-thui-7-nga',
+    16.0544853,
+    108.1772477,
+    80000,
+    220000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 69. Nhà Hàng New Hoa Viên (P. Hòa Phát)
+-- Google Maps: https://www.google.com/maps/place/Nh%C3%A0+H%C3%A0ng+New+Hoa+Vi%C3%AAn/@16.0351139,108.1799105,17z/data=!3m1!4b1!4m6!3m5!1s0x31421976e19596f7:0xc1662902b36bf51e!8m2!3d16.0351139!4d108.1799105!16s%2Fg%2F1pztp_2r5?hl=vi
+(
+    'Nhà Hàng New Hoa Viên',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Nhà hàng ẩm thực sân vườn rộng rãi trên trục đường Lê Trọng Tấn phục vụ khu vực Hòa Phát, quận Cẩm Lệ. Chuyên các món nướng lẩu truyền thống, hải sản tươi sống và đặc sản đồng quê phù hợp cho nhóm đông hoặc gia đình.',
+    '214 Đường Lê Trọng Tấn, P. Hòa Phát, Q. Cẩm Lệ, Đà Nẵng',
+    '07:30 - 22:30 (CN: 06:00 - 22:30)',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.1,
+    17,
+    'seed/food-new-hoa-vien',
+    16.0351139,
+    108.1799105,
+    100000,
+    250000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- =============================================================================
+-- 7. HUYỆN HÒA VANG (11 địa điểm - 11/11 xã)
+-- =============================================================================
+
+-- 70. Mì Quảng Bà Tỉnh (Xã Hòa Phong)
+-- Google Maps: https://www.google.com/maps/place/M%C3%AC+Qu%E1%BA%A3ng+B%C3%A0+T%E1%BB%89nh/@15.9997062,108.1436335,17z/data=!3m1!4b1!4m6!3m5!1s0x31421be07447e137:0xc7507bb2c730e238!8m2!3d15.9997062!4d108.1436335!16s%2Fg%2F1tf7_z09?hl=vi
+(
+    'Mì Quảng Bà Tỉnh',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán mì Quảng Túy Loan gia truyền nổi tiếng ngay gần chợ Túy Loan và làng nghề bánh tráng truyền thống. Sợi mì Quảng tráng thủ công đậm mùi gạo quê, nước nhưn gà ta thả vườn, ếch đồng hoặc tôm thịt ăn kèm bánh tráng nướng mè Túy Loan.',
+    'Đường Quảng Xương, Thôn Túy Loan Đông 1, Xã Hòa Phong, H. Hòa Vang, Đà Nẵng',
+    '05:30 - 20:30',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    3.9,
+    390,
+    'seed/food-mi-quang-ba-tinh',
+    15.9997062,
+    108.1436335,
+    25000,
+    40000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 71. Nhà Hàng Nhớ Hòa Vang (Xã Hòa Nhơn)
+-- Google Maps: https://www.google.com/maps/place/Nh%C3%A0+H%C3%A0ng+Nh%E1%BB%9B+H%C3%B2a+Vang/@15.9968229,108.1503523,17z/data=!3m1!4b1!4m6!3m5!1s0x31421b95ca03b067:0x13d745ab765d7bb1!8m2!3d15.9968229!4d108.1503523!16s%2Fg%2F11trrgtt9s?hl=vi
+(
+    'Nhà Hàng Nhớ Hòa Vang',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Nhà hàng đặc sản đồng quê nổi tiếng tại tuyến đường Cầu Đỏ - Túy Loan với không gian làng quê yên bình và nhiều phòng riêng thoáng mát. Phục vụ gà lên mâm, lẩu cua đồng, cá chình suối nướng muối ớt, bê nướng mọi và hải sản.',
+    'Đường Cầu Đỏ - Túy Loan, Thôn Thạch Nham Tây, Xã Hòa Nhơn, H. Hòa Vang, Đà Nẵng',
+    '08:00 - 22:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.4,
+    55,
+    'seed/food-nho-hoa-vang',
+    15.9968229,
+    108.1503523,
+    100000,
+    250000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 72. Thảo Nga Quán (Xã Hòa Châu)
+-- Google Maps: https://www.google.com/maps/place/Th%E1%BA%A3o+Nga+Qu%C3%A1n/@15.9792573,108.1859334,17z/data=!3m1!4b1!4m6!3m5!1s0x31421a11e860951b:0x524b0f9c2d1b0d26!8m2!3d15.9792573!4d108.1859334!16s%2Fg%2F11b6q4b8d0?hl=vi
+(
+    'Thảo Nga Quán',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán ăn đặc sản ven Quốc lộ 1A qua xã Hòa Châu rất được lòng thực khách yêu thích thịt bê và bò tơ xứ Quảng. Nổi bật với bê thui Cầu Mống, bò tơ nướng chấm mắm nêm, lẩu bò nhúng giấm và các món đồng quê.',
+    'Quốc lộ 1A, Thôn Tây An, Xã Hòa Châu, H. Hòa Vang, Đà Nẵng',
+    '09:00 - 22:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.4,
+    42,
+    'seed/food-thao-nga-quan',
+    15.9792573,
+    108.1859334,
+    50000,
+    200000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 73. Mì Quảng Tĩnh - Hòa Phước (Xã Hòa Phước)
+-- Google Maps: https://www.google.com/maps/place/M%C3%AC+Qu%E1%BA%A3ng+T%C4%A9nh+-+H%C3%B2a+Ph%C6%B0%E1%BB%9Bc/@15.948324,108.2196889,17z/data=!3m1!4b1!4m6!3m5!1s0x3142111d4d38c64d:0xcf2f71661b0c95ce!8m2!3d15.948324!4d108.2196889!16s%2Fg%2F11y591yq6h?hl=vi
+(
+    'Mì Quảng Tĩnh - Hòa Phước',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Điểm ăn sáng và trưa quen thuộc tại cửa ngõ phía Nam thành phố khu vực Miếu Bông, xã Hòa Phước. Tô mì Quảng gà ta, sườn non, thịt bò hoặc tôm thịt đậm đà chuẩn vị Quảng, ăn kèm bánh tráng nướng và rau sống.',
+    'Quốc lộ 1A, Thôn Quá Giáng 2 (Miếu Bông), Xã Hòa Phước, H. Hòa Vang, Đà Nẵng',
+    '06:00 - 21:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.3,
+    27,
+    'seed/food-mi-quang-tinh-hoa-phuoc',
+    15.9483240,
+    108.2196889,
+    25000,
+    40000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 74. QUÁN NHẬU ÚT XUÂN (Xã Hòa Tiến)
+-- Google Maps: https://www.google.com/maps/place/QU%C3%81N+NH%E1%BA%ACU+%C3%9AT+XU%C3%82N/@15.9626399,108.1796263,17z/data=!3m1!4b1!4m6!3m5!1s0x31421bc0aeaa9e13:0x1fc3eb8beea087cb!8m2!3d15.9626399!4d108.1796263!16s%2Fg%2F11t04yv62w?hl=vi
+(
+    'QUÁN NHẬU ÚT XUÂN',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán ăn ẩm thực đồng quê nổi tiếng tại xã Hòa Tiến dọc trục ĐT605. Chuyên cá lóc đồng nướng trui cuốn bánh tráng, gà nướng muối ớt, lẩu cá kèo và ếch xào lăn lá lốt mang hương vị mộc mạc vùng quê Hòa Vang.',
+    'ĐT605, Thôn Lệ Sơn Nam, Xã Hòa Tiến, H. Hòa Vang, Đà Nẵng',
+    '09:00 - 22:30',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.4,
+    31,
+    'seed/food-ut-xuan-hoa-tien',
+    15.9626399,
+    108.1796263,
+    60000,
+    180000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 75. Quán Diệu Hương (Xã Hòa Khương)
+-- Google Maps: https://www.google.com/maps/place/Qu%C3%A1n+Di%E1%BB%87u+H%C6%B0%C6%A1ng/@15.93469,108.1344977,17z/data=!3m1!4b1!4m6!3m5!1s0x31421da69298453f:0x6b6379f88c88746c!8m2!3d15.93469!4d108.1344977!16s%2Fg%2F11f4y1y_w0?hl=vi
+(
+    'Quán Diệu Hương',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán ẩm thực đặc sản tại xã Hòa Khương ngay gần ngã ba đường vào khu sinh thái hồ Đồng Nghệ. Nổi tiếng nhất với món chả cá thát lát Hòa Khương trứ danh, lẩu cá thát lát nấu khổ qua, cá thát lát chiên giòn và gà đồi hấp hành.',
+    'Quốc lộ 14B, Thôn Phú Sơn Tây, Xã Hòa Khương, H. Hòa Vang, Đà Nẵng',
+    '08:30 - 21:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.5,
+    34,
+    'seed/food-quan-dieu-huong-hoa-khuong',
+    15.9346900,
+    108.1344977,
+    80000,
+    200000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 76. Quán Phượng Hạnh (Xã Hòa Phú)
+-- Google Maps: https://www.google.com/maps/place/Qu%C3%A1n+Ph%C6%B0%E1%BB%A3ng+H%E1%BA%A1nh/@15.9666622,108.0406007,17z/data=!3m1!4b1!4m6!3m5!1s0x314227c449c20a1f:0xafc8152bc6fa68c0!8m2!3d15.9666622!4d108.0406007!16s%2Fg%2F11v5k91p49?hl=vi
+(
+    'Quán Phượng Hạnh',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Điểm dừng chân ẩm thực núi rừng rất được ưa chuộng trên tuyến Quốc lộ 14G dẫn vào khu du lịch Suối Hoa, Hòa Phú Thành và Công viên suối khoáng nóng Núi Thần Tài. Chuyên gà đồi nướng than hoa, heo mọi xào sả ớt, ốc đá suối và cá suối chiên giòn.',
+    'Km 18 Quốc lộ 14G, Thôn Phú Túc, Xã Hòa Phú, H. Hòa Vang, Đà Nẵng',
+    '08:00 - 21:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.6,
+    32,
+    'seed/food-quan-phuong-hanh-hoa-phu',
+    15.9666622,
+    108.0406007,
+    100000,
+    250000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 77. Nhà hàng Beer Plaza - Sun World Ba Na Hills (Xã Hòa Ninh)
+-- Google Maps: https://www.google.com/maps/place/Beer+Plaza/@15.9961706,107.9942478,17z/data=!3m1!4b1!4m6!3m5!1s0x31422501a4e12e0b:0x5e2cf948b3b7e7e5!8m2!3d15.9961706!4d107.9942478!16s%2Fg%2F11hf3x5z3y?hl=vi
+(
+    'Nhà hàng Beer Plaza - Sun World Ba Na Hills',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Nhà hàng buffet lớn bậc nhất trên đỉnh Bà Nà thuộc xã Hòa Ninh với kiến trúc hình thùng bia khổng lồ ấn tượng. Phục vụ đại tiệc buffet Á - Âu hơn 90 món, xúc xích Đức nướng lò, sườn cừu BBQ và bia tươi thủ công.',
+    'Quảng trường Beer Plaza, KDL Bà Nà Hills, Thôn An Sơn, Xã Hòa Ninh, H. Hòa Vang, Đà Nẵng',
+    '10:30 - 15:30, 17:30 - 21:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.0,
+    1180,
+    'seed/food-beer-plaza-ba-na',
+    15.9961706,
+    107.9942478,
+    350000,
+    450000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 78. Quán MỲ QUẢNG CÔ TUYẾT - Đặc sản Hoà Sơn (Xã Hòa Sơn)
+-- Google Maps: https://www.google.com/maps/place/Qu%C3%A1n+M%E1%BB%B2+QU%E1%BA%A2NG+C%C3%94+TUY%E1%BA%BEt+-+%C4%90%E1%BA%B7c+s%E1%BA%A3n+Ho%C3%A0+S%C6%A1n/@16.0710688,108.1341052,17z/data=!3m1!4b1!4m6!3m5!1s0x31421f15858064a3:0x1b0eb9db6f2dfdb8!8m2!3d16.0710688!4d108.1341052!16s%2Fg%2F11w9m8g5g5?hl=vi
+(
+    'Quán MỲ QUẢNG CÔ TUYẾT - Đặc sản Hoà Sơn',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán mì Quảng chuẩn vị địa phương tại xã Hòa Sơn đạt điểm đánh giá 5.0 sao. Nổi bật với tô mì Quảng gà thả vườn đồi, mì tôm thịt, sườn rim và chả giòn ăn kèm đĩa rau sống tươi xanh trên tuyến đường du lịch Tây Bắc.',
+    'Đường số 3 KCN Hòa Khánh mở rộng, Thôn An Ngãi Tây 1, Xã Hòa Sơn, H. Hòa Vang, Đà Nẵng',
+    '06:00 - 20:30',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    5.0,
+    20,
+    'seed/food-mi-quang-co-tuyet-hoa-son',
+    16.0710688,
+    108.1341052,
+    25000,
+    40000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 79. Ba Nở Quán (Xã Hòa Liên)
+-- Google Maps: https://www.google.com/maps/place/Ba+N%E1%BB%9F+Qu%C3%A1n/@16.0797338,108.0991882,17z/data=!3m1!4b1!4m6!3m5!1s0x31421f003787f4d9:0x86f9a56652f13bb6!8m2!3d16.0797338!4d108.0991882!16s%2Fg%2F11y54csvpz?hl=vi
+(
+    'Ba Nở Quán',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán ẩm thực đồng quê ven hồ sen Hòa Liên trên trục ĐT601 sở hữu không gian cánh đồng mát mẻ. Thực đơn chuyên gà thả vườn luộc hoặc nướng, các món đồng quê dân dã rất thích hợp dừng chân khi tham quan khu vực Tây Bắc Đà Nẵng.',
+    'ĐT601, Thôn Quan Nam (cạnh Hồ Sen Hòa Liên), Xã Hòa Liên, H. Hòa Vang, Đà Nẵng',
+    '10:00 - 23:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    4.7,
+    17,
+    'seed/food-ba-no-quan-hoa-lien',
+    16.0797338,
+    108.0991882,
+    80000,
+    200000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+),
+
+-- 80. Quán nhậu Góc vườn (Xã Hòa Bắc)
+-- Google Maps: https://www.google.com/maps/place/Qu%C3%A1n+nh%E1%BA%ADu+G%C3%B3c+v%C6%B0%E1%BB%9Dn/@16.1340628,108.05333,17z/data=!3m1!4b1!4m6!3m5!1s0x314221002c897edb:0xf7e7f99811e72565!8m2!3d16.1340628!4d108.05333!16s%2Fg%2F11vs_fnypr?hl=vi
+(
+    'Quán nhậu Góc vườn',
+    (SELECT id FROM categories WHERE code = 'FOOD' LIMIT 1),
+    'Quán ẩm thực sinh thái nằm sát sông Cu Đê và cạnh các khu cắm trại du lịch cộng đồng tại thôn Nam Yên, xã Hòa Bắc. Phục vụ gà đồi hấp lá chanh, gà nướng than xôi nếp và các món dân dã cho du khách dã ngoại.',
+    'Thôn Nam Yên, Xã Hòa Bắc, H. Hòa Vang, Đà Nẵng',
+    '08:30 - 21:00',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    5.0,
+    5,
+    'seed/food-goc-vuon-hoa-bac',
+    16.1340628,
+    108.0533300,
+    80000,
+    180000,
+    'ACTIVE',
+    NOW(),
+    NOW()
+);
