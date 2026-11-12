@@ -27,3 +27,4 @@ admin/dist/
 .anti-slop/
 anti-slop/
 backend/uploads/
+.playwright-mcp/
