@@ -11,7 +11,7 @@ public class AdminCreateUserRequest {
     private String email;
 
     @NotBlank(message = "Mật khẩu không được để trống")
-    @Size(min = 6, message = "Mật khẩu tối thiểu 6 ký tự")
+    @Size(min = 8, max = 72, message = "Mật khẩu phải có 8–72 ký tự")
     private String password;
 
     @NotBlank(message = "Họ và tên không được để trống")

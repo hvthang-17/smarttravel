@@ -7,6 +7,9 @@ import com.smarttravel.backend.features.auth.security.JwtTokenProvider;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.authentication.BadCredentialsException;
+import java.util.Locale;
+import com.smarttravel.backend.common.PasswordPolicy;
 
 @Service
 public class AuthService {
@@ -23,33 +26,37 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
+        PasswordPolicy.validate(request.getPassword());
+        String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
+        if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("Email is already in use");
         }
 
-        String role = (request.getRole() != null && !request.getRole().isEmpty()) ? request.getRole() : "ROLE_USER";
         User user = new User(
-                request.getEmail(),
+                email,
                 passwordEncoder.encode(request.getPassword()),
                 request.getFullName(),
-                role
+                "ROLE_USER"
         );
 
         User savedUser = userRepository.save(user);
-        String token = tokenProvider.generateToken(savedUser.getEmail(), savedUser.getRole());
+        String token = tokenProvider.generateToken(savedUser.getEmail(), savedUser.getRole(), savedUser.getAuthVersion());
 
         return new AuthResponse(token, savedUser.getId(), savedUser.getEmail(), savedUser.getFullName(), savedUser.getRole());
     }
 
     public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
+        if (request.getPassword().getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72) {
+            throw new BadCredentialsException("Invalid email or password");
+        }
+        User user = userRepository.findByEmail(request.getEmail().trim().toLowerCase(Locale.ROOT))
+                .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new IllegalArgumentException("Invalid email or password");
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash()) || !"ACTIVE".equals(user.getStatus())) {
+            throw new BadCredentialsException("Invalid email or password");
         }
 
-        String token = tokenProvider.generateToken(user.getEmail(), user.getRole());
+        String token = tokenProvider.generateToken(user.getEmail(), user.getRole(), user.getAuthVersion());
 
         return new AuthResponse(token, user.getId(), user.getEmail(), user.getFullName(), user.getRole());
     }
@@ -57,7 +64,7 @@ public class AuthService {
     public AuthResponse getProfile(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng với email: " + email));
-        String token = tokenProvider.generateToken(user.getEmail(), user.getRole());
+        String token = tokenProvider.generateToken(user.getEmail(), user.getRole(), user.getAuthVersion());
         return new AuthResponse(token, user.getId(), user.getEmail(), user.getFullName(), user.getRole());
     }
 
@@ -69,7 +76,7 @@ public class AuthService {
         user.setFullName(request.getFullName().trim());
         User saved = userRepository.save(user);
 
-        String token = tokenProvider.generateToken(saved.getEmail(), saved.getRole());
+        String token = tokenProvider.generateToken(saved.getEmail(), saved.getRole(), saved.getAuthVersion());
         return new AuthResponse(token, saved.getId(), saved.getEmail(), saved.getFullName(), saved.getRole());
     }
 }

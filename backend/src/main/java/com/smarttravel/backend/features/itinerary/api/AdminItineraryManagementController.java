@@ -23,11 +23,7 @@ public class AdminItineraryManagementController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<ItineraryResponseDto>>> getAllItinerariesForAdmin() {
-        // For admin monitoring, return all itineraries or simulated list
-        List<ItineraryResponseDto> dtos = itineraryService.getUserItineraryDtos("admin@smarttravel.com");
-        if (dtos.isEmpty()) {
-            dtos = itineraryService.getUserItineraryDtos("user@smarttravel.com");
-        }
+        List<ItineraryResponseDto> dtos = itineraryService.getAllItineraryDtos();
         return ResponseEntity.ok(ApiResponse.success(dtos));
     }
 }

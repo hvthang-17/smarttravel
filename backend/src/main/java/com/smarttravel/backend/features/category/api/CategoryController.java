@@ -1,6 +1,7 @@
 package com.smarttravel.backend.features.category.api;
 
 import com.smarttravel.backend.common.ApiResponse;
+import com.smarttravel.backend.common.ImageUploadService;
 import com.smarttravel.backend.features.category.dto.CategoryResponseDto;
 import com.smarttravel.backend.features.category.dto.CreateCategoryRequest;
 import com.smarttravel.backend.features.category.dto.UpdateCategoryRequest;
@@ -23,9 +24,11 @@ import java.util.*;
 public class CategoryController {
 
     private final CategoryService categoryService;
+    private final ImageUploadService imageUploadService;
 
-    public CategoryController(CategoryService categoryService) {
+    public CategoryController(CategoryService categoryService, ImageUploadService imageUploadService) {
         this.categoryService = categoryService;
+        this.imageUploadService = imageUploadService;
     }
 
     @GetMapping
@@ -70,49 +73,7 @@ public class CategoryController {
     }
 
     @PostMapping("/upload-image")
-    public ResponseEntity<ApiResponse<Map<String, String>>> uploadImage(@RequestParam("file") MultipartFile file) {
-        if (file.isEmpty()) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("Vui lòng chọn file hình ảnh hợp lệ"));
-        }
-
-        String originalFilename = file.getOriginalFilename();
-        String extension = "";
-        if (originalFilename != null && originalFilename.contains(".")) {
-            extension = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
-        }
-
-        Set<String> allowedExtensions = Set.of(".jpg", ".jpeg", ".png", ".webp", ".svg", ".gif");
-        if (!allowedExtensions.contains(extension)) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("Định dạng file không được hỗ trợ. Chỉ chấp nhận JPG, PNG, WEBP, SVG, GIF"));
-        }
-
-        if (file.getSize() > 10 * 1024 * 1024) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("Dung lượng file tối đa là 10MB"));
-        }
-
-        try {
-            Path uploadDir = Paths.get("uploads", "categories");
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
-            }
-
-            String uniqueFilename = "cat_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8) + extension;
-            Path targetPath = uploadDir.resolve(uniqueFilename);
-
-            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-
-            String fileUrl = "/uploads/categories/" + uniqueFilename;
-            Map<String, String> response = new HashMap<>();
-            response.put("url", fileUrl);
-            response.put("filename", uniqueFilename);
-
-            return ResponseEntity.ok(ApiResponse.success(response, "Tải ảnh lên thành công"));
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Lỗi khi lưu trữ file: " + e.getMessage()));
-        }
+    public ResponseEntity<ApiResponse<Map<String, String>>> uploadImage(@RequestParam("file") MultipartFile file) throws IOException {
+        return ResponseEntity.ok(ApiResponse.success(imageUploadService.store(file, "categories"), "Tải ảnh lên thành công"));
     }
 }

@@ -30,14 +30,14 @@ public class ItineraryController {
     public ResponseEntity<ApiResponse<ItineraryResponseDto>> generateItinerary(
             Authentication authentication,
             @Valid @RequestBody GenerateItineraryRequest request) {
-        String email = authentication != null ? authentication.getName() : "user@smarttravel.com";
+        String email = authentication.getName();
         ItineraryResponseDto dto = itineraryService.generateItineraryDto(email, request);
         return ResponseEntity.ok(ApiResponse.success(dto, "Sinh lịch trình thành công"));
     }
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<ItineraryResponseDto>>> getMyItineraries(Authentication authentication) {
-        String email = authentication != null ? authentication.getName() : "user@smarttravel.com";
+        String email = authentication.getName();
         List<ItineraryResponseDto> dtos = itineraryService.getUserItineraryDtos(email);
         return ResponseEntity.ok(ApiResponse.success(dtos));
     }
@@ -53,7 +53,7 @@ public class ItineraryController {
             Authentication authentication,
             @PathVariable Long id,
             @Valid @RequestBody UpdateActivitiesRequest request) {
-        String email = authentication != null ? authentication.getName() : "user@smarttravel.com";
+        String email = authentication.getName();
         ItineraryResponseDto dto = itineraryService.updateActivitiesDto(email, id, request);
         return ResponseEntity.ok(ApiResponse.success(dto, "Cập nhật lịch trình thành công"));
     }
@@ -62,7 +62,7 @@ public class ItineraryController {
     public ResponseEntity<ApiResponse<Map<String, String>>> shareItinerary(
             Authentication authentication,
             @PathVariable Long id) {
-        String email = authentication != null ? authentication.getName() : "user@smarttravel.com";
+        String email = authentication.getName();
         String token = itineraryService.createShareToken(email, id);
         return ResponseEntity.ok(ApiResponse.success(
                 Map.of("shareToken", token, "shareUrl", "/itineraries/shared/" + token),

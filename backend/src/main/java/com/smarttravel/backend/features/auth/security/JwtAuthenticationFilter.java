@@ -14,14 +14,17 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
+import com.smarttravel.backend.features.auth.repository.UserRepository;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider tokenProvider;
+    private final UserRepository userRepository;
 
-    public JwtAuthenticationFilter(JwtTokenProvider tokenProvider) {
+    public JwtAuthenticationFilter(JwtTokenProvider tokenProvider, UserRepository userRepository) {
         this.tokenProvider = tokenProvider;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -33,13 +36,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
                 String email = tokenProvider.getEmailFromToken(jwt);
 
-                // For simplicity, we can load authorities or set them from token/database
-                // Here we set authenticated
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        email, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                userRepository.findByEmail(email).filter(user -> "ACTIVE".equals(user.getStatus())
+                                && user.getAuthVersion() == tokenProvider.getAuthVersionFromToken(jwt))
+                        .ifPresent(user -> {
+                            var authentication = new UsernamePasswordAuthenticationToken(
+                                    user.getEmail(), null, Collections.singletonList(new SimpleGrantedAuthority(user.getRole())));
+                            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                            SecurityContextHolder.getContext().setAuthentication(authentication);
+                        });
             }
         } catch (Exception ex) {
             logger.error("Could not set user authentication in security context", ex);

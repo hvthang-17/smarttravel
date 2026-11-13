@@ -1,6 +1,10 @@
 spring:
   application:
     name: smarttravel-backend
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 25MB
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/smarttravel?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
     username: ${SPRING_DATASOURCE_USERNAME:root}
@@ -11,5 +15,15 @@ spring:
     open-in-view: true
   flyway:
     enabled: true
+    repair-on-migrate: true
 server:
   port: ${PORT:8080}
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}
+  jwt:
+    secret: ${JWT_SECRET:}
+  bootstrap:
+    enabled: ${BOOTSTRAP_ADMIN_ENABLED:false}
+    email: ${BOOTSTRAP_ADMIN_EMAIL:}
+    password: ${BOOTSTRAP_ADMIN_PASSWORD:}

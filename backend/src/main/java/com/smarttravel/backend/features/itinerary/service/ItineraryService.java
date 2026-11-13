@@ -1,6 +1,8 @@
 package com.smarttravel.backend.features.itinerary.service;
 
 import com.smarttravel.backend.common.ResourceNotFoundException;
+import com.smarttravel.backend.common.CurrentUser;
+import org.springframework.security.access.AccessDeniedException;
 import com.smarttravel.backend.features.auth.domain.User;
 import com.smarttravel.backend.features.auth.repository.UserRepository;
 import com.smarttravel.backend.features.destination.domain.Destination;
@@ -45,7 +47,8 @@ public class ItineraryService {
         long daysBetween = ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate()) + 1;
         int totalDays = daysBetween > 0 ? (int) daysBetween : 1;
 
-        List<Destination> allDestinations = destinationRepository.findByStatus("ACTIVE");
+        List<Destination> allDestinations = destinationRepository.findByStatus("ACTIVE").stream()
+                .filter(d -> d.getCategory() != null && "ACTIVE".equals(d.getCategory().getStatus())).toList();
         if (allDestinations.isEmpty()) {
             throw new IllegalStateException("Không có địa điểm nào khả dụng trong hệ thống.");
         }
@@ -148,8 +151,10 @@ public class ItineraryService {
 
     @Transactional(readOnly = true)
     public Itinerary getItineraryById(Long id) {
-        return itineraryRepository.findById(id)
+        Itinerary itinerary = itineraryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lịch trình ID: " + id));
+        requireOwner(itinerary, CurrentUser.email());
+        return itinerary;
     }
 
     @Transactional(readOnly = true)
@@ -163,13 +168,7 @@ public class ItineraryService {
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lịch trình ID: " + itineraryId));
 
-        if (!itinerary.getUser().getEmail().equals(userEmail)) {
-            User currentUser = userRepository.findByEmail(userEmail)
-                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng: " + userEmail));
-            if (!"ROLE_ADMIN".equals(currentUser.getRole())) {
-                throw new IllegalStateException("Bạn không có quyền chỉnh sửa lịch trình này");
-            }
-        }
+        requireOwner(itinerary, userEmail);
 
         Map<Long, ItineraryDay> existingDayMap = itinerary.getDays().stream()
                 .collect(Collectors.toMap(ItineraryDay::getId, d -> d));
@@ -197,7 +196,11 @@ public class ItineraryService {
 
                         if (itemDto.getDestinationId() != null) {
                             Destination dest = destinationRepository.findById(itemDto.getDestinationId())
-                                    .orElse(null);
+                                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy địa điểm"));
+                            if (!"ACTIVE".equals(dest.getStatus()) || dest.getCategory() == null
+                                    || !"ACTIVE".equals(dest.getCategory().getStatus())) {
+                                throw new ResourceNotFoundException("Không tìm thấy địa điểm");
+                            }
                             item.setDestination(dest);
                         }
 
@@ -240,13 +243,7 @@ public class ItineraryService {
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lịch trình ID: " + itineraryId));
 
-        if (!itinerary.getUser().getEmail().equals(userEmail)) {
-            User currentUser = userRepository.findByEmail(userEmail)
-                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng: " + userEmail));
-            if (!"ROLE_ADMIN".equals(currentUser.getRole())) {
-                throw new IllegalStateException("Bạn không có quyền chia sẻ lịch trình này");
-            }
-        }
+        requireOwner(itinerary, userEmail);
 
         if (itinerary.getShareToken() == null || itinerary.getShareToken().isEmpty()) {
             String token = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
@@ -273,5 +270,17 @@ public class ItineraryService {
     public ItineraryResponseDto getSharedItineraryDto(String shareToken) {
         Itinerary itinerary = getSharedItinerary(shareToken);
         return ItineraryMapper.toDto(itinerary);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ItineraryResponseDto> getAllItineraryDtos() {
+        if (!CurrentUser.isAdmin()) throw new AccessDeniedException("Admin required");
+        return itineraryRepository.findAll().stream().map(ItineraryMapper::toDto).toList();
+    }
+
+    private void requireOwner(Itinerary itinerary, String email) {
+        if (!itinerary.getUser().getEmail().equals(email) && !CurrentUser.isAdmin()) {
+            throw new AccessDeniedException("Bạn không có quyền truy cập lịch trình này");
+        }
     }
 }

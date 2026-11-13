@@ -26,6 +26,9 @@ public class User {
     @Column(nullable = false, length = 20)
     private String status = "ACTIVE";
 
+    @Column(name = "auth_version", nullable = false)
+    private long authVersion = 0;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
@@ -53,6 +56,8 @@ public class User {
     public void setRole(String role) { this.role = role; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public long getAuthVersion() { return authVersion; }
+    public void revokeSessions() { authVersion++; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 }

@@ -24,7 +24,7 @@ public class AdminItineraryController {
     public ResponseEntity<ApiResponse<ItineraryResponseDto>> createItinerary(
             Authentication authentication,
             @RequestBody ItineraryRequestDto request) {
-        String email = authentication != null ? authentication.getName() : "admin@smarttravel.com";
+        String email = authentication.getName();
         // Map request DTO to GenerateItineraryRequest
         com.smarttravel.backend.features.itinerary.dto.GenerateItineraryRequest genReq =
                 new com.smarttravel.backend.features.itinerary.dto.GenerateItineraryRequest();

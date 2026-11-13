@@ -3,6 +3,8 @@ package com.smarttravel.backend.features.destination.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smarttravel.backend.common.ResourceNotFoundException;
+import com.smarttravel.backend.common.CurrentUser;
+import org.springframework.security.access.AccessDeniedException;
 import com.smarttravel.backend.features.category.domain.Category;
 import com.smarttravel.backend.features.category.repository.CategoryRepository;
 import com.smarttravel.backend.features.destination.domain.Destination;
@@ -44,6 +46,9 @@ public class DestinationService {
 
     @Transactional(readOnly = true)
     public List<DestinationDto> getDestinations(String category, Long categoryId, String status, String search) {
+        if (!CurrentUser.isAdmin() && status != null && !status.isBlank() && !"ACTIVE".equalsIgnoreCase(status.trim())) {
+            throw new AccessDeniedException("Chỉ quản trị viên được xem địa điểm ẩn");
+        }
         List<Destination> destinations;
         boolean isAllStatus = status != null && status.equalsIgnoreCase("ALL");
         String effectiveStatus = (status != null && !status.trim().isEmpty()) ? status.trim() : "ACTIVE";
@@ -77,13 +82,20 @@ public class DestinationService {
                     .collect(Collectors.toList());
         }
 
-        return destinations.stream().map(this::toDto).collect(Collectors.toList());
+        return destinations.stream()
+                .filter(d -> CurrentUser.isAdmin() || ("ACTIVE".equals(d.getStatus())
+                        && d.getCategory() != null && "ACTIVE".equals(d.getCategory().getStatus())))
+                .map(this::toDto).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public DestinationDto getDestinationById(Long id) {
         Destination destination = destinationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Destination", "id", id));
+        if (!CurrentUser.isAdmin() && (!"ACTIVE".equals(destination.getStatus())
+                || destination.getCategory() == null || !"ACTIVE".equals(destination.getCategory().getStatus()))) {
+            throw new ResourceNotFoundException("Destination", "id", id);
+        }
         return toDto(destination);
     }
 

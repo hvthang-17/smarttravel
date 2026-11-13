@@ -1,6 +1,7 @@
 package com.smarttravel.backend.features.destination.api;
 
 import com.smarttravel.backend.common.ApiResponse;
+import com.smarttravel.backend.common.ImageUploadService;
 import com.smarttravel.backend.features.destination.dto.DestinationDto;
 import com.smarttravel.backend.features.destination.service.DestinationService;
 import jakarta.validation.Valid;
@@ -21,9 +22,11 @@ import java.util.*;
 public class DestinationController {
 
     private final DestinationService destinationService;
+    private final ImageUploadService imageUploadService;
 
-    public DestinationController(DestinationService destinationService) {
+    public DestinationController(DestinationService destinationService, ImageUploadService imageUploadService) {
         this.destinationService = destinationService;
+        this.imageUploadService = imageUploadService;
     }
 
     @GetMapping
@@ -60,78 +63,12 @@ public class DestinationController {
     }
 
     @PostMapping("/upload-image")
-    public ResponseEntity<ApiResponse<Map<String, String>>> uploadImage(@RequestParam("file") MultipartFile file) {
-        if (file.isEmpty()) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("Vui lòng chọn file hình ảnh hợp lệ"));
-        }
-
-        String originalFilename = file.getOriginalFilename();
-        String extension = "";
-        if (originalFilename != null && originalFilename.contains(".")) {
-            extension = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
-        }
-
-        if (!extension.matches("\\.(jpg|jpeg|png|webp|gif)$")) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("Chỉ chấp nhận các định dạng ảnh: JPG, PNG, WEBP, GIF"));
-        }
-
-        try {
-            Path uploadDir = Paths.get("uploads", "destinations");
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
-            }
-
-            String uniqueFilename = "dest_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8) + extension;
-            Path targetPath = uploadDir.resolve(uniqueFilename);
-            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-
-            String fileUrl = "/uploads/destinations/" + uniqueFilename;
-            Map<String, String> response = new HashMap<>();
-            response.put("url", fileUrl);
-            response.put("filename", uniqueFilename);
-
-            return ResponseEntity.ok(ApiResponse.success(response, "Tải ảnh lên thành công"));
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Lỗi khi lưu trữ file: " + e.getMessage()));
-        }
+    public ResponseEntity<ApiResponse<Map<String, String>>> uploadImage(@RequestParam("file") MultipartFile file) throws IOException {
+        return ResponseEntity.ok(ApiResponse.success(imageUploadService.store(file, "destinations"), "Tải ảnh lên thành công"));
     }
 
     @PostMapping("/upload-images")
-    public ResponseEntity<ApiResponse<List<String>>> uploadMultipleImages(@RequestParam("files") List<MultipartFile> files) {
-        if (files == null || files.isEmpty()) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("Vui lòng chọn ít nhất một file ảnh"));
-        }
-
-        List<String> uploadedUrls = new ArrayList<>();
-        Path uploadDir = Paths.get("uploads", "destinations");
-        try {
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
-            }
-
-            for (MultipartFile file : files) {
-                if (file.isEmpty()) continue;
-                String originalFilename = file.getOriginalFilename();
-                String extension = "";
-                if (originalFilename != null && originalFilename.contains(".")) {
-                    extension = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
-                }
-                if (!extension.matches("\\.(jpg|jpeg|png|webp|gif)$")) continue;
-
-                String uniqueFilename = "dest_sub_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8) + extension;
-                Path targetPath = uploadDir.resolve(uniqueFilename);
-                Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-                uploadedUrls.add("/uploads/destinations/" + uniqueFilename);
-            }
-
-            return ResponseEntity.ok(ApiResponse.success(uploadedUrls, "Tải các ảnh phụ lên thành công"));
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Lỗi khi tải ảnh: " + e.getMessage()));
-        }
+    public ResponseEntity<ApiResponse<List<String>>> uploadMultipleImages(@RequestParam("files") List<MultipartFile> files) throws IOException {
+        return ResponseEntity.ok(ApiResponse.success(imageUploadService.storeAll(files, "destinations"), "Tải ảnh lên thành công"));
     }
 }

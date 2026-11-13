@@ -7,6 +7,9 @@ import com.smarttravel.backend.features.category.dto.UpdateCategoryRequest;
 import com.smarttravel.backend.features.category.repository.CategoryRepository;
 import com.smarttravel.backend.features.destination.repository.DestinationRepository;
 import org.springframework.stereotype.Service;
+import com.smarttravel.backend.common.CurrentUser;
+import com.smarttravel.backend.common.ResourceNotFoundException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.Normalizer;
@@ -27,9 +30,13 @@ public class CategoryService {
     }
 
     public List<CategoryResponseDto> getAllCategories(String search, String status) {
+        if (!CurrentUser.isAdmin() && status != null && !status.isBlank() && !"ACTIVE".equalsIgnoreCase(status.trim())) {
+            throw new AccessDeniedException("Chỉ quản trị viên được xem danh mục ẩn");
+        }
         List<Category> all = categoryRepository.findAllByOrderByDisplayOrderAsc();
 
         return all.stream()
+                .filter(c -> CurrentUser.isAdmin() || "ACTIVE".equals(c.getStatus()))
                 .filter(c -> {
                     if (status != null && !status.isBlank() && !status.equalsIgnoreCase("ALL") && !status.equalsIgnoreCase("Tất cả")) {
                         if (!c.getStatus().equalsIgnoreCase(status)) return false;
@@ -49,7 +56,10 @@ public class CategoryService {
 
     public CategoryResponseDto getCategoryById(Long id) {
         Category c = categoryRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy danh mục với ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "id", id));
+        if (!CurrentUser.isAdmin() && !"ACTIVE".equals(c.getStatus())) {
+            throw new ResourceNotFoundException("Category", "id", id);
+        }
         return toDto(c);
     }
 

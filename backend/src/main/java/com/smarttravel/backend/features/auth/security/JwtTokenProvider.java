@@ -12,24 +12,28 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
-    @Value("${app.jwt.secret:SmartTravelSuperSecretKeyForJwtTokenGenerationAndValidationMustBeLongEnough123456}")
-    private String jwtSecret;
+    private final SecretKey signingKey;
+    private final long jwtExpirationMs;
 
-    @Value("${app.jwt.expiration-ms:86400000}")
-    private long jwtExpirationMs;
-
-    private SecretKey getSigningKey() {
-        byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
-        return Keys.hmacShaKeyFor(keyBytes);
+    public JwtTokenProvider(@Value("${app.jwt.secret:}") String jwtSecret,
+                            @Value("${app.jwt.expiration-ms:86400000}") long jwtExpirationMs) {
+        signingKey = jwtSecret.isBlank() ? Jwts.SIG.HS256.key().build()
+                : Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+        this.jwtExpirationMs = jwtExpirationMs;
     }
 
-    public String generateToken(String email, String role) {
+    private SecretKey getSigningKey() {
+        return signingKey;
+    }
+
+    public String generateToken(String email, String role, long authVersion) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
 
         return Jwts.builder()
                 .subject(email)
                 .claim("role", role)
+                .claim("authVersion", authVersion)
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(getSigningKey(), Jwts.SIG.HS256)
@@ -43,6 +47,12 @@ public class JwtTokenProvider {
                 .parseSignedClaims(token)
                 .getPayload();
         return claims.getSubject();
+    }
+
+    public long getAuthVersionFromToken(String token) {
+        Number version = Jwts.parser().verifyWith(getSigningKey()).build()
+                .parseSignedClaims(token).getPayload().get("authVersion", Number.class);
+        return version == null ? -1 : version.longValue();
     }
 
     public boolean validateToken(String token) {

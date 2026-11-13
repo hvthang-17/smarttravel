@@ -5,11 +5,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
-import java.util.List;
-import java.util.Map;
+import static org.junit.jupiter.api.Assertions.*;
+import org.springframework.test.context.ContextConfiguration;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@ContextConfiguration(initializers = TestDatabaseGuard.class)
 public class SmartTravelApplicationTests {
 
     @Autowired
@@ -17,18 +18,9 @@ public class SmartTravelApplicationTests {
 
     @Test
     void contextLoads() {
-        try {
-            List<Map<String, Object>> cols = jdbcTemplate.queryForList("DESCRIBE categories");
-            for (Map<String, Object> col : cols) {
-                System.out.println(">>> CATEGORIES COL: " + col);
-            }
-            List<Map<String, Object>> rows = jdbcTemplate.queryForList("SELECT * FROM categories");
-            System.out.println(">>> CATEGORIES COUNT: " + rows.size());
-            for (Map<String, Object> r : rows) {
-                System.out.println(">>> CATEGORY ROW: " + r);
-            }
-        } catch (Exception e) {
-            System.out.println(">>> ERROR: " + e.getMessage());
-        }
+        assertEquals("smarttravel_test", jdbcTemplate.queryForObject("SELECT DATABASE()", String.class));
+        assertEquals(0, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM flyway_schema_history WHERE success = 0", Integer.class));
+        assertTrue(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM destinations", Integer.class) > 0);
     }
 }
