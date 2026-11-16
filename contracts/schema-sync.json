@@ -1,0 +1,109 @@
+{
+  "destination": {
+    "id": 31,
+    "name": "Điểm chưa rõ giá",
+    "category": "Ẩm thực",
+    "categoryCode": "FOOD",
+    "nameEn": "Unknown price",
+    "descriptionEn": "English",
+    "latitude": 0,
+    "longitude": 0,
+    "googleRating": null,
+    "googleReviewCount": null,
+    "rating": 4.5,
+    "reviewCount": 999,
+    "appRating": 3,
+    "appReviewCount": 1,
+    "priceMinVnd": null,
+    "priceMaxVnd": null,
+    "visitDurationMinutes": 60,
+    "openingSchedule": {
+      "schema_version": 1,
+      "timezone": "Asia/Ho_Chi_Minh",
+      "week": {
+        "1": [
+          [
+            480,
+            690
+          ],
+          [
+            810,
+            1020
+          ]
+        ],
+        "2": null,
+        "3": [],
+        "4": [
+          [
+            0,
+            1440
+          ]
+        ],
+        "5": null,
+        "6": null,
+        "7": null
+      }
+    },
+    "status": "ACTIVE"
+  },
+  "trip": {
+    "id": 42,
+    "title": "Snapshot",
+    "version": 3,
+    "status": "DRAFT",
+    "costComplete": false,
+    "budgetHealth": "UNKNOWN",
+    "transport": "walking",
+    "generationStatus": "PARTIAL",
+    "warnings": [
+      "Thiếu giá"
+    ],
+    "totalEstimatedCost": 0,
+    "maxBudgetVnd": 1000000,
+    "categoryBreakdown": {},
+    "days": [
+      {
+        "id": 51,
+        "dayNumber": 1,
+        "dayCostVnd": 0,
+        "totalDistanceKm": null,
+        "totalDurationMinutes": null,
+        "items": [
+          {
+            "id": 61,
+            "sequenceOrder": 1,
+            "destination": {
+              "id": null,
+              "name": "Địa điểm đã xóa",
+              "category": "FOOD",
+              "latitude": null,
+              "longitude": null
+            },
+            "categoryCode": "FOOD",
+            "unitPriceVnd": null,
+            "estimatedCostVnd": null,
+            "travelDistanceKm": null,
+            "travelMinutes": null,
+            "routeSource": "UNKNOWN",
+            "routePolyline": null
+          }
+        ]
+      }
+    ]
+  },
+  "update": {
+    "version": 3,
+    "days": [
+      {
+        "dayId": 51,
+        "items": [
+          {
+            "id": 61,
+            "destinationId": null,
+            "sequenceOrder": 1
+          }
+        ]
+      }
+    ]
+  }
+}

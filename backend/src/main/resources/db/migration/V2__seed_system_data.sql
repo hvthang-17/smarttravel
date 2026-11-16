@@ -1,9 +1,8 @@
 -- =============================================================================
 -- V2__seed_system_data.sql
--- Seed system categories and initial accounts
+-- Seed system categories 
 -- =============================================================================
 
--- 1. Seed Categories (7 danh mục du lịch chính của Đà Nẵng)
 INSERT INTO categories (code, slug, name, name_en, description, image_url, icon, color_hex, display_order, status) 
 VALUES
 (
@@ -55,18 +54,6 @@ VALUES
     'ACTIVE'
 ),
 (
-    'HOTEL', 
-    'nghi-duong-khach-san', 
-    'Nghỉ dưỡng & Khách sạn', 
-    'Hotels & Resorts', 
-    'Hệ thống resort cao cấp 5 sao bên biển Non Nước và khách sạn view sông Hàn lung linh về đêm.', 
-    'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80', 
-    'hotel', 
-    '#0284C7', 
-    5, 
-    'ACTIVE'
-),
-(
     'NIGHTLIFE', 
     'cho-dem-giai-tri', 
     'Chợ đêm & Giải trí', 
@@ -75,7 +62,7 @@ VALUES
     NULL, 
     'sparkles', 
     '#EF4444', 
-    6, 
+    5, 
     'ACTIVE'
 ),
 (
@@ -87,11 +74,6 @@ VALUES
     NULL, 
     'coffee', 
     '#D97706', 
-    7, 
+    6, 
     'ACTIVE'
 );
-
--- 2. Seed Initial Users (Tài khoản mẫu ban đầu: Admin & User)
-INSERT INTO users (email, password_hash, full_name, role, status) VALUES
-('thang@gmail.com', '$2a$10$LmMIWCBX6Y7l7vLAEk.DzOjVZ0HAmzcUREi7nr34lsi1Yj3YyMksW', 'Thang', 'ROLE_ADMIN', 'ACTIVE'),
-('hi@gmail.com', '$2a$10$6UoXYVsSgf0LscRQOpE.Ceh0LYjhCwEkw3HcGz9fRSNvHFRR3HEmS', 'hi', 'ROLE_USER', 'ACTIVE');
