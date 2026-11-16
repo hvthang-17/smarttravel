@@ -15,10 +15,23 @@ spring:
     open-in-view: true
   flyway:
     enabled: true
-    repair-on-migrate: true
 server:
   port: ${PORT:8080}
 app:
+  weather:
+    endpoint: ${APP_WEATHER_ENDPOINT:https://api.open-meteo.com/v1/forecast}
+  share:
+    base-url: ${APP_SHARE_BASE_URL:}
+  routing:
+    car-url: ${APP_ROUTING_CAR_URL:}
+    foot-url: ${APP_ROUTING_FOOT_URL:}
+    motorbike-url: ${APP_ROUTING_MOTORBIKE_URL:}
+    token: ${APP_ROUTING_TOKEN:}
+    requests-per-minute: ${APP_ROUTING_REQUESTS_PER_MINUTE:30}
+  reset:
+    email-endpoint: ${APP_RESET_EMAIL_ENDPOINT:https://api.resend.com/emails}
+    email-api-key: ${APP_RESET_EMAIL_API_KEY:}
+    email-from: ${APP_RESET_EMAIL_FROM:}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}
   jwt:
