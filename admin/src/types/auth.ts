@@ -5,6 +5,7 @@ export interface AuthUser {
   email: string;
   fullName: string;
   role: RoleType;
+  language?: 'vi' | 'en';
 }
 
 export interface AuthResponseData {
@@ -13,6 +14,7 @@ export interface AuthResponseData {
   email: string;
   fullName: string;
   role: string;
+  travelerProfile?: { language?: 'vi' | 'en' };
 }
 
 export const ROLE_LABELS: Record<RoleType, string> = {
@@ -23,7 +25,7 @@ export const ROLE_LABELS: Record<RoleType, string> = {
 
 export const ROLE_DESCRIPTIONS: Record<RoleType, string> = {
   ROLE_ADMIN: 'Toàn quyền quản trị hệ thống: Thêm, sửa, xóa địa điểm, quản trị người dùng và nhật ký kiểm toán.',
-  ROLE_MODERATOR: 'Quản lý nội dung & dữ liệu: Xem dashboard, thêm và chỉnh sửa thông tin địa điểm, quản lý danh mục (không có quyền xóa).',
+  ROLE_MODERATOR: 'Vai trò cũ chưa được cấp quyền quản trị trong phiên bản hiện tại.',
   ROLE_USER: 'Người dùng thông thường: Tài khoản trải nghiệm, không có quyền can thiệp vào các cài đặt quản trị.',
 };
 
@@ -47,10 +49,10 @@ export const ROLE_BADGE_STYLES: Record<RoleType, { bg: string; text: string; bor
 
 /**
  * Kiểm tra xem vai trò có được phép vào trang quản trị Admin không.
- * ROLE_ADMIN và ROLE_MODERATOR được phép vào, ROLE_USER bị chặn.
+ * Chỉ ROLE_ADMIN được phép vào; quyền ghi được backend xác thực lại.
  */
 export function canAccessAdmin(role?: string): boolean {
-  return role === 'ROLE_ADMIN' || role === 'ROLE_MODERATOR';
+  return role === 'ROLE_ADMIN';
 }
 
 /**

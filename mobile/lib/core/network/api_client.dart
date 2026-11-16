@@ -37,6 +37,30 @@ final secureStorageProvider = Provider<FlutterSecureStorage>((ref) {
   return const FlutterSecureStorage();
 });
 
+final sessionInvalidationProvider = StateProvider<int>((ref) => 0);
+
+final sessionWritesProvider = Provider<SessionWrites>((ref) => SessionWrites());
+
+class SessionWrites {
+  Future<void>? _pending;
+
+  Future<void> run(Future<void> Function() write) {
+    final previous = _pending;
+    final next = previous == null ? write() : previous.then((_) => write());
+    late final Future<void> pending;
+    void clear() {
+      if (identical(_pending, pending)) _pending = null;
+    }
+    pending = next.then<void>((_) => clear(), onError: (Object _, StackTrace __) => clear());
+    _pending = pending;
+    return next;
+  }
+}
+
+const _publicAuth = {'/auth/login', '/auth/register', '/auth/forgot-password', '/auth/reset-password'};
+bool _publicRequest(String path) => _publicAuth.contains(path) ||
+    path.startsWith('/itineraries/shared/');
+
 final dioProvider = Provider<Dio>((ref) {
   final dio = Dio(
     BaseOptions(
@@ -51,15 +75,34 @@ final dioProvider = Provider<Dio>((ref) {
   );
 
   final storage = ref.read(secureStorageProvider);
+  final sessionWrites = ref.read(sessionWritesProvider);
 
   dio.interceptors.add(
     InterceptorsWrapper(
       onRequest: (options, handler) async {
+        if (_publicRequest(options.path)) return handler.next(options);
         final token = await storage.read(key: 'jwt_token');
-        if (token != null && token.isNotEmpty) {
+        if (token != null && token.isNotEmpty && !options.headers.containsKey('Authorization')) {
           options.headers['Authorization'] = 'Bearer $token';
         }
         return handler.next(options);
+      },
+      onError: (error, handler) async {
+        final sentToken = error.requestOptions.headers['Authorization'];
+        final isPublicAuth = _publicRequest(error.requestOptions.path);
+        try {
+          if (error.response?.statusCode == 401 && !isPublicAuth && sentToken != null) {
+            await sessionWrites.run(() async {
+              if (sentToken != 'Bearer ${await storage.read(key: 'jwt_token')}') return;
+              await storage.delete(key: 'jwt_token');
+              ref.read(sessionInvalidationProvider.notifier).state++;
+            });
+          }
+        } catch (_) {
+          ref.read(sessionInvalidationProvider.notifier).state++;
+        } finally {
+          handler.next(error);
+        }
       },
     ),
   );

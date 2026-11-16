@@ -1,3 +1,4 @@
+import { t } from '../../core/language';
 import React from 'react';
 import { LockIcon, LogOutIcon } from '../../components/Icons';
 import { AuthUser, ROLE_LABELS, ROLE_BADGE_STYLES } from '../../types/auth';
@@ -56,13 +57,9 @@ export const AccessDeniedView: React.FC<AccessDeniedViewProps> = ({
           <LockIcon size={26} color="#dc2626" strokeWidth={2.2} />
         </div>
 
-        <h2 style={{ margin: '0 0 10px 0', fontSize: '20px', fontWeight: 700, color: '#0f172a' }}>
-          Yêu cầu quyền Quản trị viên
-        </h2>
+        <h2 style={{ margin: '0 0 10px 0', fontSize: '20px', fontWeight: 700, color: '#0f172a' }}>{t("Yêu cầu quyền Quản trị viên")} </h2>
 
-        <p style={{ margin: '0 0 20px 0', fontSize: '14px', color: '#475569', lineHeight: 1.5 }}>
-          Tài khoản của bạn hiện có vai trò:
-        </p>
+        <p style={{ margin: '0 0 20px 0', fontSize: '14px', color: '#475569', lineHeight: 1.5 }}>{t("Tài khoản của bạn hiện có vai trò:")} </p>
 
         {/* Current user card */}
         <div
@@ -92,8 +89,7 @@ export const AccessDeniedView: React.FC<AccessDeniedViewProps> = ({
             </span>
           </div>
           <div style={{ fontSize: '12.5px', color: '#64748b' }}>{currentUser.email}</div>
-          <div style={{ marginTop: '10px', fontSize: '12px', color: '#b91c1c', lineHeight: 1.4 }}>
-            * Tài khoản <strong>ROLE_USER</strong> không có thẩm quyền truy cập hệ thống quản trị dữ liệu. Vui lòng đăng nhập bằng tài khoản có vai trò <strong>ROLE_ADMIN</strong> hoặc <strong>ROLE_MODERATOR</strong>.
+          <div style={{ marginTop: '10px', fontSize: '12px', color: '#b91c1c', lineHeight: 1.4 }}>{t("Tài khoản này không có quyền truy cập trang quản trị. Vui lòng đăng nhập bằng tài khoản có vai trò")} <strong>ROLE_ADMIN</strong>.
           </div>
         </div>
 
@@ -104,7 +100,7 @@ export const AccessDeniedView: React.FC<AccessDeniedViewProps> = ({
           className="auth-btn-primary btn-action-touch"
         >
           <LogOutIcon size={16} color="#ffffff" />
-          <span>Đăng xuất và Đăng nhập tài khoản khác</span>
+          <span>{t("Đăng xuất và Đăng nhập tài khoản khác")}</span>
         </button>
       </div>
     </div>

@@ -72,8 +72,11 @@ class SecurityIntegrationTest {
     void onlyAdminCanReadHiddenContentAndUseRealAdminEndpoints() throws Exception {
         Account admin = account("ROLE_ADMIN");
         Account user = account("ROLE_USER");
-        JsonNode category = call(HttpMethod.POST, "/categories", Map.of("name", "Hidden " + UUID.randomUUID(),
-                "status", "INACTIVE"), admin.token(), 201).path("data");
+        JsonNode category = null;
+        for (JsonNode item : call(HttpMethod.GET, "/categories", null, admin.token(), 200).path("data")) {
+            if ("CAFE".equals(item.path("code").asText())) category = item;
+        }
+        assertNotNull(category);
         long categoryId = category.path("id").asLong();
         JsonNode destination = call(HttpMethod.POST, "/destinations", Map.of("name", "Hidden destination",
                 "categoryId", categoryId, "latitude", 16.05, "longitude", 108.2, "status", "INACTIVE"), admin.token(), 201).path("data");
@@ -81,6 +84,8 @@ class SecurityIntegrationTest {
         long activeInHiddenCategory = call(HttpMethod.POST, "/destinations", Map.of("name", "Active point in hidden category",
                 "categoryId", categoryId, "latitude", 16.05, "longitude", 108.2, "status", "ACTIVE"), admin.token(), 201)
                 .path("data").path("id").asLong();
+        call(HttpMethod.DELETE, "/categories/" + categoryId, null, admin.token(), 200);
+        try {
         for (String token : Arrays.asList(null, user.token())) {
             call(HttpMethod.GET, "/destinations?status=ALL", null, token, 403);
             call(HttpMethod.GET, "/categories?status=INACTIVE", null, token, 403);
@@ -95,9 +100,12 @@ class SecurityIntegrationTest {
         call(HttpMethod.GET, "/categories/" + categoryId, null, admin.token(), 200);
         call(HttpMethod.GET, "/admin/users", null, admin.token(), 200);
         call(HttpMethod.GET, "/admin/itineraries", null, admin.token(), 200);
+        call(HttpMethod.POST, "/itineraries/generate", Map.of("title", "Hidden selection",
+                "startDate", planningDate(0), "endDate", planningDate(0), "travelersCount", 1,
+                "maxBudgetVnd", 1000000, "pace", "balanced", "preferredCategories", List.of("CAFE")), user.token(), 400);
         JsonNode trip = call(HttpMethod.POST, "/itineraries/generate", Map.of("title", "Visibility test",
-                "startDate", "2026-12-01", "endDate", "2026-12-01", "travelersCount", 1,
-                "maxBudgetVnd", 1000000, "pace", "balanced", "preferredCategories", List.of(category.path("code").asText())),
+                "startDate", planningDate(0), "endDate", planningDate(0), "travelersCount", 1,
+                "maxBudgetVnd", 1000000, "pace", "balanced", "preferredCategories", List.of("FOOD")),
                 user.token(), 200).path("data");
         for (JsonNode day : trip.path("days")) {
             for (JsonNode item : day.path("items")) {
@@ -105,10 +113,13 @@ class SecurityIntegrationTest {
                 assertNotEquals(activeInHiddenCategory, item.path("destination").path("id").asLong());
             }
         }
-        call(HttpMethod.PUT, "/itineraries/" + trip.path("id").asLong() + "/activities", Map.of("days", List.of(
+        call(HttpMethod.PUT, "/itineraries/" + trip.path("id").asLong() + "/activities", Map.of("version", trip.path("version").asInt(), "days", List.of(
                 Map.of("dayId", trip.path("days").get(0).path("id").asLong(), "items", List.of(
                         Map.of("destinationId", activeInHiddenCategory, "sequenceOrder", 1, "startTime", "09:00", "durationMinutes", 60))))),
                 user.token(), 404);
+        } finally {
+            call(HttpMethod.PUT, "/categories/" + categoryId, Map.of("name", category.path("name").asText(), "status", "ACTIVE"), admin.token(), 200);
+        }
     }
 
     @Test
@@ -116,14 +127,15 @@ class SecurityIntegrationTest {
         Account owner = account("ROLE_USER");
         Account stranger = account("ROLE_USER");
         JsonNode trip = call(HttpMethod.POST, "/itineraries/generate", Map.of("title", "Private",
-                "startDate", "2026-12-01", "endDate", "2026-12-01", "travelersCount", 1,
+                "startDate", planningDate(0), "endDate", planningDate(0), "travelersCount", 1,
                 "maxBudgetVnd", 1000000, "pace", "balanced"), owner.token(), 200).path("data");
         String path = "/itineraries/" + trip.path("id").asLong();
         call(HttpMethod.GET, path, null, stranger.token(), 403);
-        call(HttpMethod.PUT, path + "/activities", Map.of("days", List.of(
+        call(HttpMethod.PUT, path + "/activities", Map.of("version", trip.path("version").asInt(), "days", List.of(
                 Map.of("dayId", trip.path("days").get(0).path("id").asLong(), "items", List.of()))), stranger.token(), 403);
         call(HttpMethod.POST, path + "/share", Map.of(), stranger.token(), 403);
         call(HttpMethod.GET, path, null, owner.token(), 200);
+        call(HttpMethod.PUT, path + "/save", null, owner.token(), 200);
         String share = call(HttpMethod.POST, path + "/share", Map.of(), owner.token(), 200)
                 .path("data").path("shareToken").asText();
         call(HttpMethod.GET, "/itineraries/shared/" + share, null, null, 200);
@@ -196,5 +208,8 @@ class SecurityIntegrationTest {
             assertTrue(json.hasNonNull("timestamp"));
         }
         return json;
+    }
+    private static String planningDate(int days) {
+        return java.time.LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")).plusDays(days + 1L).toString();
     }
 }
