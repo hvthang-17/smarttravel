@@ -1,0 +1,14 @@
+.destination-form-heading { margin: 0; font-size: 18px; color: #0f172a; }
+.destination-field-help { margin: 0; color: #475569; font-size: 13px; line-height: 1.5; }
+.destination-form-error { display: flex; gap: 8px; padding: 12px; margin-bottom: 16px; border: 1px solid #fecaca; border-radius: 8px; background: #fef2f2; color: #991b1b; }
+.destination-hours-editor { min-width: 0; margin: 0; }
+.destination-hours-title { font-weight: 600; font-size: 14px; color: #0f172a; }
+.destination-hours-day { border-top: 1px solid #cbd5e1; padding-top: 12px; }
+.destination-hours-day-header { display: grid; grid-template-columns: 32px minmax(0, 1fr); align-items: center; gap: 8px; }
+.destination-hours-day-header > label { font-size: 14px; font-weight: 600; color: #334155; }
+.destination-hours-period { display: flex; gap: 8px; align-items: end; flex-wrap: wrap; padding-top: 8px; }
+.destination-hours-time-label { flex: 1 1 88px; min-width: 0; font-size: 13px; color: #334155; }
+.destination-hours-time-label > input { margin-top: 4px; width: 100%; min-height: 44px; }
+.destination-hours-action { min-height: 44px; padding: 8px; background: #fff; color: #0369a1; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; font-size: 13px; }
+.destination-hours-action:disabled { color: #64748b; cursor: default; }
+.destination-hours-action:focus-visible, .destination-hours-editor :focus-visible { outline: 2px solid #0077b6; outline-offset: 2px; }

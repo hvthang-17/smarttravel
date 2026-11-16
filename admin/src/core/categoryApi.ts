@@ -1,13 +1,13 @@
-const API_BASE_URL = 'http://localhost:8080/api/v1';
+import { API_BASE_URL, apiFetch } from './session';
 
 export interface Category {
   id: number;
   code: string;
   slug: string;
   name: string;
-  nameEn?: string;
-  description?: string;
-  imageUrl?: string;
+  nameEn?: string | null;
+  description?: string | null;
+  imageUrl?: string | null;
   icon: string;
   colorHex: string;
   displayOrder: number;
@@ -32,9 +32,9 @@ export interface CreateCategoryPayload {
 
 export interface UpdateCategoryPayload {
   name: string;
-  nameEn?: string;
-  description?: string;
-  imageUrl?: string;
+  nameEn?: string | null;
+  description?: string | null;
+  imageUrl?: string | null;
   icon: string;
   colorHex: string;
   displayOrder?: number;
@@ -49,7 +49,7 @@ export interface CategoryFilterOptions {
 /**
  * Helper chuyển đổi đường dẫn ảnh lưu trữ nội bộ thành URL đầy đủ
  */
-export function resolveImageUrl(url?: string): string {
+export function resolveImageUrl(url?: string | null): string {
   if (!url) return '';
   if (url.startsWith('http://') || url.startsWith('https://')) {
     return url;
@@ -72,11 +72,9 @@ export async function fetchCategoriesApi(options?: CategoryFilterOptions): Promi
     params.append('status', options.status);
   }
 
-  const token = localStorage.getItem('smarttravel_admin_token') || '';
-  const response = await fetch(`${API_BASE_URL}/categories?${params.toString()}`, {
+  const response = await apiFetch(`${API_BASE_URL}/categories?${params.toString()}`, {
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
 
@@ -88,7 +86,7 @@ export async function fetchCategoriesApi(options?: CategoryFilterOptions): Promi
   const json = await response.json();
   const list = json.data || [];
 
-  return list.map((c: any) => ({
+  return list.map((c: Category) => ({
     id: c.id,
     code: c.code,
     slug: c.slug,
@@ -110,12 +108,10 @@ export async function fetchCategoriesApi(options?: CategoryFilterOptions): Promi
  * Tạo danh mục mới trong cơ sở dữ liệu
  */
 export async function createCategoryApi(payload: CreateCategoryPayload): Promise<Category> {
-  const token = localStorage.getItem('smarttravel_admin_token') || '';
-  const response = await fetch(`${API_BASE_URL}/categories`, {
+  const response = await apiFetch(`${API_BASE_URL}/categories`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify(payload),
   });
@@ -133,12 +129,10 @@ export async function createCategoryApi(payload: CreateCategoryPayload): Promise
  * Cập nhật thông tin danh mục
  */
 export async function updateCategoryApi(id: number, payload: UpdateCategoryPayload): Promise<Category> {
-  const token = localStorage.getItem('smarttravel_admin_token') || '';
-  const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
+  const response = await apiFetch(`${API_BASE_URL}/categories/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify(payload),
   });
@@ -156,12 +150,10 @@ export async function updateCategoryApi(id: number, payload: UpdateCategoryPaylo
  * Bật/tắt trạng thái ACTIVE / INACTIVE của danh mục
  */
 export async function toggleCategoryStatusApi(id: number): Promise<Category> {
-  const token = localStorage.getItem('smarttravel_admin_token') || '';
-  const response = await fetch(`${API_BASE_URL}/categories/${id}/status`, {
+  const response = await apiFetch(`${API_BASE_URL}/categories/${id}/status`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
 
@@ -178,12 +170,10 @@ export async function toggleCategoryStatusApi(id: number): Promise<Category> {
  * Xóa danh mục khỏi cơ sở dữ liệu
  */
 export async function deleteCategoryApi(id: number): Promise<void> {
-  const token = localStorage.getItem('smarttravel_admin_token') || '';
-  const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
+  const response = await apiFetch(`${API_BASE_URL}/categories/${id}`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
 
@@ -200,11 +190,9 @@ export async function uploadCategoryImageApi(file: File): Promise<{ url: string;
   const formData = new FormData();
   formData.append('file', file);
 
-  const token = localStorage.getItem('smarttravel_admin_token') || '';
-  const response = await fetch(`${API_BASE_URL}/categories/upload-image`, {
+  const response = await apiFetch(`${API_BASE_URL}/categories/upload-image`, {
     method: 'POST',
     headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: formData,
   });

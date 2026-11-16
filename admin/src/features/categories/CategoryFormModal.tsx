@@ -1,4 +1,7 @@
+import { t } from '../../core/language';
+import { useDialogFocus } from '../../components/useDialogFocus';
 import React, { useState, useEffect, useRef } from 'react';
+import { CATALOG_CODES, requireCatalogCode, validateImageFiles } from '../destinations/catalogContract';
 import {
   XIcon,
   ImageIcon,
@@ -55,7 +58,6 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
   const [name, setName] = useState('');
   const [nameEn, setNameEn] = useState('');
   const [code, setCode] = useState('');
-  const [isCodeManuallyEdited, setIsCodeManuallyEdited] = useState(false);
   const [description, setDescription] = useState('');
   const [selectedIcon, setSelectedIcon] = useState('palmtree');
   const [colorHex, setColorHex] = useState('#0077B6');
@@ -69,6 +71,7 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useDialogFocus(isOpen);
 
   // Memory hygiene: Revoke object URL blob when preview changes or unmounts (R-38 / C-4)
   useEffect(() => {
@@ -95,7 +98,6 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
         setName(category.name || '');
         setNameEn(category.nameEn || '');
         setCode(category.code || '');
-        setIsCodeManuallyEdited(true);
         setDescription(category.description || '');
         setSelectedIcon(category.icon || 'tag');
         setColorHex(category.colorHex || '#0077B6');
@@ -107,7 +109,6 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
         setName('');
         setNameEn('');
         setCode('');
-        setIsCodeManuallyEdited(false);
         setDescription('');
         setSelectedIcon('palmtree');
         setColorHex('#0077B6');
@@ -132,26 +133,22 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
 
   const handleNameChange = (val: string) => {
     setName(val);
-    if (!isEdit && !isCodeManuallyEdited) {
-      setCode(generateCategoryCode(val));
-    }
   };
 
   const handleCodeChange = (val: string) => {
     const upper = val.toUpperCase().replace(/[^A-Z0-9_]/g, '');
     setCode(upper);
-    setIsCodeManuallyEdited(upper.trim().length > 0);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (!file.type.startsWith('image/')) {
-        setErrorMessage('Vui lòng chọn file hình ảnh hợp lệ (PNG, JPG, WEBP, SVG)');
+      if (!['image/png', 'image/jpeg', 'image/gif'].includes(file.type)) {
+        setErrorMessage(t('Vui lòng chọn ảnh PNG, JPG hoặc GIF'));
         return;
       }
-      if (file.size > 10 * 1024 * 1024) {
-        setErrorMessage('Kích thước ảnh tối đa cho phép là 10MB');
+      if (file.size > 5 * 1024 * 1024) {
+        setErrorMessage(t('Kích thước ảnh tối đa cho phép là 5MB'));
         return;
       }
       if (previewUrl && previewUrl.startsWith('blob:')) {
@@ -178,7 +175,7 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      setErrorMessage('Vui lòng nhập tên danh mục (Tiếng Việt)');
+      setErrorMessage(t('Vui lòng nhập tên danh mục (Tiếng Việt)'));
       return;
     }
 
@@ -186,6 +183,8 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
     setErrorMessage(null);
 
     try {
+      requireCatalogCode(code);
+      if (selectedFile) validateImageFiles([selectedFile]);
       let finalImageUrl = isEdit ? (category?.imageUrl || '') : '';
 
       if (selectedFile) {
@@ -198,9 +197,9 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
       if (isEdit && category) {
         const updatePayload: UpdateCategoryPayload = {
           name: name.trim(),
-          nameEn: nameEn.trim() || undefined,
-          description: description.trim() || undefined,
-          imageUrl: finalImageUrl || undefined,
+          nameEn: nameEn.trim() || null,
+          description: description.trim() || null,
+          imageUrl: finalImageUrl || null,
           icon: selectedIcon,
           colorHex: colorHex,
           displayOrder: Number(displayOrder) || 0,
@@ -212,7 +211,7 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
         const createPayload: CreateCategoryPayload = {
           name: name.trim(),
           nameEn: nameEn.trim() || undefined,
-          code: code.trim() ? code.trim() : undefined,
+          code: code,
           description: description.trim() || undefined,
           imageUrl: finalImageUrl || undefined,
           icon: selectedIcon,
@@ -224,8 +223,8 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
         onSuccess(created, false);
       }
       onClose();
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Có lỗi xảy ra khi lưu trữ thông tin danh mục');
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : t('Có lỗi xảy ra khi lưu trữ thông tin danh mục'));
     } finally {
       setIsUploading(false);
     }
@@ -246,7 +245,7 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
         role="dialog"
         aria-modal="true"
         aria-labelledby="category-form-modal-title"
-        className="category-modal-dialog"
+        ref={dialogRef} className="category-modal-dialog"
       >
         {/* Header */}
         <div className="category-modal-header">
@@ -282,7 +281,7 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
                   textOverflow: 'ellipsis',
                 }}
               >
-                {isEdit ? `Cập nhật danh mục: ${category?.name}` : 'Thêm danh mục địa điểm mới'}
+                {isEdit ? `Cập nhật danh mục: ${category?.name}` : t('Thêm danh mục địa điểm mới')}
               </h2>
               <p
                 style={{
@@ -297,7 +296,7 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
               >
                 {isEdit
                   ? `Mã định danh hệ thống: ${category?.code} (ID: #${category?.id})`
-                  : 'Cấu hình trực quan mã icon, màu sắc và tải ảnh đại diện từ thiết bị'}
+                  : t('Cấu hình trực quan mã icon, màu sắc và tải ảnh đại diện từ thiết bị')}
               </p>
             </div>
           </div>
@@ -305,7 +304,7 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
             type="button"
             onClick={onClose}
             disabled={isUploading}
-            aria-label="Đóng cửa sổ"
+            aria-label={t("Đóng cửa sổ")}
             style={{
               padding: '0.5rem',
               borderRadius: '0.5rem',
@@ -347,8 +346,7 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
 
             <div className="category-modal-form-row">
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#1E293B', marginBottom: '0.375rem' }}>
-                  Tên danh mục (Tiếng Việt) <span style={{ color: '#EF4444' }}>*</span>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#1E293B', marginBottom: '0.375rem' }}>{t("Tên danh mục (Tiếng Việt)")} <span style={{ color: '#EF4444' }}>*</span>
                 </label>
                 <input
                   ref={nameInputRef}
@@ -356,15 +354,13 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
                   required
                   value={name}
                   onChange={(e) => handleNameChange(e.target.value)}
-                  placeholder="VD: Biển & Thiên nhiên"
+                  placeholder={t("VD: Biển & Thiên nhiên")}
                   className="category-input"
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#1E293B', marginBottom: '0.375rem' }}>
-                  Tên tiếng Anh (English)
-                </label>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#1E293B', marginBottom: '0.375rem' }}>{t("Tên tiếng Anh (English)")} </label>
                 <input
                   type="text"
                   value={nameEn}
@@ -378,28 +374,26 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
             <div className="category-modal-form-row">
               <div>
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#1E293B', marginBottom: '0.375rem' }}>
-                  {isEdit ? 'Mã hệ thống (Không thay đổi)' : 'Mã hệ thống (Code)'}
+                  {isEdit ? 'Mã hệ thống (Không thay đổi)' : t('Mã hệ thống (Code)')}
                 </label>
-                <input
-                  type="text"
+                <select
                   disabled={isEdit}
                   value={code}
                   onChange={(e) => handleCodeChange(e.target.value)}
-                  placeholder="VD: BEACH, FOOD, CULTURE"
                   className="category-input"
                   style={{ fontWeight: 600 }}
-                />
+                >
+                  <option value="">{t("Chọn mã danh mục")}</option>
+                  {isEdit && !(CATALOG_CODES as readonly string[]).includes(code) && <option value={code}>{code} (ngoài phạm vi)</option>}
+                  {CATALOG_CODES.map(value => <option key={value} value={value}>{value}</option>)}
+                </select>
                 {!isEdit && (
-                  <span style={{ fontSize: '0.75rem', color: '#64748B' }}>
-                    Tự động sinh từ tên danh mục hoặc tự nhập mã riêng
-                  </span>
+                  <span style={{ fontSize: '0.75rem', color: '#64748B' }}>{t("Mã cố định theo phạm vi đề tài. Nếu đã có mã, hãy sửa hoặc khôi phục danh mục hiện có.")} </span>
                 )}
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#1E293B', marginBottom: '0.375rem' }}>
-                  Thứ tự hiển thị
-                </label>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#1E293B', marginBottom: '0.375rem' }}>{t("Thứ tự hiển thị")} </label>
                 <input
                   type="number"
                   min="0"
@@ -411,14 +405,12 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
             </div>
 
             <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#1E293B', marginBottom: '0.375rem' }}>
-                Mô tả giới thiệu
-              </label>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#1E293B', marginBottom: '0.375rem' }}>{t("Mô tả giới thiệu")} </label>
               <textarea
                 rows={2}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Giới thiệu tóm tắt nét đặc trưng của nhóm danh mục này tại Đà Nẵng..."
+                placeholder={t("Giới thiệu tóm tắt nét đặc trưng của nhóm danh mục này tại Đà Nẵng...")}
                 className="category-textarea"
                 style={{ resize: 'vertical' }}
               />
@@ -426,9 +418,7 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
 
             {/* Visual Icon Picker */}
             <div style={{ marginBottom: '1.25rem' }}>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#1E293B', marginBottom: '0.5rem' }}>
-                Chọn biểu tượng nhận diện (Icon)
-              </label>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#1E293B', marginBottom: '0.5rem' }}>{t("Chọn biểu tượng nhận diện (Icon)")} </label>
               <div className="category-icon-picker-grid">
                 {PRESET_ICONS.map((item) => {
                   const isSelected = selectedIcon === item.id;
@@ -468,9 +458,7 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
 
             {/* Color Swatches & Native Color Picker */}
             <div style={{ marginBottom: '1.25rem' }}>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#1E293B', marginBottom: '0.5rem' }}>
-                Chọn màu sắc đại diện (Color HEX)
-              </label>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#1E293B', marginBottom: '0.5rem' }}>{t("Chọn màu sắc đại diện (Color HEX)")} </label>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                 {PRESET_COLORS.map((c) => {
                   const isSelected = colorHex.toLowerCase() === c.hex.toLowerCase();
@@ -534,14 +522,12 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
 
             {/* Local Image Upload from Computer */}
             <div style={{ marginBottom: '1.25rem' }}>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#1E293B', marginBottom: '0.375rem' }}>
-                Ảnh đại diện danh mục (Chọn từ máy tính)
-              </label>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#1E293B', marginBottom: '0.375rem' }}>{t("Ảnh đại diện danh mục (Chọn từ máy tính)")} </label>
 
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                accept="image/png,image/jpeg,image/gif"
                 onChange={handleFileChange}
                 style={{ display: 'none' }}
               />
@@ -574,11 +560,9 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
                     <ImageIcon size={24} color="#64748B" />
                   </div>
                   <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#0F172A' }}>
-                    {isEdit ? 'Chọn ảnh mới từ thiết bị máy tính' : 'Nhấn vào đây để chọn ảnh từ máy tính'}
+                    {isEdit ? 'Chọn ảnh mới từ thiết bị máy tính' : t('Nhấn vào đây để chọn ảnh từ máy tính')}
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.25rem' }}>
-                    Hỗ trợ PNG, JPG, WEBP dung lượng tối đa 10MB
-                  </div>
+                  <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.25rem' }}>{t("Hỗ trợ PNG, JPG, GIF dung lượng tối đa 5MB")} </div>
                 </div>
               ) : (
                 <div
@@ -592,7 +576,7 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
                 >
                   <img
                     src={previewUrl}
-                    alt="Xem trước ảnh danh mục"
+                    alt={t("Xem trước ảnh danh mục")}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                   <div
@@ -620,7 +604,7 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
                         cursor: 'pointer',
                       }}
                     >
-                      {isEdit ? 'Thay đổi ảnh' : 'Đổi ảnh khác'}
+                      {isEdit ? 'Thay đổi ảnh' : t('Đổi ảnh khác')}
                     </button>
                     <button
                       type="button"
@@ -636,7 +620,7 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
                         cursor: 'pointer',
                       }}
                     >
-                      {isEdit ? 'Gỡ ảnh' : 'Xóa ảnh'}
+                      {isEdit ? 'Gỡ ảnh' : t('Xóa ảnh')}
                     </button>
                   </div>
                 </div>
@@ -645,9 +629,7 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
 
             {/* Status Option */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.25rem' }}>
-              <label style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1E293B' }}>
-                Trạng thái:
-              </label>
+              <label style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1E293B' }}>{t("Trạng thái:")} </label>
               <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem' }}>
                 <input
                   type="radio"
@@ -656,7 +638,7 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
                   checked={status === 'ACTIVE'}
                   onChange={() => setStatus('ACTIVE')}
                 />
-                <span style={{ color: '#166534', fontWeight: 600 }}>Hoạt động</span>
+                <span style={{ color: '#166534', fontWeight: 600 }}>{t("Hoạt động")}</span>
               </label>
               <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem' }}>
                 <input
@@ -666,16 +648,14 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
                   checked={status === 'INACTIVE'}
                   onChange={() => setStatus('INACTIVE')}
                 />
-                <span style={{ color: '#475569', fontWeight: 600 }}>Ẩn</span>
+                <span style={{ color: '#475569', fontWeight: 600 }}>{t("Ẩn")}</span>
               </label>
             </div>
           </form>
 
           {/* Right Column: Live Preview Card */}
           <div className="category-live-preview-col">
-            <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#475569', marginBottom: '0.75rem' }}>
-              Mô phỏng hiển thị thực tế (Live Preview):
-            </div>
+            <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#475569', marginBottom: '0.75rem' }}>{t("Mô phỏng hiển thị thực tế (Live Preview):")} </div>
 
             <div
               style={{
@@ -716,7 +696,7 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
                     boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
                   }}
                 >
-                  {status === 'ACTIVE' ? 'HOẠT ĐỘNG' : 'TẠM ẨN'}
+                  {status === 'ACTIVE' ? 'HOẠT ĐỘNG' : t('TẠM ẨN')}
                 </div>
               </div>
 
@@ -739,7 +719,7 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
                   </div>
                   <div>
                     <h3 style={{ margin: 0, fontSize: '1.0625rem', fontWeight: 700, color: '#0F172A' }}>
-                      {name || 'Tên danh mục'}
+                      {name || t('Tên danh mục')}
                     </h3>
                     <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
                       {nameEn || 'English Category Name'}
@@ -756,7 +736,7 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
                     minHeight: '2.5rem',
                   }}
                 >
-                  {description || 'Chưa có mô tả tóm tắt cho nhóm danh mục địa điểm này.'}
+                  {description || t('Chưa có mô tả tóm tắt cho nhóm danh mục địa điểm này.')}
                 </p>
 
                 <div
@@ -779,10 +759,10 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
                       fontFamily: 'monospace',
                     }}
                   >
-                    {code || (isEdit ? category?.code : 'AUTO_CODE')}
+                    {code || (isEdit ? category?.code : t('Chưa chọn mã'))}
                   </span>
                   <span style={{ color: '#0077B6', fontWeight: 600 }}>
-                    {isEdit ? `${category?.destinationsCount || 0} địa điểm liên kết` : '0 địa điểm liên kết'}
+                    {isEdit ? `${category?.destinationsCount || 0} địa điểm liên kết` : t('0 địa điểm liên kết')}
                   </span>
                 </div>
               </div>
@@ -807,9 +787,7 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
               cursor: 'pointer',
               minHeight: '44px',
             }}
-          >
-            Hủy bỏ
-          </button>
+          >{t("Hủy bỏ")} </button>
           {/* WCAG AA Button: Solid #005F92 (6.88:1) when uploading instead of faded opacity */}
           <button
             type="submit"
@@ -833,8 +811,8 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
             {isUploading && <RefreshCwIcon size={16} color="#FFFFFF" />}
             <span>
               {isUploading
-                ? (isEdit ? 'Đang cập nhật...' : 'Đang lưu trữ dữ liệu...')
-                : (isEdit ? 'Cập nhật thay đổi' : 'Lưu danh mục')}
+                ? (isEdit ? 'Đang cập nhật...' : t('Đang lưu trữ dữ liệu...'))
+                : (isEdit ? 'Cập nhật thay đổi' : t('Lưu danh mục'))}
             </span>
           </button>
         </div>

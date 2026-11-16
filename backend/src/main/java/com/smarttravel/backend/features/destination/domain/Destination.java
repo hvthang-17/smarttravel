@@ -2,6 +2,8 @@ package com.smarttravel.backend.features.destination.domain;
 
 import com.smarttravel.backend.features.category.domain.Category;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.math.BigDecimal;
 import java.time.Instant;
 
@@ -26,8 +28,24 @@ public class Destination {
     @Column(length = 255)
     private String address;
 
-    @Column(name = "opening_hours", length = 100)
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "opening_hours", columnDefinition = "json")
     private String openingHours;
+    @Column(name = "featured_reason", length = 240)
+    private String featuredReason;
+
+    public String getFeaturedReason() { return featuredReason; }
+    public void setFeaturedReason(String value) { featuredReason = value; }
+
+    public int suggestedVisitDurationMinutes() {
+        if (visitDurationMinutes != null) return visitDurationMinutes;
+        return switch (category.getCode()) {
+            case "FOOD", "CAFE" -> 60;
+            case "CHECKIN" -> 45;
+            case "NIGHTLIFE" -> 120;
+            default -> 90;
+        };
+    }
 
     @Column(length = 50)
     private String phone;
@@ -41,11 +59,11 @@ public class Destination {
     @Column(name = "sub_images", columnDefinition = "TEXT")
     private String subImages;
 
-    @Column(precision = 2, scale = 1)
-    private BigDecimal rating = BigDecimal.valueOf(4.5);
+    @Column(name = "google_rating", precision = 2, scale = 1)
+    private BigDecimal rating;
 
-    @Column(name = "review_count")
-    private Integer reviewCount = 0;
+    @Column(name = "google_review_count")
+    private Integer reviewCount;
 
     @Column(name = "osm_id", length = 50)
     private String osmId;
@@ -70,6 +88,20 @@ public class Destination {
 
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt = Instant.now();
+
+    @Column(name = "name_en")
+    private String nameEn;
+
+    @Column(name = "description_en")
+    private String descriptionEn;
+
+    @Column(name = "visit_duration_minutes")
+    private Integer visitDurationMinutes;
+
+    public BigDecimal getGoogleRating() { return rating; }
+    public void setGoogleRating(BigDecimal value) { rating = value; }
+    public Integer getGoogleReviewCount() { return reviewCount; }
+    public void setGoogleReviewCount(Integer value) { reviewCount = value; }
 
     public Destination() {}
 
@@ -150,4 +182,11 @@ public class Destination {
 
     public Instant getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getNameEn() { return nameEn; }
+    public void setNameEn(String nameEn) { this.nameEn = nameEn; }
+    public String getDescriptionEn() { return descriptionEn; }
+    public void setDescriptionEn(String descriptionEn) { this.descriptionEn = descriptionEn; }
+    public Integer getVisitDurationMinutes() { return visitDurationMinutes; }
+    public void setVisitDurationMinutes(Integer visitDurationMinutes) { this.visitDurationMinutes = visitDurationMinutes; }
 }

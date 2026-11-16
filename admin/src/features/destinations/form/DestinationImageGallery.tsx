@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import { t } from '../../../core/language';
+import React, { useEffect, useState } from 'react';
+import { galleryImages, validateImageFiles } from '../catalogContract';
 import { resolveImageUrl } from '../../../core/categoryApi';
 import { uploadDestinationImage, uploadDestinationMultipleImages } from '../../../core/api';
 import {
@@ -13,30 +15,36 @@ interface Props {
   mainImage: string;
   subImages: string[];
   onChange: (mainImage: string, subImages: string[]) => void;
+  disabled?: boolean;
+  onUploadingChange?: (busy: boolean) => void;
 }
 
 export const DestinationImageGallery: React.FC<Props> = ({
   mainImage,
   subImages,
   onChange,
+  disabled = false, onUploadingChange,
 }) => {
   const [newSubUrl, setNewSubUrl] = useState('');
   const [uploadingMain, setUploadingMain] = useState(false);
   const [uploadingSub, setUploadingSub] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  useEffect(() => { onUploadingChange?.(uploadingMain || uploadingSub); }, [uploadingMain, uploadingSub, onUploadingChange]);
 
   const handleUploadMain = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
+      validateImageFiles([file]);
       setUploadingMain(true);
       setError(null);
       const res = await uploadDestinationImage(file);
       onChange(res.url, subImages);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Không thể tải ảnh lên');
+      setError(err instanceof Error ? err.message : t('Không thể tải ảnh lên'));
     } finally {
       setUploadingMain(false);
+      e.target.value = '';
     }
   };
 
@@ -44,14 +52,17 @@ export const DestinationImageGallery: React.FC<Props> = ({
     const files = e.target.files ? Array.from(e.target.files) : [];
     if (files.length === 0) return;
     try {
+      validateImageFiles(files);
+      if (subImages.length + files.length > 10) throw new Error(t('Tối đa 10 ảnh phụ cho mỗi địa điểm.'));
       setUploadingSub(true);
       setError(null);
       const urls = await uploadDestinationMultipleImages(files);
       onChange(mainImage, [...subImages, ...urls]);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Không thể tải ảnh phụ');
+      setError(err instanceof Error ? err.message : t('Không thể tải ảnh phụ'));
     } finally {
       setUploadingSub(false);
+      e.target.value = '';
     }
   };
 
@@ -59,10 +70,11 @@ export const DestinationImageGallery: React.FC<Props> = ({
     const url = newSubUrl.trim();
     if (!url) return;
     if (subImages.includes(url) || url === mainImage) {
-      setError('Đường dẫn ảnh đã tồn tại trong danh sách');
+      setError(t('Đường dẫn ảnh đã tồn tại trong danh sách'));
       return;
     }
-    onChange(mainImage, [...subImages, url]);
+    try { onChange(mainImage, galleryImages([...subImages, url])); }
+    catch (failure: unknown) { setError(failure instanceof Error ? failure.message : t('Đường dẫn ảnh không hợp lệ')); return; }
     setNewSubUrl('');
     setError(null);
   };
@@ -84,7 +96,7 @@ export const DestinationImageGallery: React.FC<Props> = ({
   const resolvedMain = resolveImageUrl(mainImage);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+    <fieldset disabled={disabled || uploadingMain || uploadingSub} style={{ border: 0, padding: 0, margin: 0, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '14px' }}>
       {error && (
         <div
           role="alert"
@@ -107,9 +119,7 @@ export const DestinationImageGallery: React.FC<Props> = ({
 
       {/* Ảnh đại diện */}
       <div>
-        <label className="user-form-label" style={{ marginBottom: '6px' }}>
-          Ảnh đại diện
-        </label>
+        <label className="user-form-label" style={{ marginBottom: '6px' }}>{t("Ảnh đại diện")} </label>
 
         {resolvedMain ? (
           <div
@@ -125,7 +135,7 @@ export const DestinationImageGallery: React.FC<Props> = ({
           >
             <img
               src={resolvedMain}
-              alt="Ảnh đại diện điểm đến"
+              alt={t("Ảnh đại diện điểm đến")}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               onError={(e) => {
                 (e.target as HTMLElement).style.display = 'none';
@@ -142,15 +152,15 @@ export const DestinationImageGallery: React.FC<Props> = ({
             >
               <input
                 type="file"
-                accept="image/*"
+                accept="image/png,image/jpeg,image/gif"
                 id="change-cover-file"
                 onChange={handleUploadMain}
                 style={{ display: 'none' }}
               />
               <label
                 htmlFor="change-cover-file"
-                title="Đổi ảnh đại diện"
-                aria-label="Đổi ảnh đại diện từ máy tính"
+                title={t("Đổi ảnh đại diện")}
+                aria-label={t("Đổi ảnh đại diện từ máy tính")}
                 className="btn-action-touch"
                 style={{
                   height: '28px',
@@ -167,14 +177,14 @@ export const DestinationImageGallery: React.FC<Props> = ({
                   border: 'none',
                 }}
               >
-                <span>{uploadingMain ? 'Đang tải...' : 'Đổi ảnh'}</span>
+                <span>{uploadingMain ? 'Đang tải...' : t('Đổi ảnh')}</span>
               </label>
 
               <button
                 type="button"
                 onClick={() => onChange('', subImages)}
-                aria-label="Xóa ảnh đại diện"
-                title="Xóa ảnh đại diện"
+                aria-label={t("Xóa ảnh đại diện")}
+                title={t("Xóa ảnh đại diện")}
                 className="btn-action-touch"
                 style={{
                   width: '28px',
@@ -211,7 +221,7 @@ export const DestinationImageGallery: React.FC<Props> = ({
             >
               <input
                 type="file"
-                accept="image/*"
+                accept="image/png,image/jpeg,image/gif"
                 id="main-cover-upload"
                 onChange={handleUploadMain}
                 style={{ display: 'none' }}
@@ -229,7 +239,7 @@ export const DestinationImageGallery: React.FC<Props> = ({
                 }}
               >
                 <ImageIcon size={15} color="#0077b6" />
-                <span>{uploadingMain ? 'Đang tải ảnh...' : 'Tải ảnh từ máy tính'}</span>
+                <span>{uploadingMain ? 'Đang tải ảnh...' : t('Tải ảnh từ máy tính')}</span>
               </label>
             </div>
 
@@ -237,7 +247,7 @@ export const DestinationImageGallery: React.FC<Props> = ({
               type="text"
               value={mainImage}
               onChange={(e) => onChange(e.target.value, subImages)}
-              placeholder="Hoặc dán URL ảnh trực tiếp..."
+              placeholder={t("Hoặc dán URL ảnh trực tiếp...")}
               className="user-form-input"
               style={{ fontSize: '12.5px', padding: '7px 10px' }}
             />
@@ -248,8 +258,7 @@ export const DestinationImageGallery: React.FC<Props> = ({
       {/* Ảnh phụ */}
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-          <label className="user-form-label" style={{ margin: 0 }}>
-            Ảnh phụ {subImages.length > 0 && `(${subImages.length})`}
+          <label className="user-form-label" style={{ margin: 0 }}>{t("Ảnh phụ")} {subImages.length > 0 && `(${subImages.length})`}
           </label>
         </div>
 
@@ -298,7 +307,7 @@ export const DestinationImageGallery: React.FC<Props> = ({
                   <button
                     type="button"
                     onClick={() => handlePromoteToMain(imgUrl, idx)}
-                    title="Đặt làm ảnh chính"
+                    title={t("Đặt làm ảnh chính")}
                     aria-label={`Đặt ảnh phụ ${idx + 1} làm ảnh đại diện`}
                     style={{
                       width: '24px',
@@ -319,7 +328,7 @@ export const DestinationImageGallery: React.FC<Props> = ({
                   <button
                     type="button"
                     onClick={() => handleRemoveSub(idx)}
-                    title="Xóa ảnh này"
+                    title={t("Xóa ảnh này")}
                     aria-label={`Xóa ảnh phụ ${idx + 1}`}
                     style={{
                       width: '24px',
@@ -346,14 +355,14 @@ export const DestinationImageGallery: React.FC<Props> = ({
             <input
               type="file"
               multiple
-              accept="image/*"
+              accept="image/png,image/jpeg,image/gif"
               id="sub-file-picker"
               onChange={handleUploadMultipleSub}
               style={{ display: 'none' }}
             />
             <label
               htmlFor="sub-file-picker"
-              title="Thêm ảnh từ máy tính"
+              title={t("Thêm ảnh từ máy tính")}
               style={{
                 width: '60px',
                 height: '60px',
@@ -372,7 +381,7 @@ export const DestinationImageGallery: React.FC<Props> = ({
             >
               <PlusIcon size={16} color="#475569" />
               <span style={{ fontSize: '10px', marginTop: '2px', fontWeight: 600 }}>
-                {uploadingSub ? 'Tải...' : 'Thêm'}
+                {uploadingSub ? 'Tải...' : t('Thêm')}
               </span>
             </label>
           </div>
@@ -390,7 +399,7 @@ export const DestinationImageGallery: React.FC<Props> = ({
                 handleAddSubUrl();
               }
             }}
-            placeholder="Dán link ảnh phụ rồi nhấn Enter..."
+            placeholder={t("Dán link ảnh phụ rồi nhấn Enter...")}
             className="user-form-input"
             style={{ fontSize: '12px', padding: '6px 9px', flex: 1 }}
           />
@@ -409,11 +418,9 @@ export const DestinationImageGallery: React.FC<Props> = ({
               cursor: 'pointer',
               whiteSpace: 'nowrap',
             }}
-          >
-            Thêm
-          </button>
+          >{t("Thêm")} </button>
         </div>
       </div>
-    </div>
+    </fieldset>
   );
 };

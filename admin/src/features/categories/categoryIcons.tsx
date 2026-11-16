@@ -1,3 +1,4 @@
+import { t } from '../../core/language';
 import React from 'react';
 import {
   PalmtreeIcon,
@@ -21,31 +22,31 @@ export interface CategoryIconMeta {
 }
 
 export const PRESET_ICONS: CategoryIconMeta[] = [
-  { id: 'palmtree', label: 'Biển & Thiên nhiên', Icon: PalmtreeIcon },
-  { id: 'utensils', label: 'Ẩm thực & Món ngon', Icon: UtensilsIcon },
-  { id: 'landmark', label: 'Văn hóa & Di tích', Icon: LandmarkIcon },
-  { id: 'camera', label: 'Sống ảo & Check-in', Icon: CameraIcon },
-  { id: 'hotel', label: 'Khách sạn & Resort', Icon: HotelIcon },
-  { id: 'shopping-bag', label: 'Chợ đêm & Mua sắm', Icon: ShoppingBagIcon },
-  { id: 'coffee', label: 'Cà phê & Thư giãn', Icon: CoffeeIcon },
-  { id: 'waves', label: 'Sóng biển sông Hàn', Icon: WavesIcon },
-  { id: 'compass', label: 'Khám phá & Tour', Icon: CompassIcon },
-  { id: 'map-pin', label: 'Địa điểm nổi bật', Icon: MapPinIcon },
-  { id: 'star', label: 'Đặc sắc & Nổi bật', Icon: StarIcon },
-  { id: 'tag', label: 'Thẻ phân loại', Icon: TagIcon },
+  { id: 'palmtree', label: t('Biển & Thiên nhiên'), Icon: PalmtreeIcon },
+  { id: 'utensils', label: t('Ẩm thực & Món ngon'), Icon: UtensilsIcon },
+  { id: 'landmark', label: t('Văn hóa & Di tích'), Icon: LandmarkIcon },
+  { id: 'camera', label: t('Sống ảo & Check-in'), Icon: CameraIcon },
+  { id: 'hotel', label: t('Khách sạn & Resort'), Icon: HotelIcon },
+  { id: 'shopping-bag', label: t('Chợ đêm & Mua sắm'), Icon: ShoppingBagIcon },
+  { id: 'coffee', label: t('Cà phê & Thư giãn'), Icon: CoffeeIcon },
+  { id: 'waves', label: t('Sóng biển sông Hàn'), Icon: WavesIcon },
+  { id: 'compass', label: t('Khám phá & Tour'), Icon: CompassIcon },
+  { id: 'map-pin', label: t('Địa điểm nổi bật'), Icon: MapPinIcon },
+  { id: 'star', label: t('Đặc sắc & Nổi bật'), Icon: StarIcon },
+  { id: 'tag', label: t('Thẻ phân loại'), Icon: TagIcon },
 ];
 
 export const PRESET_COLORS = [
-  { hex: '#0077B6', label: 'Ocean Blue (Màu chủ đạo)' },
-  { hex: '#10B981', label: 'Emerald Green (Thiên nhiên)' },
-  { hex: '#F97316', label: 'Sunset Orange (Ẩm thực)' },
-  { hex: '#8B5CF6', label: 'Purple Violet (Sống ảo)' },
-  { hex: '#0284C7', label: 'Sky Blue (Nghỉ dưỡng)' },
-  { hex: '#EF4444', label: 'Vibrant Red (Giải trí)' },
-  { hex: '#D97706', label: 'Warm Amber (Cà phê)' },
-  { hex: '#EC4899', label: 'Pink Rose (Lãng mạn)' },
-  { hex: '#0D9488', label: 'Teal (Sinh thái)' },
-  { hex: '#6366F1', label: 'Indigo (Sự kiện)' },
+  { hex: '#0077B6', label: t('Ocean Blue (Màu chủ đạo)') },
+  { hex: '#10B981', label: t('Emerald Green (Thiên nhiên)') },
+  { hex: '#F97316', label: t('Sunset Orange (Ẩm thực)') },
+  { hex: '#8B5CF6', label: t('Purple Violet (Sống ảo)') },
+  { hex: '#0284C7', label: t('Sky Blue (Nghỉ dưỡng)') },
+  { hex: '#EF4444', label: t('Vibrant Red (Giải trí)') },
+  { hex: '#D97706', label: t('Warm Amber (Cà phê)') },
+  { hex: '#EC4899', label: t('Pink Rose (Lãng mạn)') },
+  { hex: '#0D9488', label: t('Teal (Sinh thái)') },
+  { hex: '#6366F1', label: t('Indigo (Sự kiện)') },
 ];
 
 export function renderCategoryIcon(iconName: string, color: string = 'currentColor', size: number = 20) {

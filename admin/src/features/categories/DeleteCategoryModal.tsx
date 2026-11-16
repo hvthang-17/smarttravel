@@ -1,3 +1,4 @@
+import { t } from '../../core/language';
 import React, { useState, useEffect } from 'react';
 import {
   AlertTriangleIcon,
@@ -50,8 +51,8 @@ export const DeleteCategoryModal: React.FC<DeleteCategoryModalProps> = ({
       await deleteCategoryApi(category.id);
       onSuccess();
       onClose();
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Có lỗi xảy ra khi xóa danh mục');
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : t('Có lỗi xảy ra khi ẩn danh mục'));
       setIsDeleting(false);
     }
   };
@@ -100,14 +101,12 @@ export const DeleteCategoryModal: React.FC<DeleteCategoryModalProps> = ({
                 <h3
                   id="delete-category-title"
                   style={{ margin: 0, fontSize: '1.125rem', fontWeight: 700, color: '#0F172A' }}
-                >
-                  Xác nhận xóa danh mục
-                </h3>
+                >{t("Ẩn danh mục")} </h3>
                 <button
                   type="button"
                   onClick={onClose}
                   disabled={isDeleting}
-                  aria-label="Đóng"
+                  aria-label={t("Đóng")}
                   style={{
                     border: 'none',
                     backgroundColor: 'transparent',
@@ -120,8 +119,7 @@ export const DeleteCategoryModal: React.FC<DeleteCategoryModalProps> = ({
                 </button>
               </div>
 
-              <p style={{ marginTop: '0.5rem', marginBottom: '1rem', fontSize: '0.875rem', color: '#475569', lineHeight: 1.5 }}>
-                Bạn có chắc chắn muốn xóa vĩnh viễn danh mục <strong style={{ color: '#0F172A' }}>{category.name}</strong> ({category.code}) khỏi hệ thống không?
+              <p style={{ marginTop: '0.5rem', marginBottom: '1rem', fontSize: '0.875rem', color: '#475569', lineHeight: 1.5 }}>{t("Ẩn danh mục")} <strong style={{ color: '#0F172A' }}>{category.name}</strong> ({category.code}) và các địa điểm của danh mục khỏi danh sách công khai, gợi ý mới? Dữ liệu vẫn được giữ và có thể hiện lại.
               </p>
 
               {category.destinationsCount > 0 && (
@@ -137,8 +135,7 @@ export const DeleteCategoryModal: React.FC<DeleteCategoryModalProps> = ({
                     lineHeight: 1.4,
                   }}
                 >
-                  <strong>Cảnh báo:</strong> Đang có <strong>{category.destinationsCount} địa điểm</strong> thuộc danh mục này. Hãy kiểm tra hoặc phân loại lại trước khi xóa.
-                </div>
+                  <strong>{category.destinationsCount} địa điểm</strong>{t("vẫn giữ liên kết danh mục. Review và lịch trình đã lưu không bị xóa.")} </div>
               )}
 
               {errorMessage && (
@@ -176,9 +173,7 @@ export const DeleteCategoryModal: React.FC<DeleteCategoryModalProps> = ({
               cursor: 'pointer',
               minHeight: '44px',
             }}
-          >
-            Hủy bỏ
-          </button>
+          >{t("Hủy bỏ")} </button>
           <button
             type="button"
             onClick={handleDelete}
@@ -196,7 +191,7 @@ export const DeleteCategoryModal: React.FC<DeleteCategoryModalProps> = ({
               minHeight: '44px',
             }}
           >
-            {isDeleting ? 'Đang xóa...' : 'Xóa vĩnh viễn'}
+            {isDeleting ? 'Đang ẩn...' : t('Xác nhận ẩn')}
           </button>
         </div>
       </div>

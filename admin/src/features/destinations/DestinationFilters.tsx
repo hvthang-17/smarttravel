@@ -1,3 +1,4 @@
+import { t, localizedText } from '../../core/language';
 import React from 'react';
 import { SearchIcon, XIcon, DownloadIcon } from '../../components/Icons';
 import { Category } from '../../core/categoryApi';
@@ -41,8 +42,8 @@ export const DestinationFilters: React.FC<Props> = ({
           </span>
           <input
             type="text"
-            placeholder="Tìm theo tên, địa chỉ, mô tả..."
-            aria-label="Tìm kiếm địa điểm"
+            placeholder={t("Tìm theo tên, địa chỉ, mô tả...")}
+            aria-label={t("Tìm kiếm địa điểm")}
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             className="destination-filter-input"
@@ -52,7 +53,7 @@ export const DestinationFilters: React.FC<Props> = ({
             <button
               type="button"
               onClick={() => onSearchChange('')}
-              aria-label="Xóa từ khóa tìm kiếm"
+              aria-label={t("Xóa từ khóa tìm kiếm")}
               style={{
                 position: 'absolute',
                 right: '8px',
@@ -74,60 +75,52 @@ export const DestinationFilters: React.FC<Props> = ({
 
         {/* Dynamic Category Selector */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <label style={{ fontSize: '13px', color: '#475569', fontWeight: 500 }}>Danh mục:</label>
+          <label style={{ fontSize: '13px', color: '#475569', fontWeight: 500 }}>{t("Danh mục:")}</label>
           <select
             value={categoryFilter}
             onChange={(e) => onCategoryFilterChange(e.target.value)}
-            aria-label="Lọc theo danh mục"
+            aria-label={t("Lọc theo danh mục")}
             className="destination-filter-select"
           >
-            <option value="ALL">Tất cả danh mục</option>
+            <option value="ALL">{t("Tất cả danh mục")}</option>
             {categoriesList.map((cat) => (
-              <option key={cat.id} value={cat.name}>
-                {cat.name} ({cat.destinationsCount || 0})
+              <option key={cat.id} value={cat.code}>
+                {localizedText(cat.name, cat.nameEn)} ({cat.destinationsCount || 0})
               </option>
             ))}
-            {categoriesList.length === 0 && (
-              <>
-                <option value="Culture">Văn hóa & Di sản</option>
-                <option value="Beach">Biển & Thiên nhiên</option>
-                <option value="Food">Ẩm thực & Đặc sản</option>
-                <option value="Cafe">Cà phê & Thư giãn</option>
-                <option value="Hotel">Nghỉ dưỡng & Khách sạn</option>
-              </>
-            )}
+            {categoriesList.length === 0 && <option disabled>{t("Chưa tải được danh mục")}</option>}
           </select>
         </div>
 
         {/* Status Selector */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <label style={{ fontSize: '13px', color: '#475569', fontWeight: 500 }}>Trạng thái:</label>
+          <label style={{ fontSize: '13px', color: '#475569', fontWeight: 500 }}>{t("Trạng thái:")}</label>
           <select
             value={statusFilter}
             onChange={(e) => onStatusFilterChange(e.target.value)}
-            aria-label="Lọc theo trạng thái"
+            aria-label={t("Lọc theo trạng thái")}
             className="destination-filter-select"
           >
-            <option value="ALL">Tất cả</option>
-            <option value="ACTIVE">Đang hoạt động</option>
-            <option value="INACTIVE">Tạm ẩn</option>
+            <option value="ALL">{t("Tất cả")}</option>
+            <option value="ACTIVE">{t("Đang hoạt động")}</option>
+            <option value="INACTIVE">{t("Tạm ẩn")}</option>
           </select>
         </div>
 
         {/* Sorting Dropdown */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <label style={{ fontSize: '13px', color: '#475569', fontWeight: 500 }}>Sắp xếp:</label>
+          <label style={{ fontSize: '13px', color: '#475569', fontWeight: 500 }}>{t("Sắp xếp:")}</label>
           <select
             value={sortBy}
             onChange={(e) => onSortByChange(e.target.value)}
-            aria-label="Sắp xếp kết quả"
+            aria-label={t("Sắp xếp kết quả")}
             className="destination-filter-select"
           >
-            <option value="DEFAULT">Mặc định (ID)</option>
-            <option value="RATING_DESC">Đánh giá cao nhất</option>
-            <option value="REVIEWS_DESC">Nhiều đánh giá nhất</option>
-            <option value="NAME_ASC">Tên A-Z</option>
-            <option value="PRICE_ASC">Giá tăng dần</option>
+            <option value="DEFAULT">{t("Mặc định (ID)")}</option>
+            <option value="RATING_DESC">{t("Đánh giá cao nhất")}</option>
+            <option value="REVIEWS_DESC">{t("Nhiều đánh giá nhất")}</option>
+            <option value="NAME_ASC">{t("Tên A-Z")}</option>
+            <option value="PRICE_ASC">{t("Giá tăng dần")}</option>
           </select>
         </div>
 
@@ -149,10 +142,10 @@ export const DestinationFilters: React.FC<Props> = ({
               gap: '4px',
               padding: '4px 6px',
             }}
-            aria-label="Đặt lại tất cả bộ lọc tìm kiếm"
+            aria-label={t("Đặt lại tất cả bộ lọc tìm kiếm")}
           >
             <XIcon size={13} color="#0077b6" />
-            <span>Xóa bộ lọc</span>
+            <span>{t("Xóa bộ lọc")}</span>
           </button>
         )}
       </div>
@@ -176,10 +169,10 @@ export const DestinationFilters: React.FC<Props> = ({
           gap: '6px',
           boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
         }}
-        aria-label="Xuất dữ liệu danh sách địa điểm thành file CSV"
+        aria-label={t("Xuất dữ liệu danh sách địa điểm thành file CSV")}
       >
         <DownloadIcon size={14} color="#475569" />
-        <span>Xuất CSV</span>
+        <span>{t("Xuất CSV")}</span>
       </button>
     </div>
   );

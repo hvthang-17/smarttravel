@@ -1,3 +1,6 @@
+import { t, localizedText } from '../../../core/language';
+import { googleRating, googleReviewCount, smartTravelReviewLabel } from '../destinationContract';
+import { formatOpeningHours } from '../formatOpeningHours';
 import React, { useState } from 'react';
 import { Destination } from '../../../types/destination';
 import { Category, resolveImageUrl } from '../../../core/categoryApi';
@@ -39,7 +42,7 @@ export const DestinationTableRow: React.FC<Props> = ({
   const [imgFailed, setImgFailed] = useState(false);
   const meta = getCategoryMeta(d.category, categoriesList);
   const CategoryIcon = meta.Icon;
-  const destCode = `#DEST-${String(d.id || index + 1).padStart(3, '0')}`;
+  const destCode = d.id == null ? 'Chưa có ID' : `#DEST-${String(d.id).padStart(3, '0')}`;
   const isActive = d.status === 'ACTIVE';
   const resolvedImg = resolveImageUrl(d.imageUrl);
   const mapsUrl = buildGoogleMapsUrl(d.latitude, d.longitude);
@@ -55,13 +58,13 @@ export const DestinationTableRow: React.FC<Props> = ({
             onClick={() => onView(d)}
             className="destination-thumb-btn"
             style={{ backgroundColor: meta.bg }}
-            title="Bấm để xem chi tiết địa điểm"
-            aria-label={`Xem ảnh và chi tiết ${d.name}`}
+            title={t("Bấm để xem chi tiết địa điểm")}
+            aria-label={`Xem ảnh và chi tiết ${localizedText(d.name, d.nameEn)}`}
           >
             {showImage ? (
               <img
                 src={resolvedImg}
-                alt={d.name}
+                alt={localizedText(d.name, d.nameEn)}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 onError={() => setImgFailed(true)}
               />
@@ -94,15 +97,15 @@ export const DestinationTableRow: React.FC<Props> = ({
                   cursor: 'pointer',
                 }}
                 className="destination-name-btn"
-                title="Bấm để xem chi tiết địa điểm"
+                title={t("Bấm để xem chi tiết địa điểm")}
               >
-                {d.name}
+                {localizedText(d.name, d.nameEn)}
               </button>
               <span className="destination-code-tag">{destCode}</span>
             </div>
-            <div className="destination-address-text" title={d.address || 'Đà Nẵng'}>
+            <div className="destination-address-text" title={d.address || t('Đà Nẵng')}>
               <MapPinIcon size={12} color="#94a3b8" />
-              <span>{d.address || 'TP. Đà Nẵng'}</span>
+              <span>{d.address || t('TP. Đà Nẵng')}</span>
             </div>
           </div>
         </div>
@@ -115,7 +118,7 @@ export const DestinationTableRow: React.FC<Props> = ({
           style={{ backgroundColor: meta.bg, color: meta.color }}
         >
           <CategoryIcon size={13} color={meta.color} />
-          <span>{meta.label}</span>
+          <span>{t(meta.label)}</span>
         </span>
       </td>
 
@@ -127,7 +130,7 @@ export const DestinationTableRow: React.FC<Props> = ({
             target="_blank"
             rel="noopener noreferrer"
             className="destination-gps-pill"
-            title="Bấm để xem vị trí chính xác trên Google Maps"
+            title={t("Bấm để xem vị trí chính xác trên Google Maps")}
           >
             <span>{Number(d.latitude).toFixed(4)}, {Number(d.longitude).toFixed(4)}</span>
             <ExternalLinkIcon size={11} color="#0369a1" />
@@ -143,10 +146,10 @@ export const DestinationTableRow: React.FC<Props> = ({
       {/* Price */}
       <td>
         <div className="destination-price-text">
-          {formatVndPrice(d.priceMinVnd, d.priceMaxVnd)}
+          {t(formatVndPrice(d.priceMinVnd, d.priceMaxVnd))}
         </div>
         <div className="destination-price-hint">
-          {d.priceMinVnd && d.priceMinVnd > 0 ? 'Giá vé / tham khảo' : 'Điểm đến công cộng'}
+          {d.priceMinVnd == null && d.priceMaxVnd == null ? 'Chưa có dữ liệu giá' : t('Chi phí tham khảo / người')}
         </div>
       </td>
 
@@ -155,11 +158,11 @@ export const DestinationTableRow: React.FC<Props> = ({
         {d.openingHours ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12.5px', color: '#334155' }}>
             <ClockIcon size={12} color="#64748b" />
-            <span title={d.openingHours}>{d.openingHours}</span>
+            <span title={d.openingHours}>{t(formatOpeningHours(d.openingHours))}</span>
           </div>
         ) : (
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#92400e', backgroundColor: '#fef3c7', padding: '2px 7px', borderRadius: '4px' }}>
-            <span>Chưa cập nhật</span>
+            <span>{t("Chưa cập nhật")}</span>
           </span>
         )}
       </td>
@@ -169,12 +172,13 @@ export const DestinationTableRow: React.FC<Props> = ({
         <div className="destination-rating-row">
           <StarIcon size={13} color="#f59e0b" />
           <span className="destination-rating-score">
-            {d.rating != null ? Number(d.rating).toFixed(1) : '4.5'}
+            Google · {googleRating(d)?.toFixed(1) ?? t('Chưa có')}
           </span>
           <span className="destination-rating-count">
-            ({d.reviewCount ?? 0})
+            ({googleReviewCount(d) ?? t('chưa rõ')})
           </span>
         </div>
+        <div className="destination-rating-count">SmartTravel · {t(smartTravelReviewLabel(d))}</div>
       </td>
 
       {/* Toggle Status with Loading Spinner & Focus Ring */}
@@ -186,14 +190,14 @@ export const DestinationTableRow: React.FC<Props> = ({
               checked={isActive}
               disabled={isPending}
               onChange={() => onToggleStatus(d)}
-              aria-label={`Bật tắt trạng thái cho ${d.name}`}
+              aria-label={`Bật tắt trạng thái cho ${localizedText(d.name, d.nameEn)}`}
             />
             <span className="toggle-slider" />
           </label>
           {isPending ? (
             <span className="destination-status-pending">
               <RefreshCwIcon size={12} className="spin-animation" color="#0077b6" />
-              <span>Đang lưu...</span>
+              <span>{t("Đang lưu...")}</span>
             </span>
           ) : (
             <span style={{ fontSize: '12px', fontWeight: 600, color: isActive ? '#15803d' : '#475569' }}>
@@ -210,8 +214,8 @@ export const DestinationTableRow: React.FC<Props> = ({
             type="button"
             onClick={() => onView(d)}
             className="destination-action-btn view-btn"
-            title="Xem chi tiết địa điểm"
-            aria-label={`Xem chi tiết ${d.name}`}
+            title={t("Xem chi tiết địa điểm")}
+            aria-label={`Xem chi tiết ${localizedText(d.name, d.nameEn)}`}
           >
             <EyeIcon size={15} color="#0077b6" />
           </button>
@@ -220,8 +224,8 @@ export const DestinationTableRow: React.FC<Props> = ({
             type="button"
             onClick={() => onEdit(d)}
             className="destination-action-btn"
-            title="Chỉnh sửa thông tin chi tiết"
-            aria-label={`Chỉnh sửa ${d.name}`}
+            title={t("Chỉnh sửa thông tin chi tiết")}
+            aria-label={`Chỉnh sửa ${localizedText(d.name, d.nameEn)}`}
           >
             <PencilIcon size={15} color="#0077b6" />
           </button>
@@ -232,8 +236,8 @@ export const DestinationTableRow: React.FC<Props> = ({
               onClick={() => onDelete(d)}
               disabled={isPending}
               className="destination-action-btn delete-btn"
-              title="Xóa điểm đến"
-              aria-label={`Xóa ${d.name}`}
+                title={t("Ẩn điểm đến, giữ review và lịch trình")}
+                aria-label={`Ẩn ${localizedText(d.name, d.nameEn)}`}
             >
               <TrashIcon size={15} color="#dc2626" />
             </button>

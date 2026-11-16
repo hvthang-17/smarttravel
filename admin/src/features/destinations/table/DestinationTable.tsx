@@ -1,3 +1,4 @@
+import { t } from '../../../core/language';
 import React from 'react';
 import { Destination } from '../../../types/destination';
 import { Category } from '../../../core/categoryApi';
@@ -56,18 +57,18 @@ export const DestinationTable: React.FC<Props> = ({
         <div className="destination-error-container" role="alert">
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <AlertTriangleIcon size={20} color="#dc2626" />
-            <span style={{ fontWeight: 500 }}>Lỗi tải dữ liệu: {error}</span>
+            <span style={{ fontWeight: 500 }}>{t("Lỗi tải dữ liệu:")} {error}</span>
           </div>
           {onRetry && (
             <button
               type="button"
               onClick={onRetry}
               className="destination-retry-btn"
-              title="Nhấn để thử tải lại dữ liệu"
-              aria-label="Tải lại dữ liệu điểm đến"
+              title={t("Nhấn để thử tải lại dữ liệu")}
+              aria-label={t("Tải lại dữ liệu điểm đến")}
             >
               <RefreshCwIcon size={14} color="#b91c1c" />
-              <span>Thử lại</span>
+              <span>{t("Thử lại")}</span>
             </button>
           )}
         </div>
@@ -80,12 +81,8 @@ export const DestinationTable: React.FC<Props> = ({
     return (
       <div className="destination-table-container">
         <div style={{ padding: '64px 24px', textAlign: 'center', color: '#64748b' }}>
-          <div style={{ fontSize: '15px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-            Không tìm thấy địa điểm nào
-          </div>
-          <p style={{ fontSize: '13px', margin: 0 }}>
-            Thử thay đổi từ khóa tìm kiếm hoặc điều chỉnh lại các bộ lọc danh mục và trạng thái.
-          </p>
+          <div style={{ fontSize: '15px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>{t("Không tìm thấy địa điểm nào")} </div>
+          <p style={{ fontSize: '13px', margin: 0 }}>{t("Thử thay đổi từ khóa tìm kiếm hoặc điều chỉnh lại các bộ lọc danh mục và trạng thái.")} </p>
         </div>
       </div>
     );
@@ -98,14 +95,14 @@ export const DestinationTable: React.FC<Props> = ({
         <table className="destination-table">
           <thead>
             <tr>
-              <th scope="col" style={{ width: '320px' }}>Địa điểm & Địa chỉ</th>
-              <th scope="col" style={{ width: '170px' }}>Danh mục</th>
-              <th scope="col" style={{ width: '180px' }}>Tọa độ & Bản đồ</th>
-              <th scope="col" style={{ width: '170px' }}>Chi phí ước tính</th>
-              <th scope="col" style={{ width: '160px' }}>Giờ hoạt động</th>
-              <th scope="col" style={{ width: '120px' }}>Đánh giá</th>
-              <th scope="col" style={{ width: '120px' }}>Trạng thái</th>
-              <th scope="col" style={{ width: '120px', textAlign: 'center' }}>Thao tác</th>
+              <th scope="col" style={{ width: '320px' }}>{t("Địa điểm & Địa chỉ")}</th>
+              <th scope="col" style={{ width: '170px' }}>{t("Danh mục")}</th>
+              <th scope="col" style={{ width: '180px' }}>{t("Tọa độ & Bản đồ")}</th>
+              <th scope="col" style={{ width: '170px' }}>{t("Chi phí ước tính")}</th>
+              <th scope="col" style={{ width: '160px' }}>{t("Giờ hoạt động")}</th>
+              <th scope="col" style={{ width: '120px' }}>{t("Đánh giá")}</th>
+              <th scope="col" style={{ width: '120px' }}>{t("Trạng thái")}</th>
+              <th scope="col" style={{ width: '120px', textAlign: 'center' }}>{t("Thao tác")}</th>
             </tr>
           </thead>
           <tbody>

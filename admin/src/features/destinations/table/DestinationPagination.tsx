@@ -1,3 +1,4 @@
+import { t } from '../../../core/language';
 import React from 'react';
 import { ChevronLeftIcon, ChevronRightIcon } from '../../../components/Icons';
 
@@ -21,10 +22,8 @@ export const DestinationPagination: React.FC<Props> = ({
   const endIndex = Math.min(currentPage * itemsPerPage, totalFilteredCount);
 
   return (
-    <div className="destination-pagination-bar" role="navigation" aria-label="Phân trang dữ liệu địa điểm">
-      <div style={{ fontSize: '13px', color: '#64748b' }}>
-        Hiển thị <strong>{startIndex}–{endIndex}</strong> trong tổng số <strong>{totalFilteredCount}</strong> địa điểm
-      </div>
+    <div className="destination-pagination-bar" role="navigation" aria-label={t("Phân trang dữ liệu địa điểm")}>
+      <div style={{ fontSize: '13px', color: '#64748b' }}>{t("Hiển thị")} <strong>{startIndex}–{endIndex}</strong>{t("trong tổng số")}<strong>{totalFilteredCount}</strong>{t("địa điểm")} </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
         <button
@@ -32,8 +31,8 @@ export const DestinationPagination: React.FC<Props> = ({
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage <= 1}
           className="destination-page-btn"
-          aria-label="Trang trước"
-          title="Về trang trước"
+          aria-label={t("Trang trước")}
+          title={t("Về trang trước")}
         >
           <ChevronLeftIcon size={15} />
         </button>
@@ -48,7 +47,7 @@ export const DestinationPagination: React.FC<Props> = ({
           disabled={currentPage >= safeTotalPages}
           className="destination-page-btn"
           aria-label="Trang sau"
-          title="Sang trang tiếp theo"
+          title={t("Sang trang tiếp theo")}
         >
           <ChevronRightIcon size={15} />
         </button>
