@@ -96,9 +96,14 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/register").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/register",
+                        "/api/v1/auth/forgot-password", "/api/v1/auth/reset-password").permitAll()
+                .requestMatchers("/api/v1/destinations/*/reviews/mine").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/v1/destinations/*/reviews",
+                        "/api/v1/destinations/*/reviews/*/reports").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/health", "/actuator/health",
                         "/api/v1/weather/**", "/api/v1/itineraries/shared/**", "/uploads/**",
+                        "/itineraries/shared/*",
                         "/api/v1/destinations", "/api/v1/destinations/**",
                         "/api/v1/categories", "/api/v1/categories/**").permitAll()
                 .requestMatchers("/api/v1/admin/**", "/api/v1/destinations", "/api/v1/destinations/**",

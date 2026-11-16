@@ -1,4 +1,7 @@
+import 'traveler_profile.dart';
+
 class UserState {
+  final TravelerProfile? travelerProfile;
   final int? id;
   final String? email;
   final String? fullName;
@@ -10,6 +13,7 @@ class UserState {
   final int? avatarIndex;
 
   UserState({
+    this.travelerProfile,
     this.id,
     this.email,
     this.fullName,
@@ -24,6 +28,7 @@ class UserState {
   bool get isAuthenticated => token != null && token!.isNotEmpty;
 
   UserState copyWith({
+    TravelerProfile? travelerProfile,
     int? id,
     String? email,
     String? fullName,
@@ -35,6 +40,7 @@ class UserState {
     int? avatarIndex,
   }) {
     return UserState(
+      travelerProfile: travelerProfile ?? this.travelerProfile,
       id: id ?? this.id,
       email: email ?? this.email,
       fullName: fullName ?? this.fullName,
@@ -57,6 +63,7 @@ class UserState {
     }
 
     return UserState(
+      travelerProfile: TravelerProfile.fromJson(json['travelerProfile'] as Map<String, dynamic>? ?? {}),
       id: parsedId,
       email: json['email'] as String?,
       fullName: json['fullName'] as String?,
@@ -71,6 +78,7 @@ class UserState {
 
   Map<String, dynamic> toJson() {
     return {
+      'travelerProfile': travelerProfile?.toJson(),
       'id': id,
       'email': email,
       'fullName': fullName,

@@ -1,3 +1,6 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
+import 'package:smarttravel_mobile/features/destination/presentation/widgets/destination_display.dart';
+import 'package:smarttravel_mobile/features/destination/presentation/widgets/favorite_button.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smarttravel_mobile/core/theme/app_theme.dart';
@@ -5,28 +8,18 @@ import 'package:smarttravel_mobile/features/destination/data/models/destination_
 
 class DestinationCard extends StatelessWidget {
   final DestinationModel destination;
-  final bool isFavorite;
-  final VoidCallback onToggleFavorite;
+  final String language;
 
   const DestinationCard({
     super.key,
     required this.destination,
-    required this.isFavorite,
-    required this.onToggleFavorite,
+    this.language = 'vi',
   });
-
-  String _formatPrice(int amount) {
-    if (amount >= 1000000) {
-      return '${(amount / 1000000).toStringAsFixed(1)}tr';
-    } else if (amount >= 1000) {
-      return '${(amount / 1000).toStringAsFixed(0)}k';
-    }
-    return '$amount';
-  }
 
   @override
   Widget build(BuildContext context) {
-    final isFree = (destination.priceMinVnd == null || destination.priceMinVnd == 0);
+    final image = destinationImageUrl(destination.imageUrl);
+    final id = destination.id;
 
     Color badgeBg = const Color(0xFFE0F2FE);
     Color badgeText = const Color(0xFF0284C7);
@@ -42,7 +35,7 @@ class DestinationCard extends StatelessWidget {
     }
 
     return InkWell(
-      onTap: () => context.push('/destinations/${destination.id}'),
+      onTap: destination.id == null ? null : () => context.push('/destinations/${destination.id}'),
       borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
@@ -65,9 +58,9 @@ class DestinationCard extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  destination.imageUrl?.trim().isNotEmpty == true
+                  image != null
                       ? Image.network(
-                          destination.imageUrl!,
+                          image,
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) => _buildFallbackCover(),
                           loadingBuilder: (context, child, progress) {
@@ -82,46 +75,13 @@ class DestinationCard extends StatelessWidget {
                         )
                       : _buildFallbackCover(),
 
-                  // Floating 44x44 favorite button
-                  Positioned(
+                  if (id != null) Positioned(
                     top: 4,
                     right: 4,
-                    child: Semantics(
-                      label: isFavorite ? 'Bỏ yêu thích' : 'Thêm vào yêu thích',
-                      button: true,
-                      child: SizedBox(
-                        width: 44,
-                        height: 44,
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            customBorder: const CircleBorder(),
-                            onTap: onToggleFavorite,
-                            child: Center(
-                              child: Container(
-                                padding: const EdgeInsets.all(7),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.1),
-                                      blurRadius: 4,
-                                    ),
-                                  ],
-                                ),
-                                child: Icon(
-                                  isFavorite ? Icons.favorite : Icons.favorite_border,
-                                  size: 18,
-                                  color: isFavorite
-                                      ? AppTheme.statusError
-                                      : AppTheme.textMuted,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                    child: Material(
+                      color: Colors.white,
+                      shape: const CircleBorder(),
+                      child: FavoriteButton(id: id),
                     ),
                   ),
                 ],
@@ -139,8 +99,10 @@ class DestinationCard extends StatelessWidget {
                       color: badgeBg,
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: Text(
-                      destination.category,
+                    child: AppText(
+                      destinationCategoryName(destination, language),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -149,8 +111,8 @@ class DestinationCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text(
-                    destination.name,
+                  AppText(
+                    destinationName(destination, language),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -160,37 +122,9 @@ class DestinationCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        isFree ? 'Miễn phí' : '~${_formatPrice(destination.priceMinVnd!)}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isFree
-                              ? AppTheme.statusSuccess
-                              : AppTheme.secondaryCoral,
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          const Icon(Icons.star, size: 14, color: Color(0xFFF59E0B)),
-                          const SizedBox(width: 2),
-                          Text(
-                            destination.rating > 0
-                                ? destination.rating.toStringAsFixed(1)
-                                : 'Mới',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                  AppText(formatDestinationPrice(destination.priceMinVnd, destination.priceMaxVnd),
+                    maxLines: 2, overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
                 ],
               ),
             ),

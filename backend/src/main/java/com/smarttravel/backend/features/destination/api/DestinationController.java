@@ -59,7 +59,7 @@ public class DestinationController {
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteDestination(@PathVariable Long id) {
         destinationService.deleteDestination(id);
-        return ApiResponse.success(null, "Destination deleted successfully");
+        return ApiResponse.success(null, "Đã ẩn địa điểm; giữ nguyên review và lịch trình đã lưu");
     }
 
     @PostMapping("/upload-image")

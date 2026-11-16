@@ -1,3 +1,4 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:smarttravel_mobile/core/theme/app_theme.dart';
 
@@ -62,7 +63,7 @@ class HomeCategoryPills extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                   ],
-                  Text(
+                  AppText(
                     cat.label,
                     style: TextStyle(
                       fontSize: 13,

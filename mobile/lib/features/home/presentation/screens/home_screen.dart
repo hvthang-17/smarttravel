@@ -1,3 +1,6 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
+import 'dart:async';
+import 'package:smarttravel_mobile/features/destination/data/models/discovery_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,9 +9,7 @@ import 'package:smarttravel_mobile/features/auth/presentation/providers/auth_pro
 import 'package:smarttravel_mobile/features/destination/presentation/providers/destination_provider.dart';
 import 'package:smarttravel_mobile/features/destination/presentation/widgets/destination_card_skeleton.dart';
 import 'package:smarttravel_mobile/features/home/presentation/widgets/destination_card.dart';
-import 'package:smarttravel_mobile/features/home/presentation/widgets/home_category_pills.dart';
 import 'package:smarttravel_mobile/features/home/presentation/widgets/home_cta_banner.dart';
-import 'package:smarttravel_mobile/features/home/presentation/widgets/home_filter_bottom_sheet.dart';
 import 'package:smarttravel_mobile/features/home/presentation/widgets/home_top_bar.dart';
 import 'package:smarttravel_mobile/features/weather/presentation/widgets/weather_pill.dart';
 
@@ -20,37 +21,39 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  String _selectedCategory = 'Tất cả';
+  String? _selectedCategory;
+  String _search = '';
+  Timer? _debounce;
   final TextEditingController _searchController = TextEditingController();
-  final Set<int> _favorites = {};
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
-  void _toggleFavorite(int id) {
-    setState(() {
-      if (_favorites.contains(id)) {
-        _favorites.remove(id);
-      } else {
-        _favorites.add(id);
-      }
-    });
+  void _openDiscovery() {
+    context.push(Uri(path: '/destinations', queryParameters: {
+      if (_searchController.text.trim().isNotEmpty) 'search': _searchController.text.trim(),
+      if (_selectedCategory != null) 'category': _selectedCategory!,
+    }).toString());
   }
 
   @override
   Widget build(BuildContext context) {
-    final destinationAsync = ref.watch(destinationListProvider);
+    final DiscoveryQuery query = (search: _search, category: _selectedCategory, minPrice: null, maxPrice: null, page: 0);
+    final destinationAsync = ref.watch(discoveryProvider(query));
+    final catalog = ref.watch(destinationCatalogProvider);
     final userState = ref.watch(authNotifierProvider);
-    final userName = userState.fullName?.isNotEmpty == true ? userState.fullName! : 'Minh';
+    final userName = userState.fullName?.isNotEmpty == true ? userState.fullName! : 'Bạn';
+    final language = userState.travelerProfile?.language ?? 'vi';
 
     return Scaffold(
       backgroundColor: AppTheme.bgCanvas,
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () async => ref.invalidate(destinationListProvider),
+          onRefresh: () => ref.refresh(discoveryProvider(query).future),
           child: CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
@@ -68,7 +71,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Xin chào!', style: TextStyle(fontSize: 14, color: AppTheme.textSecondary, fontWeight: FontWeight.w500)),
+                          const AppText('Xin chào!', style: TextStyle(fontSize: 14, color: AppTheme.textSecondary, fontWeight: FontWeight.w500)),
                           const SizedBox(height: 2),
                           Text(userName, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
                         ],
@@ -91,12 +94,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           decoration: BoxDecoration(color: AppTheme.surfaceCard, borderRadius: BorderRadius.circular(14), border: Border.all(color: AppTheme.borderSubtle)),
                           child: TextField(
                             controller: _searchController,
-                            onChanged: (_) => setState(() {}),
+                            maxLength: 180,
+                            onChanged: (value) {
+                              _debounce?.cancel();
+                              _debounce = Timer(const Duration(milliseconds: 350), () {
+                                if (mounted) setState(() => _search = value.trim());
+                              });
+                            },
+                            onSubmitted: (_) => _openDiscovery(),
                             decoration: const InputDecoration(
-                              hintText: 'Tìm địa điểm tại Đà Nẵng...',
+                              hint: AppText('Tìm địa điểm tại Đà Nẵng...'),
                               hintStyle: TextStyle(color: AppTheme.textMuted, fontSize: 14),
                               prefixIcon: Icon(Icons.search, color: AppTheme.textMuted, size: 20),
                               border: InputBorder.none,
+                              counterText: '',
                               contentPadding: EdgeInsets.symmetric(vertical: 14),
                             ),
                           ),
@@ -112,12 +123,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           decoration: BoxDecoration(color: AppTheme.primaryBlue, borderRadius: BorderRadius.circular(14)),
                           child: IconButton(
                             icon: const Icon(Icons.tune, color: Colors.white, size: 20),
-                            tooltip: 'Lọc danh mục',
-                            onPressed: () => HomeFilterBottomSheet.show(
-                              context,
-                              selectedCategory: _selectedCategory,
-                              onSelectCategory: (cat) => setState(() => _selectedCategory = cat),
-                            ),
+                            tooltip: AppLanguage.text(context, 'Mở bộ lọc địa điểm'),
+                            onPressed: _openDiscovery,
                           ),
                         ),
                       ),
@@ -128,9 +135,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
               // Category Pills with real Material vector icons
               SliverToBoxAdapter(
-                child: HomeCategoryPills(
-                  selectedCategory: _selectedCategory,
-                  onSelectCategory: (cat) => setState(() => _selectedCategory = cat),
+                child: catalog.when(
+                  loading: () => const SizedBox(height: 44),
+                  error: (_, __) => TextButton(onPressed: () => ref.invalidate(destinationCatalogProvider),
+                    child: const AppText('Thử tải lại danh mục')),
+                  data: (categories) => SizedBox(
+                    height: 48,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      children: [
+                        ChoiceChip(label: const AppText('Tất cả'), selected: _selectedCategory == null,
+                          onSelected: (_) => setState(() => _selectedCategory = null)),
+                        for (final category in categories) Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: ChoiceChip(label: AppText(category.label(language)), selected: _selectedCategory == category.code,
+                            onSelected: (_) => setState(() => _selectedCategory = category.code)),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
 
@@ -141,25 +165,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          const Text('Điểm đến nổi bật', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(color: AppTheme.primarySurface, borderRadius: BorderRadius.circular(12)),
-                            child: destinationAsync.maybeWhen(
-                              data: (list) => Text('${list.length}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
-                              orElse: () => const Text('0', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
-                            ),
-                          ),
-                        ],
-                      ),
+                      const Expanded(child: AppText('Điểm đến', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textPrimary))),
                       InkWell(
-                        onTap: () => context.push('/destinations'),
+                        onTap: _openDiscovery,
                         child: const Row(
                           children: [
-                            Text('Xem tất cả', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.primaryBlue)),
+                            AppText('Xem tất cả', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.primaryBlue)),
                             SizedBox(width: 2),
                             Icon(Icons.chevron_right, size: 16, color: AppTheme.primaryBlue),
                           ],
@@ -187,22 +198,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ),
                 ),
-                error: (err, _) => SliverToBoxAdapter(
-                  child: Center(child: Padding(padding: const EdgeInsets.all(24), child: Text('Lỗi tải dữ liệu: $err'))),
+                error: (_, __) => SliverToBoxAdapter(
+                  child: Center(child: TextButton(onPressed: () => ref.invalidate(discoveryProvider(query)),
+                    child: const AppText('Không tải được địa điểm. Thử lại'))),
                 ),
-                data: (allDests) {
-                  final query = _searchController.text.trim().toLowerCase();
-                  var filtered = allDests.where((d) {
-                    final matchesSearch = query.isEmpty || d.name.toLowerCase().contains(query) || d.category.toLowerCase().contains(query);
-                    final matchesCategory = _selectedCategory == 'Tất cả' || d.category.toLowerCase().contains(_selectedCategory.toLowerCase());
-                    return matchesSearch && matchesCategory;
-                  }).toList();
-
+                data: (page) {
+                  final filtered = page.items.take(8).toList();
                   if (filtered.isEmpty) {
                     return const SliverToBoxAdapter(
                       child: Padding(
                         padding: EdgeInsets.all(40),
-                        child: Center(child: Text('Không tìm thấy địa điểm phù hợp', style: TextStyle(color: AppTheme.textMuted))),
+                        child: Center(child: AppText('Không tìm thấy địa điểm phù hợp', style: TextStyle(color: AppTheme.textMuted))),
                       ),
                     );
                   }
@@ -221,8 +227,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           final dest = filtered[index];
                           return DestinationCard(
                             destination: dest,
-                            isFavorite: _favorites.contains(dest.id),
-                            onToggleFavorite: () => _toggleFavorite(dest.id),
+                            language: language,
                           );
                         },
                         childCount: filtered.length,

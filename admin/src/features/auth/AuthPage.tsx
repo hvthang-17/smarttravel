@@ -1,3 +1,4 @@
+import { t } from '../../core/language';
 import React, { useState } from 'react';
 import {
   WavesIcon,
@@ -12,7 +13,7 @@ import {
   MapPinIcon,
   InfoIcon,
 } from '../../components/Icons';
-import { loginApi, registerApi, DEMO_ACCOUNTS } from '../../core/authApi';
+import { loginApi, registerApi } from '../../core/authApi';
 import { AuthUser } from '../../types/auth';
 
 interface AuthPageProps {
@@ -46,9 +47,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({
   const [regLoading, setRegLoading] = useState(false);
   const [regError, setRegError] = useState<string | null>(null);
 
-  // Dev Fixture State
-  const [showDemoList, setShowDemoList] = useState(false);
-
   const switchView = (view: 'login' | 'register') => {
     if (view === currentView) return;
     setSlideDirection(view === 'register' ? 'right' : 'left');
@@ -62,7 +60,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
     setLoginError(null);
 
     if (!loginEmail.trim() || !loginPassword) {
-      setLoginError('Vui lòng nhập đầy đủ địa chỉ email và mật khẩu.');
+      setLoginError(t('Vui lòng nhập đầy đủ địa chỉ email và mật khẩu.'));
       return;
     }
 
@@ -74,8 +72,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({
         remember: rememberMe,
       });
       onLoginSuccess(user);
-    } catch (err: any) {
-      setLoginError(err.message || 'Đăng nhập không thành công. Vui lòng kiểm tra lại thông tin.');
+    } catch (err: unknown) {
+      setLoginError(err instanceof Error ? err.message : t('Đăng nhập không thành công. Vui lòng kiểm tra lại thông tin.'));
     } finally {
       setLoginLoading(false);
     }
@@ -86,19 +84,19 @@ export const AuthPage: React.FC<AuthPageProps> = ({
     setRegError(null);
 
     if (!regFullName.trim()) {
-      setRegError('Vui lòng nhập họ và tên.');
+      setRegError(t('Vui lòng nhập họ và tên.'));
       return;
     }
     if (!regEmail.trim()) {
-      setRegError('Vui lòng nhập địa chỉ email hợp lệ.');
+      setRegError(t('Vui lòng nhập địa chỉ email hợp lệ.'));
       return;
     }
-    if (regPassword.length < 6) {
-      setRegError('Mật khẩu phải có độ dài tối thiểu 6 ký tự.');
+    if (regPassword.length < 8 || regPassword.length > 72) {
+      setRegError(t('Mật khẩu phải có độ dài từ 8 đến 72 ký tự.'));
       return;
     }
     if (regPassword !== regConfirmPassword) {
-      setRegError('Mật khẩu nhập lại không trùng khớp.');
+      setRegError(t('Mật khẩu nhập lại không trùng khớp.'));
       return;
     }
 
@@ -108,24 +106,17 @@ export const AuthPage: React.FC<AuthPageProps> = ({
         fullName: regFullName.trim(),
         email: regEmail.trim(),
         password: regPassword,
-        role: 'ROLE_USER',
       });
       if (onRegisterSuccess) {
         onRegisterSuccess(user);
       } else {
         onLoginSuccess(user);
       }
-    } catch (err: any) {
-      setRegError(err.message || 'Đăng ký không thành công. Vui lòng thử lại.');
+    } catch (err: unknown) {
+      setRegError(err instanceof Error ? err.message : t('Đăng ký không thành công. Vui lòng thử lại.'));
     } finally {
       setRegLoading(false);
     }
-  };
-
-  const handleFillDemo = (demoEmail: string, demoPass: string) => {
-    setLoginEmail(demoEmail);
-    setLoginPassword(demoPass);
-    setLoginError(null);
   };
 
   const isRegister = currentView === 'register';
@@ -204,9 +195,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                     ADMIN PORTAL
                   </span>
                 </div>
-                <div style={{ fontSize: '12px', color: '#cbd5e1' }}>
-                  Dữ liệu Du lịch Thông minh Đà Nẵng
-                </div>
+                <div style={{ fontSize: '12px', color: '#cbd5e1' }}>{t("Dữ liệu Du lịch Thông minh Đà Nẵng")} </div>
               </div>
             </div>
 
@@ -214,19 +203,19 @@ export const AuthPage: React.FC<AuthPageProps> = ({
             <div key={currentView} className="animate-fade-in">
               <div className="auth-hero-badge">
                 <MapPinIcon size={14} color="#38bdf8" />
-                <span>{isRegister ? 'Cầu Rồng Sông Hàn, Đà Nẵng' : 'Cầu Vàng Bà Nà Hills, Đà Nẵng'}</span>
+                <span>{isRegister ? 'Cầu Rồng Sông Hàn, Đà Nẵng' : t('Cầu Vàng Bà Nà Hills, Đà Nẵng')}</span>
               </div>
 
               <h2 style={{ fontSize: '26px', fontWeight: 700, lineHeight: 1.35, color: '#ffffff', margin: '0 0 16px 0', letterSpacing: '-0.4px' }}>
                 {isRegister
                   ? 'Biểu tượng Cầu Rồng và nhịp sống đêm bên dòng sông Hàn'
-                  : 'Hệ thống điều hành và phân tích dữ liệu du lịch Đà Nẵng'}
+                  : t('Hệ thống điều hành và phân tích dữ liệu du lịch Đà Nẵng')}
               </h2>
 
               <p style={{ fontSize: '14.5px', color: '#e2e8f0', lineHeight: 1.6, margin: '0 0 28px 0' }}>
                 {isRegister
                   ? 'Cầu Rồng bắc qua sông Hàn là kiệt tác kiến trúc biểu trưng cho khát vọng phát triển, với màn trình diễn phun lửa, phun nước sống động và chuỗi lễ hội du lịch quốc tế kết nối đôi bờ sông Hàn.'
-                  : 'Nền tảng kiểm soát cơ sở dữ liệu điểm đến, đồng bộ lịch trình khám phá di sản và điều phối phân quyền nhân sự nội bộ.'}
+                  : t('Nền tảng kiểm soát cơ sở dữ liệu điểm đến, đồng bộ lịch trình khám phá di sản và điều phối phân quyền nhân sự nội bộ.')}
               </p>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -237,7 +226,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                   <span style={{ fontSize: '13.5px', color: '#f1f5f9' }}>
                     {isRegister
                       ? 'Màn trình diễn phun lửa, phun nước sống động vào các tối cuối tuần bên bờ sông Hàn'
-                      : 'Quản lý 140+ điểm đến di sản, biển đảo và ẩm thực địa phương'}
+                      : t('Quản lý điểm đến di sản, biển đảo và ẩm thực địa phương')}
                   </span>
                 </div>
                 <div className="auth-hero-feature">
@@ -247,7 +236,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                   <span style={{ fontSize: '13.5px', color: '#f1f5f9' }}>
                     {isRegister
                       ? 'Đăng ký tài khoản tham gia đóng góp dữ liệu và trải nghiệm hệ thống SmartTravel'
-                      : 'Phân quyền quản trị 3 cấp độ (Admin, Moderator, User) và lưu vết kiểm toán (Audit Logs)'}
+                      : t('Chỉ tài khoản quản trị viên được thay đổi dữ liệu và quản lý người dùng')}
                   </span>
                 </div>
               </div>
@@ -258,7 +247,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
           <div style={{ fontSize: '12px', color: '#e2e8f0', borderTop: '1px solid rgba(255, 255, 255, 0.2)', paddingTop: '16px' }}>
             {isRegister
               ? 'Cầu Rồng Đà Nẵng & Sông Hàn lung linh về đêm • SmartTravel Portal © 2026'
-              : 'Cầu Vàng Bà Nà Hills & Bãi biển Mỹ Khê • SmartTravel Portal © 2026'}
+              : t('Cầu Vàng Bà Nà Hills & Bãi biển Mỹ Khê • SmartTravel Portal © 2026')}
           </div>
         </div>
       </div>
@@ -273,16 +262,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({
               /* LOGIN FORM */
               <div>
                 <div style={{ marginBottom: '22px' }}>
-                  <h1 style={{ margin: '0 0 6px 0', fontSize: '22px', fontWeight: 700, color: '#0f172a' }}>
-                    Chào mừng trở lại
-                  </h1>
-                  <p style={{ margin: 0, fontSize: '13.5px', color: '#475569' }}>
-                    Đăng nhập tài khoản để vào bàn làm việc quản trị.
-                  </p>
+                  <h1 style={{ margin: '0 0 6px 0', fontSize: '22px', fontWeight: 700, color: '#0f172a' }}>{t("Chào mừng trở lại")} </h1>
+                  <p style={{ margin: 0, fontSize: '13.5px', color: '#475569' }}>{t("Đăng nhập tài khoản để vào bàn làm việc quản trị.")} </p>
                 </div>
 
                 {loginError && (
-                  <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', padding: '10px 14px', marginBottom: '18px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                  <div role="alert" style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', padding: '10px 14px', marginBottom: '18px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                     <AlertTriangleIcon size={16} color="#dc2626" style={{ marginTop: '2px', flexShrink: 0 }} />
                     <span style={{ fontSize: '13px', color: '#b91c1c', lineHeight: 1.4 }}>{loginError}</span>
                   </div>
@@ -290,13 +275,13 @@ export const AuthPage: React.FC<AuthPageProps> = ({
 
                 <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div className="auth-input-group">
-                    <label className="auth-label">Địa chỉ email</label>
+                    <label className="auth-label">{t("Địa chỉ email")}</label>
                     <div className="auth-input-wrapper">
                       <div className="auth-input-icon"><MailIcon size={16} /></div>
                       <input
                         type="email"
                         required
-                        value={loginEmail}
+                        id="login-email" aria-label={t("Địa chỉ email")} autoComplete="email" value={loginEmail}
                         onChange={(e) => setLoginEmail(e.target.value)}
                         placeholder="admin@smarttravel.vn"
                         className="auth-input"
@@ -305,13 +290,13 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                   </div>
 
                   <div className="auth-input-group">
-                    <label className="auth-label">Mật khẩu</label>
+                    <label className="auth-label">{t("Mật khẩu")}</label>
                     <div className="auth-input-wrapper">
                       <div className="auth-input-icon"><LockIcon size={16} /></div>
                       <input
                         type={showLoginPassword ? 'text' : 'password'}
                         required
-                        value={loginPassword}
+                        id="login-password" aria-label={t("Mật khẩu")} autoComplete="current-password" value={loginPassword}
                         onChange={(e) => setLoginPassword(e.target.value)}
                         placeholder="••••••••"
                         className="auth-input"
@@ -320,7 +305,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                       <button
                         type="button"
                         onClick={() => setShowLoginPassword(!showLoginPassword)}
-                        aria-label={showLoginPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                        aria-label={showLoginPassword ? t('Ẩn mật khẩu') : t('Hiện mật khẩu')}
                         className="auth-password-toggle"
                       >
                         {showLoginPassword ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
@@ -336,9 +321,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                         onChange={(e) => setRememberMe(e.target.checked)}
                         style={{ cursor: 'pointer', accentColor: '#0077b6' }}
                       />
-                      <span>Ghi nhớ phiên đăng nhập</span>
+                      <span>{t("Ghi nhớ phiên đăng nhập")}</span>
                     </label>
-                    <span style={{ fontSize: '12px', color: '#0077b6', fontWeight: 600 }}>RBAC Bảo mật</span>
+                    <span style={{ fontSize: '12px', color: '#0077b6', fontWeight: 600 }}>{t("RBAC Bảo mật")}</span>
                   </div>
 
                   <button
@@ -347,25 +332,22 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                     className="auth-btn-primary btn-action-touch"
                   >
                     {loginLoading ? (
-                      <span>Đang xác thực...</span>
+                      <span>{t("Đang xác thực...")}</span>
                     ) : (
                       <>
                         <ShieldIcon size={17} color="#ffffff" />
-                        <span>Đăng nhập vào hệ thống</span>
+                        <span>{t("Đăng nhập vào hệ thống")}</span>
                       </>
                     )}
                   </button>
 
                   {/* 1.3 Action Link below Login Button to Switch to Register */}
-                  <div className="auth-switch-link-wrapper">
-                    Chưa có tài khoản?{' '}
+                  <div className="auth-switch-link-wrapper">{t("Chưa có tài khoản?")}{' '}
                     <button
                       type="button"
                       onClick={() => switchView('register')}
                       className="auth-switch-link-btn"
-                    >
-                      Đăng ký tài khoản ngay
-                    </button>
+                    >{t("Đăng ký tài khoản ngay")} </button>
                   </div>
                 </form>
               </div>
@@ -373,16 +355,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({
               /* REGISTER FORM */
               <div>
                 <div style={{ marginBottom: '22px' }}>
-                  <h1 style={{ margin: '0 0 6px 0', fontSize: '22px', fontWeight: 700, color: '#0f172a' }}>
-                    Tạo tài khoản mới
-                  </h1>
-                  <p style={{ margin: 0, fontSize: '13.5px', color: '#475569' }}>
-                    Đăng ký tài khoản tham gia hệ thống SmartTravel.
-                  </p>
+                  <h1 style={{ margin: '0 0 6px 0', fontSize: '22px', fontWeight: 700, color: '#0f172a' }}>{t("Tạo tài khoản mới")} </h1>
+                  <p style={{ margin: 0, fontSize: '13.5px', color: '#475569' }}>{t("Đăng ký tài khoản tham gia hệ thống SmartTravel.")} </p>
                 </div>
 
                 {regError && (
-                  <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', padding: '10px 14px', marginBottom: '18px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                  <div role="alert" style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', padding: '10px 14px', marginBottom: '18px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                     <AlertTriangleIcon size={16} color="#dc2626" style={{ marginTop: '2px', flexShrink: 0 }} />
                     <span style={{ fontSize: '13px', color: '#b91c1c', lineHeight: 1.4 }}>{regError}</span>
                   </div>
@@ -390,28 +368,28 @@ export const AuthPage: React.FC<AuthPageProps> = ({
 
                 <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                   <div className="auth-input-group">
-                    <label className="auth-label">Họ và tên</label>
+                    <label className="auth-label">{t("Họ và tên")}</label>
                     <div className="auth-input-wrapper">
                       <div className="auth-input-icon"><UserIcon size={16} /></div>
                       <input
                         type="text"
                         required
-                        value={regFullName}
+                        id="register-name" aria-label={t("Họ và tên")} autoComplete="name" value={regFullName}
                         onChange={(e) => setRegFullName(e.target.value)}
-                        placeholder="Nguyễn Văn A"
+                        placeholder={t("Nguyễn Văn A")}
                         className="auth-input"
                       />
                     </div>
                   </div>
 
                   <div className="auth-input-group">
-                    <label className="auth-label">Địa chỉ email</label>
+                    <label className="auth-label">{t("Địa chỉ email")}</label>
                     <div className="auth-input-wrapper">
                       <div className="auth-input-icon"><MailIcon size={16} /></div>
                       <input
                         type="email"
                         required
-                        value={regEmail}
+                        id="register-email" aria-label={t("Địa chỉ email")} autoComplete="email" value={regEmail}
                         onChange={(e) => setRegEmail(e.target.value)}
                         placeholder="nguyenvana@gmail.com"
                         className="auth-input"
@@ -420,13 +398,13 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                   </div>
 
                   <div className="auth-input-group">
-                    <label className="auth-label">Mật khẩu (tối thiểu 6 ký tự)</label>
+                    <label className="auth-label">{t("Mật khẩu (8–72 ký tự)")}</label>
                     <div className="auth-input-wrapper">
                       <div className="auth-input-icon"><LockIcon size={16} /></div>
                       <input
                         type={showRegPassword ? 'text' : 'password'}
                         required
-                        value={regPassword}
+                        id="register-password" aria-label={t("Mật khẩu")} autoComplete="new-password" value={regPassword}
                         onChange={(e) => setRegPassword(e.target.value)}
                         placeholder="••••••••"
                         className="auth-input"
@@ -435,7 +413,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                       <button
                         type="button"
                         onClick={() => setShowRegPassword(!showRegPassword)}
-                        aria-label={showRegPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                        aria-label={showRegPassword ? t('Ẩn mật khẩu') : t('Hiện mật khẩu')}
                         className="auth-password-toggle"
                       >
                         {showRegPassword ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
@@ -444,13 +422,13 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                   </div>
 
                   <div className="auth-input-group">
-                    <label className="auth-label">Nhập lại mật khẩu</label>
+                    <label className="auth-label">{t("Nhập lại mật khẩu")}</label>
                     <div className="auth-input-wrapper">
                       <div className="auth-input-icon"><LockIcon size={16} /></div>
                       <input
                         type={showRegPassword ? 'text' : 'password'}
                         required
-                        value={regConfirmPassword}
+                        id="register-confirm" aria-label={t("Nhập lại mật khẩu")} autoComplete="new-password" value={regConfirmPassword}
                         onChange={(e) => setRegConfirmPassword(e.target.value)}
                         placeholder="••••••••"
                         className="auth-input"
@@ -464,25 +442,22 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                     className="auth-btn-primary btn-action-touch"
                   >
                     {regLoading ? (
-                      <span>Đang đăng ký tài khoản...</span>
+                      <span>{t("Đang đăng ký tài khoản...")}</span>
                     ) : (
                       <>
                         <CheckCircleIcon size={17} color="#ffffff" />
-                        <span>Đăng ký tài khoản</span>
+                        <span>{t("Đăng ký tài khoản")}</span>
                       </>
                     )}
                   </button>
 
                   {/* 1.3 Action Link below Register Button to Switch to Login */}
-                  <div className="auth-switch-link-wrapper">
-                    Đã có tài khoản quản trị?{' '}
+                  <div className="auth-switch-link-wrapper">{t("Đã có tài khoản quản trị?")}{' '}
                     <button
                       type="button"
                       onClick={() => switchView('login')}
                       className="auth-switch-link-btn"
-                    >
-                      Đăng nhập tại đây
-                    </button>
+                    >{t("Đăng nhập tại đây")} </button>
                   </div>
                 </form>
               </div>

@@ -1,3 +1,4 @@
+import { t } from '../../core/language';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   PlusIcon,
@@ -82,7 +83,7 @@ export const CategoriesView: React.FC = () => {
         setAllCategories(fullData);
       }
     } catch (err: any) {
-      setErrorMessage(err.message || 'Không thể tải danh sách danh mục từ máy chủ');
+      setErrorMessage(err.message || t('Không thể tải danh sách danh mục từ máy chủ'));
     } finally {
       setIsLoading(false);
     }
@@ -105,11 +106,11 @@ export const CategoriesView: React.FC = () => {
         prev.map((item) => (item.id === cat.id ? { ...item, status: updated.status } : item))
       );
       showToast(
-        `Đã chuyển trạng thái danh mục "${cat.name}" sang ${updated.status === 'ACTIVE' ? 'Hoạt động' : 'Tạm ẩn'}`,
+        `Đã chuyển trạng thái danh mục "${cat.name}" sang ${updated.status === 'ACTIVE' ? 'Hoạt động' : t('Tạm ẩn')}`,
         'success'
       );
     } catch (err: any) {
-      showToast(err.message || 'Lỗi khi thay đổi trạng thái danh mục', 'error');
+      showToast(err.message || t('Lỗi khi thay đổi trạng thái danh mục'), 'error');
     } finally {
       setTogglingId(null);
     }
@@ -134,7 +135,7 @@ export const CategoriesView: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="admin-page admin-page-categories">
       {/* Toast Alert */}
       {toast && (
         <div
@@ -165,7 +166,7 @@ export const CategoriesView: React.FC = () => {
           <button
             type="button"
             onClick={() => setToast(null)}
-            aria-label="Đóng thông báo"
+            aria-label={t("Đóng thông báo")}
             style={{
               background: 'none',
               border: 'none',
@@ -183,7 +184,7 @@ export const CategoriesView: React.FC = () => {
       )}
 
       {/* Header Section */}
-      <div
+      <div className="admin-page-heading"
         style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -195,17 +196,7 @@ export const CategoriesView: React.FC = () => {
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-            <h1
-              style={{
-                fontSize: '22px',
-                fontWeight: 700,
-                color: '#0f172a',
-                margin: 0,
-                letterSpacing: '-0.3px',
-              }}
-            >
-              Quản lý Danh mục Địa điểm
-            </h1>
+            <h1>{t("Quản lý Danh mục Địa điểm")} </h1>
             <span
               style={{
                 backgroundColor: '#e0f2fe',
@@ -219,9 +210,7 @@ export const CategoriesView: React.FC = () => {
               {isFiltered ? `Hiển thị ${categories.length}/${totalCount}` : `${totalCount}`} danh mục
             </span>
           </div>
-          <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#475569' }}>
-            Phân loại địa điểm du lịch Đà Nẵng, tùy biến mã icon, màu sắc HEX và hình ảnh trực tiếp từ cơ sở dữ liệu
-          </p>
+          <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#475569' }}>{t("Phân loại địa điểm du lịch Đà Nẵng, tùy biến mã icon, màu sắc HEX và hình ảnh trực tiếp từ cơ sở dữ liệu")} </p>
         </div>
 
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -246,7 +235,7 @@ export const CategoriesView: React.FC = () => {
             }}
           >
             <RefreshCwIcon size={15} color="#475569" />
-            <span>Làm mới</span>
+            <span>{t("Làm mới")}</span>
           </button>
 
           <button
@@ -269,7 +258,7 @@ export const CategoriesView: React.FC = () => {
             }}
           >
             <PlusIcon size={16} color="#ffffff" />
-            <span>Thêm danh mục mới</span>
+            <span>{t("Thêm danh mục mới")}</span>
           </button>
         </div>
       </div>
@@ -284,7 +273,7 @@ export const CategoriesView: React.FC = () => {
             <div className="category-stat-value" style={{ color: '#0f172a' }}>
               {totalCount.toLocaleString('vi-VN')}
             </div>
-            <div className="category-stat-label">Tổng số danh mục</div>
+            <div className="category-stat-label">{t("Tổng số danh mục")}</div>
           </div>
         </div>
 
@@ -296,7 +285,7 @@ export const CategoriesView: React.FC = () => {
             <div className="category-stat-value" style={{ color: '#166534' }}>
               {activeCount.toLocaleString('vi-VN')}
             </div>
-            <div className="category-stat-label">Đang hoạt động</div>
+            <div className="category-stat-label">{t("Đang hoạt động")}</div>
           </div>
         </div>
 
@@ -308,7 +297,7 @@ export const CategoriesView: React.FC = () => {
             <div className="category-stat-value" style={{ color: '#475569' }}>
               {inactiveCount.toLocaleString('vi-VN')}
             </div>
-            <div className="category-stat-label">Tạm ẩn</div>
+            <div className="category-stat-label">{t("Tạm ẩn")}</div>
           </div>
         </div>
 
@@ -320,7 +309,7 @@ export const CategoriesView: React.FC = () => {
             <div className="category-stat-value" style={{ color: '#7c3aed' }}>
               {totalDestinations.toLocaleString('vi-VN')}
             </div>
-            <div className="category-stat-label">Tổng địa điểm liên kết</div>
+            <div className="category-stat-label">{t("Tổng địa điểm liên kết")}</div>
           </div>
         </div>
       </div>
@@ -345,7 +334,7 @@ export const CategoriesView: React.FC = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Tìm theo tên danh mục, tên tiếng Anh, mã code..."
+            placeholder={t("Tìm theo tên danh mục, tên tiếng Anh, mã code...")}
             className="category-input"
             style={{ paddingLeft: '36px', paddingRight: searchQuery ? '36px' : '12px' }}
           />
@@ -353,7 +342,7 @@ export const CategoriesView: React.FC = () => {
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              aria-label="Xóa từ khóa tìm kiếm"
+              aria-label={t("Xóa từ khóa tìm kiếm")}
               style={{
                 position: 'absolute',
                 right: '10px',
@@ -374,18 +363,16 @@ export const CategoriesView: React.FC = () => {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <label style={{ fontSize: '13px', fontWeight: 600, color: '#475569' }}>
-            Trạng thái:
-          </label>
+          <label style={{ fontSize: '13px', fontWeight: 600, color: '#475569' }}>{t("Trạng thái:")} </label>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className="category-select"
             style={{ width: 'auto', minWidth: '160px' }}
           >
-            <option value="ALL">Tất cả trạng thái</option>
-            <option value="ACTIVE">Đang hoạt động</option>
-            <option value="INACTIVE">Tạm ẩn</option>
+            <option value="ALL">{t("Tất cả trạng thái")}</option>
+            <option value="ACTIVE">{t("Đang hoạt động")}</option>
+            <option value="INACTIVE">{t("Tạm ẩn")}</option>
           </select>
 
           {isFiltered && (
@@ -402,16 +389,14 @@ export const CategoriesView: React.FC = () => {
                 fontWeight: 600,
                 cursor: 'pointer',
               }}
-            >
-              Đặt lại
-            </button>
+            >{t("Đặt lại")} </button>
           )}
         </div>
       </div>
 
       {/* Error Message */}
       {errorMessage && (
-        <div
+        <div role="alert"
           style={{
             padding: '1rem',
             borderRadius: '0.75rem',
@@ -452,14 +437,14 @@ export const CategoriesView: React.FC = () => {
             </div>
           ))}
         </div>
-      ) : categories.length === 0 ? (
+      ) : errorMessage ? null : categories.length === 0 ? (
         /* Empty State (R-27) */
         <div className="category-empty-state">
           <div
             style={{
               width: '3.5rem',
               height: '3.5rem',
-              borderRadius: '9999px',
+              borderRadius: '6px',
               backgroundColor: '#F1F5F9',
               display: 'flex',
               alignItems: 'center',
@@ -470,12 +455,12 @@ export const CategoriesView: React.FC = () => {
             <TagIcon size={28} color="#94A3B8" />
           </div>
           <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#0F172A', margin: '0 0 0.5rem 0' }}>
-            {isFiltered ? 'Không tìm thấy danh mục phù hợp' : 'Chưa có danh mục nào được khởi tạo'}
+            {isFiltered ? 'Không tìm thấy danh mục phù hợp' : t('Chưa có danh mục nào được khởi tạo')}
           </h3>
           <p style={{ fontSize: '0.875rem', color: '#64748B', margin: '0 0 1.25rem 0', maxWidth: '420px', marginLeft: 'auto', marginRight: 'auto' }}>
             {isFiltered
               ? 'Thử điều chỉnh từ khóa tìm kiếm hoặc bấm nút "Đặt lại bộ lọc" bên dưới để xem toàn bộ danh mục.'
-              : 'Hãy bắt đầu phân loại các điểm tham quan Đà Nẵng bằng cách tạo mới danh mục đầu tiên.'}
+              : t('Hãy bắt đầu phân loại các điểm tham quan Đà Nẵng bằng cách tạo mới danh mục đầu tiên.')}
           </p>
           {isFiltered ? (
             <button
@@ -491,9 +476,7 @@ export const CategoriesView: React.FC = () => {
                 fontWeight: 600,
                 cursor: 'pointer',
               }}
-            >
-              Đặt lại bộ lọc
-            </button>
+            >{t("Đặt lại bộ lọc")} </button>
           ) : (
             <button
               type="button"
@@ -508,9 +491,7 @@ export const CategoriesView: React.FC = () => {
                 fontWeight: 600,
                 cursor: 'pointer',
               }}
-            >
-              Thêm danh mục mới
-            </button>
+            >{t("Thêm danh mục mới")} </button>
           )}
         </div>
       ) : (
@@ -532,12 +513,12 @@ export const CategoriesView: React.FC = () => {
                 {/* Header Banner */}
                 <div
                   style={{
-                    height: '140px',
+                    height: hasImage ? '96px' : '54px',
                     position: 'relative',
-                    backgroundColor: hasImage ? '#0F172A' : color,
+                    backgroundColor: hasImage ? '#0F172A' : '#edf4f7',
                     backgroundImage: hasImage
                       ? `url(${imageSrc})`
-                      : `linear-gradient(135deg, ${color} 0%, #0F172A 100%)`,
+                      : 'none',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                   }}
@@ -549,7 +530,7 @@ export const CategoriesView: React.FC = () => {
                       top: '0.75rem',
                       right: '0.75rem',
                       padding: '0.25rem 0.625rem',
-                      borderRadius: '9999px',
+                      borderRadius: '6px',
                       backgroundColor: cat.status === 'ACTIVE' ? '#15803D' : '#334155',
                       color: '#FFFFFF',
                       fontSize: '0.6875rem',
@@ -558,7 +539,7 @@ export const CategoriesView: React.FC = () => {
                       boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
                     }}
                   >
-                    {cat.status === 'ACTIVE' ? 'HOẠT ĐỘNG' : 'TẠM ẨN'}
+                    {cat.status === 'ACTIVE' ? t('Hoạt động') : t('Tạm ẩn')}
                   </div>
 
                   {/* Order Badge */}
@@ -575,8 +556,7 @@ export const CategoriesView: React.FC = () => {
                       fontSize: '0.6875rem',
                       fontWeight: 600,
                     }}
-                  >
-                    Thứ tự: #{cat.displayOrder}
+                  >{t("Thứ tự: #")}{cat.displayOrder}
                   </div>
                 </div>
 
@@ -620,7 +600,7 @@ export const CategoriesView: React.FC = () => {
                           textOverflow: 'ellipsis',
                         }}
                       >
-                        {cat.nameEn || cat.slug}
+                        {cat.nameEn || cat.name}
                       </div>
                     </div>
                   </div>
@@ -638,7 +618,7 @@ export const CategoriesView: React.FC = () => {
                       overflow: 'hidden',
                     }}
                   >
-                    {cat.description || 'Chưa có thông tin mô tả giới thiệu cho danh mục này.'}
+                    {cat.description || t('Chưa có thông tin mô tả giới thiệu cho danh mục này.')}
                   </p>
 
                   <div
@@ -683,7 +663,7 @@ export const CategoriesView: React.FC = () => {
                       type="button"
                       onClick={() => handleToggleStatus(cat)}
                       disabled={isToggling}
-                      title={cat.status === 'ACTIVE' ? 'Tạm ẩn danh mục' : 'Kích hoạt danh mục'}
+                      title={cat.status === 'ACTIVE' ? 'Tạm ẩn danh mục' : t('Kích hoạt danh mục')}
                       style={{
                         flex: 1,
                         padding: '0.5rem',
@@ -702,13 +682,13 @@ export const CategoriesView: React.FC = () => {
                         ? 'Đang đổi...'
                         : cat.status === 'ACTIVE'
                         ? 'Đang hoạt động'
-                        : 'Tạm ẩn'}
+                        : t('Tạm ẩn')}
                     </button>
 
                     <button
                       type="button"
                       onClick={() => setEditingCategory(cat)}
-                      title="Chỉnh sửa danh mục"
+                      title={t("Chỉnh sửa danh mục")}
                       style={{
                         padding: '0.5rem 0.75rem',
                         borderRadius: '0.5rem',
@@ -729,7 +709,7 @@ export const CategoriesView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setDeletingCategory(cat)}
-                      title="Xóa danh mục"
+                       title={t("Ẩn danh mục, giữ dữ liệu liên quan")}
                       style={{
                         padding: '0.5rem 0.75rem',
                         borderRadius: '0.5rem',
@@ -760,7 +740,7 @@ export const CategoriesView: React.FC = () => {
         onClose={() => setIsAddModalOpen(false)}
         onSuccess={() => {
           loadCategories();
-          showToast('Đã thêm mới danh mục thành công!', 'success');
+          showToast(t('Đã thêm mới danh mục thành công!'), 'success');
         }}
       />
 
@@ -770,7 +750,7 @@ export const CategoriesView: React.FC = () => {
         onClose={() => setEditingCategory(null)}
         onSuccess={() => {
           loadCategories();
-          showToast('Đã cập nhật danh mục thành công!', 'success');
+          showToast(t('Đã cập nhật danh mục thành công!'), 'success');
         }}
       />
 
@@ -780,7 +760,7 @@ export const CategoriesView: React.FC = () => {
         onClose={() => setDeletingCategory(null)}
         onSuccess={() => {
           loadCategories();
-          showToast('Đã xóa danh mục thành công!', 'success');
+           showToast(t('Đã ẩn danh mục. Địa điểm, review và lịch trình cũ được giữ nguyên.'), 'success');
         }}
       />
     </div>

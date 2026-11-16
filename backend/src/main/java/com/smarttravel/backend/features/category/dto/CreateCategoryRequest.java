@@ -5,16 +5,25 @@ import jakarta.validation.constraints.NotBlank;
 public class CreateCategoryRequest {
 
     @NotBlank(message = "Tên danh mục không được để trống")
+    @jakarta.validation.constraints.Size(max = 100)
     private String name;
 
+    @jakarta.validation.constraints.Size(max = 100)
+    @jakarta.validation.constraints.Size(max = 100)
     private String nameEn;
+    @jakarta.validation.constraints.Size(max = 50)
     private String code;
+    @jakarta.validation.constraints.Size(max = 100)
     private String slug;
     private String description;
+    @jakarta.validation.constraints.Size(max = 500)
     private String imageUrl;
+    @jakarta.validation.constraints.Size(max = 50)
     private String icon = "tag";
+    @jakarta.validation.constraints.Size(max = 10)
     private String colorHex = "#0077B6";
     private Integer displayOrder = 0;
+    @jakarta.validation.constraints.Pattern(regexp = "(?i)ACTIVE|INACTIVE", message = "Trạng thái danh mục không hợp lệ")
     private String status = "ACTIVE";
 
     public CreateCategoryRequest() {}

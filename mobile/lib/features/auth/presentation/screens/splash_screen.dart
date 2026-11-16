@@ -1,15 +1,18 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/auth_provider.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
+class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _fadeAnimation;
@@ -31,11 +34,12 @@ class _SplashScreenState extends State<SplashScreen>
     _controller.forward();
 
     // Tự động chuyển tiếp sang màn hình Onboarding sau 2.5 giây
-    _redirectTimer = Timer(const Duration(milliseconds: 2500), () {
+    _redirectTimer = Timer(const Duration(milliseconds: 2500), () async {
       if (!mounted) return;
 
-      if (context.mounted) {
-        context.go('/onboarding');
+      final restored = await ref.read(authNotifierProvider.notifier).restoreSession();
+      if (mounted) {
+        context.go(restored ? '/' : '/onboarding');
       }
     });
   }
@@ -79,7 +83,7 @@ class _SplashScreenState extends State<SplashScreen>
               const SizedBox(height: 20),
 
               // Brand Title
-              const Text(
+              const AppText(
                 'SmartTravel',
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
@@ -92,7 +96,7 @@ class _SplashScreenState extends State<SplashScreen>
               const SizedBox(height: 8),
 
               // Tagline
-              const Text(
+              const AppText(
                 'Lên lịch trình Đà Nẵng trong 3 phút',
                 style: TextStyle(
                   fontSize: 14,
@@ -106,7 +110,7 @@ class _SplashScreenState extends State<SplashScreen>
               // Bottom Brand Indicator
               const Padding(
                 padding: EdgeInsets.only(bottom: 24),
-                child: Text(
+                child: AppText(
                   'ĐÀ NẴNG • VIỆT NAM',
                   style: TextStyle(
                     fontSize: 11,

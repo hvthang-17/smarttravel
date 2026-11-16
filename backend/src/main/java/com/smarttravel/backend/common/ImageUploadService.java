@@ -21,7 +21,7 @@ public class ImageUploadService {
     }
 
     public Map<String, String> store(MultipartFile file, String directory) throws IOException {
-        if (file.isEmpty() || file.getSize() > MAX_BYTES) {
+        if (file == null || file.isEmpty() || file.getSize() > MAX_BYTES) {
             throw new IllegalArgumentException("Ảnh phải có dung lượng từ 1 byte đến 5MB");
         }
         String filename = Optional.ofNullable(file.getOriginalFilename()).orElse("").toLowerCase(Locale.ROOT);

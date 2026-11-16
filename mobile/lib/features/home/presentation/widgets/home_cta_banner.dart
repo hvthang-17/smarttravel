@@ -1,3 +1,4 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smarttravel_mobile/core/theme/app_theme.dart';
@@ -46,7 +47,7 @@ class HomeCtaBanner extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  AppText(
                     'Tạo lịch trình trong 3 phút',
                     style: TextStyle(
                       color: Colors.white,
@@ -55,7 +56,7 @@ class HomeCtaBanner extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 2),
-                  Text(
+                  AppText(
                     'Tối ưu theo sở thích của bạn',
                     style: TextStyle(
                       color: AppTheme.primarySurface,
@@ -78,7 +79,7 @@ class HomeCtaBanner extends StatelessWidget {
                 ),
               ),
               onPressed: () => context.push('/trip-wizard'),
-              child: const Text(
+              child: const AppText(
                 'Tạo ngay',
                 style: TextStyle(
                   color: Colors.white,

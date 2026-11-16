@@ -1,20 +1,21 @@
+import { t } from '../../../core/language';
 import React from 'react';
 
 export const DestinationTableSkeleton: React.FC = () => {
   return (
-    <div className="destination-table-container" aria-busy="true" aria-label="Đang tải danh sách địa điểm">
+    <div className="destination-table-container" aria-busy="true" aria-label={t("Đang tải danh sách địa điểm")}>
       <div className="destination-table-scroll">
         <table className="destination-table">
           <thead>
             <tr>
-              <th scope="col" style={{ width: '320px' }}>Địa điểm & Địa chỉ</th>
-              <th scope="col" style={{ width: '170px' }}>Danh mục</th>
-              <th scope="col" style={{ width: '180px' }}>Tọa độ & Bản đồ</th>
-              <th scope="col" style={{ width: '170px' }}>Chi phí ước tính</th>
-              <th scope="col" style={{ width: '160px' }}>Giờ hoạt động</th>
-              <th scope="col" style={{ width: '120px' }}>Đánh giá</th>
-              <th scope="col" style={{ width: '120px' }}>Trạng thái</th>
-              <th scope="col" style={{ width: '120px', textAlign: 'center' }}>Thao tác</th>
+              <th scope="col" style={{ width: '320px' }}>{t("Địa điểm & Địa chỉ")}</th>
+              <th scope="col" style={{ width: '170px' }}>{t("Danh mục")}</th>
+              <th scope="col" style={{ width: '180px' }}>{t("Tọa độ & Bản đồ")}</th>
+              <th scope="col" style={{ width: '170px' }}>{t("Chi phí ước tính")}</th>
+              <th scope="col" style={{ width: '160px' }}>{t("Giờ hoạt động")}</th>
+              <th scope="col" style={{ width: '120px' }}>{t("Đánh giá")}</th>
+              <th scope="col" style={{ width: '120px' }}>{t("Trạng thái")}</th>
+              <th scope="col" style={{ width: '120px', textAlign: 'center' }}>{t("Thao tác")}</th>
             </tr>
           </thead>
           <tbody>

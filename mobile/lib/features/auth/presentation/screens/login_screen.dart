@@ -1,8 +1,10 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
+import 'package:smarttravel_mobile/features/auth/data/repositories/auth_repository.dart';
+import 'password_reset_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smarttravel_mobile/features/auth/presentation/providers/auth_provider.dart';
-import 'package:smarttravel_mobile/features/auth/presentation/widgets/social_login_buttons.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -49,55 +51,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  void _showForgotPasswordDialog() {
-    final resetEmailController = TextEditingController(text: _emailController.text.trim());
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Đặt lại mật khẩu'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Nhập địa chỉ email tài khoản để nhận liên kết khôi phục mật khẩu:',
-              style: TextStyle(fontSize: 14, color: Color(0xFF475569)),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: resetEmailController,
-              keyboardType: TextInputType.emailAddress,
-              decoration: _inputDecoration('email@example.com'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Hủy')),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: const Color(0xFF0077B6)),
-            onPressed: () {
-              final email = resetEmailController.text.trim();
-              if (email.isEmpty || !email.contains('@')) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vui lòng nhập email hợp lệ')));
-                return;
-              }
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Hướng dẫn đặt lại mật khẩu đã gửi đến $email')));
-            },
-            child: const Text('Gửi yêu cầu'),
-          ),
-        ],
-      ),
+  Future<void> _showForgotPasswordDialog() async {
+    final reset = await showDialog<bool>(
+      context: context, barrierDismissible: false,
+      builder: (_) => PasswordResetDialog(repository: ref.read(authRepositoryProvider), email: _emailController.text.trim()),
     );
-  }
-
-  void _handleSocialLogin(String provider) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Tính năng đăng nhập qua $provider đang được kết nối với tài khoản SmartTravel.'),
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    if (reset == true && mounted) {
+      _passwordController.clear();
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: AppText('Đã đổi mật khẩu. Hãy đăng nhập lại.')));
+    }
   }
 
   @override
@@ -114,15 +76,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               children: [
                 _buildHeader(context),
                 const SizedBox(height: 36),
-                const Text('Chào mừng trở lại', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+                const AppText('Chào mừng trở lại', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
                 const SizedBox(height: 6),
-                const Text('Đăng nhập để tiếp tục hành trình của bạn', style: TextStyle(fontSize: 14, color: Color(0xFF64748B))),
+                const AppText('Đăng nhập để tiếp tục hành trình của bạn', style: TextStyle(fontSize: 14, color: Color(0xFF64748B))),
                 const SizedBox(height: 28),
                 if (_errorMessage != null) ...[
                   _buildErrorBanner(_errorMessage!),
                   const SizedBox(height: 16),
                 ],
-                const Text('Email / Số điện thoại', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF0F172A))),
+                const AppText('Email / Số điện thoại', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF0F172A))),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _emailController,
@@ -131,7 +93,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   validator: (val) => val == null || val.trim().isEmpty ? 'Vui lòng nhập email hoặc số điện thoại' : null,
                 ),
                 const SizedBox(height: 18),
-                const Text('Mật khẩu', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF0F172A))),
+                const AppText('Mật khẩu', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF0F172A))),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _passwordController,
@@ -152,7 +114,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: _showForgotPasswordDialog,
-                    child: const Text('Quên mật khẩu?', style: TextStyle(color: Color(0xFF0077B6), fontSize: 13, fontWeight: FontWeight.w500)),
+                    child: const AppText('Quên mật khẩu?', style: TextStyle(color: Color(0xFF0077B6), fontSize: 13, fontWeight: FontWeight.w500)),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -165,18 +127,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   child: _isLoading
                       ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Text('Đăng nhập', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                      : const AppText('Đăng nhập', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                 ),
                 const SizedBox(height: 24),
-                SocialLoginButtons(onSelectProvider: _handleSocialLogin),
                 const SizedBox(height: 32),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('Chưa có tài khoản? ', style: TextStyle(color: Color(0xFF64748B), fontSize: 14)),
+                    const AppText('Chưa có tài khoản? ', style: TextStyle(color: Color(0xFF64748B), fontSize: 14)),
                     GestureDetector(
                       onTap: () => context.push('/register'),
-                      child: const Text('Đăng ký ngay', style: TextStyle(color: Color(0xFF0077B6), fontSize: 14, fontWeight: FontWeight.bold)),
+                      child: const AppText('Đăng ký ngay', style: TextStyle(color: Color(0xFF0077B6), fontSize: 14, fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
@@ -217,7 +178,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             children: [
               Icon(Icons.explore, size: 16, color: Color(0xFF0077B6)),
               SizedBox(width: 6),
-              Text(
+              AppText(
                 'SMARTTRAVEL',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF0077B6), letterSpacing: 0.5),
               ),
@@ -240,7 +201,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         children: [
           const Icon(Icons.error_outline, color: Color(0xFFDC2626), size: 20),
           const SizedBox(width: 8),
-          Expanded(child: Text(message, style: const TextStyle(color: Color(0xFFDC2626), fontSize: 13))),
+          Expanded(child: AppText(message, style: const TextStyle(color: Color(0xFFDC2626), fontSize: 13))),
         ],
       ),
     );
@@ -248,7 +209,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
-      hintText: hint,
+      hint: AppText(hint),
       hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
       filled: true,
       fillColor: Colors.white,

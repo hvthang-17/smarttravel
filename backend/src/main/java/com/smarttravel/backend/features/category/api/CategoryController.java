@@ -69,7 +69,7 @@ public class CategoryController {
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);
-        return ResponseEntity.ok(ApiResponse.success(null, "Xóa danh mục thành công"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Đã ẩn danh mục; giữ nguyên các liên kết và dữ liệu lịch sử"));
     }
 
     @PostMapping("/upload-image")

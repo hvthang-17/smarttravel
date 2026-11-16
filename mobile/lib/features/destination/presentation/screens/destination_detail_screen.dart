@@ -1,3 +1,8 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
+import 'package:smarttravel_mobile/features/auth/presentation/providers/auth_provider.dart';
+import '../providers/favorite_provider.dart';
+import '../widgets/favorite_button.dart';
+import '../widgets/destination_display.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,22 +11,18 @@ import 'package:smarttravel_mobile/features/destination/presentation/providers/d
 import 'package:smarttravel_mobile/features/destination/presentation/widgets/detail/destination_detail_header.dart';
 import 'package:smarttravel_mobile/features/destination/presentation/widgets/detail/destination_main_info_card.dart';
 import 'package:smarttravel_mobile/features/destination/presentation/widgets/detail/destination_visit_info_card.dart';
+import '../widgets/detail/destination_reviews_section.dart';
 
-class DestinationDetailScreen extends ConsumerStatefulWidget {
+class DestinationDetailScreen extends ConsumerWidget {
   final int id;
 
   const DestinationDetailScreen({super.key, required this.id});
 
   @override
-  ConsumerState<DestinationDetailScreen> createState() => _DestinationDetailScreenState();
-}
-
-class _DestinationDetailScreenState extends ConsumerState<DestinationDetailScreen> {
-  bool _isSavedToPlan = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final detailAsync = ref.watch(destinationDetailProvider(widget.id));
+  Widget build(BuildContext context, WidgetRef ref) {
+    final language = ref.watch(authNotifierProvider.select((user) => user.travelerProfile?.language)) ?? 'vi';
+    final saved = ref.watch(favoritesProvider).valueOrNull?.any((item) => item.id == id) ?? false;
+    final detailAsync = ref.watch(destinationDetailProvider(id));
 
     return Scaffold(
       backgroundColor: AppTheme.bgCanvas,
@@ -29,13 +30,14 @@ class _DestinationDetailScreenState extends ConsumerState<DestinationDetailScree
         data: (destination) {
           if (destination == null) {
             return Scaffold(
-              appBar: AppBar(title: const Text('Chi tiết địa điểm')),
+              appBar: AppBar(title: const AppText('Chi tiết địa điểm')),
               body: const Center(
-                child: Text('Không tìm thấy thông tin địa điểm.'),
+                child: AppText('Không tìm thấy thông tin địa điểm.'),
               ),
             );
           }
 
+          final description = localizedText(destination.description ?? '', destination.descriptionEn, language);
           return Stack(
             children: [
               CustomScrollView(
@@ -45,13 +47,13 @@ class _DestinationDetailScreenState extends ConsumerState<DestinationDetailScree
                   ),
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+                      padding: EdgeInsets.fromLTRB(20, 16, 20, 112 + MediaQuery.paddingOf(context).bottom),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          DestinationMainInfoCard(destination: destination),
+                          DestinationMainInfoCard(destination: destination, language: language),
                           const SizedBox(height: 16),
-                          if (destination.description?.isNotEmpty == true) ...[
+                          if (description.trim().isNotEmpty) ...[
                             Container(
                               padding: const EdgeInsets.all(18),
                               decoration: BoxDecoration(
@@ -61,7 +63,7 @@ class _DestinationDetailScreenState extends ConsumerState<DestinationDetailScree
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
+                                  const AppText(
                                     'Mô tả điểm đến',
                                     style: TextStyle(
                                       fontSize: 16,
@@ -70,8 +72,8 @@ class _DestinationDetailScreenState extends ConsumerState<DestinationDetailScree
                                     ),
                                   ),
                                   const SizedBox(height: 10),
-                                  Text(
-                                    destination.description!,
+                                  AppText(
+                                    description,
                                     style: const TextStyle(
                                       fontSize: 14,
                                       height: 1.6,
@@ -84,6 +86,8 @@ class _DestinationDetailScreenState extends ConsumerState<DestinationDetailScree
                             const SizedBox(height: 16),
                           ],
                           DestinationVisitInfoCard(destination: destination),
+                          const SizedBox(height: 16),
+                          DestinationReviewsSection(key: ValueKey(id), destinationId: id),
                         ],
                       ),
                     ),
@@ -95,7 +99,7 @@ class _DestinationDetailScreenState extends ConsumerState<DestinationDetailScree
                 left: 0,
                 right: 0,
                 child: Container(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                  padding: EdgeInsets.fromLTRB(20, 12, 20, 12 + MediaQuery.paddingOf(context).bottom),
                   decoration: BoxDecoration(
                     color: AppTheme.surfaceCard,
                     boxShadow: [
@@ -108,42 +112,7 @@ class _DestinationDetailScreenState extends ConsumerState<DestinationDetailScree
                   ),
                   child: Row(
                     children: [
-                      Semantics(
-                        label: _isSavedToPlan ? 'Đã lưu điểm đến' : 'Lưu điểm đến',
-                        button: true,
-                        child: Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: _isSavedToPlan
-                                ? AppTheme.secondarySurface
-                                : AppTheme.primarySurface,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: IconButton(
-                            icon: Icon(
-                              _isSavedToPlan ? Icons.bookmark : Icons.bookmark_border,
-                              color: _isSavedToPlan
-                                  ? AppTheme.secondaryCoral
-                                  : AppTheme.primaryBlue,
-                            ),
-                            onPressed: () {
-                              setState(() => _isSavedToPlan = !_isSavedToPlan);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    _isSavedToPlan
-                                        ? 'Đã lưu điểm đến vào danh sách yêu thích'
-                                        : 'Đã bỏ lưu điểm đến',
-                                  ),
-                                  duration: const Duration(seconds: 1),
-                                ),
-                              );
-                            },
-                            tooltip: 'Lưu điểm đến',
-                          ),
-                        ),
-                      ),
+                      FavoriteButton(id: id),
                       const SizedBox(width: 12),
                       Expanded(
                         child: FilledButton.icon(
@@ -155,12 +124,12 @@ class _DestinationDetailScreenState extends ConsumerState<DestinationDetailScree
                             ),
                           ),
                           onPressed: () {
-                            context.push('/trip-wizard');
+                            context.push(saved ? '/trip-wizard?favorite=$id' : '/trip-wizard');
                           },
                           icon: const Icon(Icons.add, size: 20),
-                          label: const Text(
-                            'Thêm vào lịch trình',
-                            style: TextStyle(
+                          label: AppText(
+                            saved ? 'Lập chuyến với điểm này' : 'Lập chuyến đi',
+                            style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
                             ),
@@ -180,16 +149,16 @@ class _DestinationDetailScreenState extends ConsumerState<DestinationDetailScree
           ),
         ),
         error: (err, stack) => Scaffold(
-          appBar: AppBar(title: const Text('Chi tiết địa điểm')),
+          appBar: AppBar(title: const AppText('Chi tiết địa điểm')),
           body: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Không thể tải chi tiết: $err'),
+                const AppText('Không thể tải chi tiết địa điểm.'),
                 const SizedBox(height: 12),
                 FilledButton(
-                  onPressed: () => ref.refresh(destinationDetailProvider(widget.id)),
-                  child: const Text('Thử lại'),
+                  onPressed: () => ref.invalidate(destinationDetailProvider(id)),
+                  child: const AppText('Thử lại'),
                 ),
               ],
             ),

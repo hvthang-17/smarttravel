@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { t } from '../core/language';
+import React, { useEffect, useState } from 'react';
 import { TopBar } from './TopBar';
 import { Sidebar, AdminTab } from './Sidebar';
 import { AuthUser } from '../types/auth';
@@ -14,11 +15,13 @@ interface LayoutProps {
 }
 
 const TAB_NAMES: Record<AdminTab, string> = {
-  dashboard: 'Tổng quan Dashboard',
-  destinations: 'Quản lý địa điểm',
-  categories: 'Quản lý danh mục',
-  users: 'Quản lý tài khoản',
-  audit: 'Nhật ký thao tác hệ thống',
+  dashboard: t('Tổng quan Dashboard'),
+  destinations: t('Quản lý địa điểm'),
+  categories: t('Quản lý danh mục'),
+  users: t('Quản lý tài khoản'),
+  audit: t('Nhật ký thao tác hệ thống'),
+  reviews: t('Kiểm duyệt đánh giá'),
+  trips: t('Quản trị lịch trình'),
 };
 
 export const Layout: React.FC<LayoutProps> = ({
@@ -30,17 +33,16 @@ export const Layout: React.FC<LayoutProps> = ({
   onLogout,
   children,
 }) => {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => window.matchMedia('(max-width: 768px)').matches);
+  useEffect(() => {
+    const screen = window.matchMedia('(max-width: 768px)');
+    const adaptSidebar = () => setIsSidebarCollapsed(screen.matches);
+    screen.addEventListener('change', adaptSidebar);
+    return () => screen.removeEventListener('change', adaptSidebar);
+  }, []);
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        height: '100vh',
-        overflow: 'hidden',
-        backgroundColor: '#f8fafc',
-      }}
-    >
+    <div className="admin-shell">
       {/* 1. Sidebar fixed full-height on the left */}
       <Sidebar
         currentTab={currentTab}
@@ -63,19 +65,19 @@ export const Layout: React.FC<LayoutProps> = ({
         }}
       >
         <TopBar
-          currentTabName={TAB_NAMES[currentTab]}
+          currentTabName={t(TAB_NAMES[currentTab])}
           isSidebarCollapsed={isSidebarCollapsed}
           onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
           onSearch={onSearch}
           currentUser={currentUser}
         />
         <main
+          className="admin-workspace-main"
           style={{
             flex: 1,
-            padding: '24px 32px',
             overflowY: 'auto',
             overflowX: 'hidden',
-            backgroundColor: '#f8fafc',
+            backgroundColor: 'var(--admin-canvas)',
           }}
         >
           {children}

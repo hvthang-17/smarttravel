@@ -1,3 +1,5 @@
+import { t } from '../../core/language';
+import { averageGoogleRating, destinationCsvRow, googleRating, googleReviewCount } from './destinationContract';
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { fetchDestinations, createDestination, updateDestination, deleteDestination } from '../../core/api';
 import { fetchCategoriesApi, Category } from '../../core/categoryApi';
@@ -33,7 +35,7 @@ interface GlobalStats {
   total: number;
   active: number;
   inactive: number;
-  averageRating: number;
+  averageRating: number | null;
 }
 
 export const DestinationList: React.FC<Props> = ({ onTotalCountChange, externalSearchQuery, userRole }) => {
@@ -47,7 +49,7 @@ export const DestinationList: React.FC<Props> = ({ onTotalCountChange, externalS
     total: 0,
     active: 0,
     inactive: 0,
-    averageRating: 4.5,
+    averageRating: null,
   });
 
   // Request sequencing guard against race conditions (R-26)
@@ -114,7 +116,7 @@ export const DestinationList: React.FC<Props> = ({ onTotalCountChange, externalS
       const total = all.length;
       const active = all.filter((d) => d.status === 'ACTIVE').length;
       const inactive = all.filter((d) => d.status === 'INACTIVE').length;
-      const avgRating = total > 0 ? all.reduce((sum, d) => sum + Number(d.rating || 4.5), 0) / total : 4.5;
+      const avgRating = averageGoogleRating(all);
       setGlobalStats({ total, active, inactive, averageRating: avgRating });
       onTotalCountChange?.(total);
     } catch {
@@ -138,7 +140,7 @@ export const DestinationList: React.FC<Props> = ({ onTotalCountChange, externalS
       }
     } catch (err: unknown) {
       if (reqId === activeRequestId.current) {
-        setError(err instanceof Error ? err.message : 'Lỗi tải danh sách địa điểm');
+        setError(err instanceof Error ? err.message : t('Lỗi tải danh sách địa điểm'));
       }
     } finally {
       if (reqId === activeRequestId.current) {
@@ -161,13 +163,13 @@ export const DestinationList: React.FC<Props> = ({ onTotalCountChange, externalS
     const list = [...allDestinations];
     switch (sortBy) {
       case 'RATING_DESC':
-        return list.sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0));
+        return list.sort((a, b) => (googleRating(b) ?? -1) - (googleRating(a) ?? -1));
       case 'REVIEWS_DESC':
-        return list.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0));
+        return list.sort((a, b) => (googleReviewCount(b) ?? -1) - (googleReviewCount(a) ?? -1));
       case 'NAME_ASC':
         return list.sort((a, b) => a.name.localeCompare(b.name, 'vi'));
       case 'PRICE_ASC':
-        return list.sort((a, b) => Number(a.priceMinVnd || 0) - Number(b.priceMinVnd || 0));
+        return list.sort((a, b) => (a.priceMinVnd ?? a.priceMaxVnd ?? Infinity) - (b.priceMinVnd ?? b.priceMaxVnd ?? Infinity));
       default:
         return list;
     }
@@ -202,28 +204,14 @@ export const DestinationList: React.FC<Props> = ({ onTotalCountChange, externalS
       );
       await updateDestination(dest.id, {
         name: dest.name,
-        category: dest.category,
-        categoryId: dest.categoryId,
         latitude: dest.latitude,
         longitude: dest.longitude,
-        description: dest.description,
-        address: dest.address,
-        openingHours: dest.openingHours,
-        phone: dest.phone,
-        website: dest.website,
-        priceMinVnd: dest.priceMinVnd,
-        priceMaxVnd: dest.priceMaxVnd,
-        rating: dest.rating,
-        reviewCount: dest.reviewCount,
-        osmId: dest.osmId,
-        imageUrl: dest.imageUrl,
-        subImages: dest.subImages,
         status: newStatus,
       });
-      showToast(`Đã chuyển trạng thái "${dest.name}" sang ${newStatus === 'ACTIVE' ? 'Hoạt động' : 'Tạm ẩn'}`);
+      showToast(`Đã chuyển trạng thái "${dest.name}" sang ${newStatus === 'ACTIVE' ? 'Hoạt động' : t('Tạm ẩn')}`);
       refreshGlobalStats();
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Lỗi cập nhật trạng thái', 'error');
+      showToast(err instanceof Error ? err.message : t('Lỗi cập nhật trạng thái'), 'error');
       loadDestinations();
     } finally {
       setActionPendingId(null);
@@ -256,13 +244,13 @@ export const DestinationList: React.FC<Props> = ({ onTotalCountChange, externalS
     try {
       setDeleteLoading(true);
       await deleteDestination(deleteTarget.id);
-      showToast(`Đã xóa điểm đến "${deleteTarget.name}" khỏi hệ thống.`);
+      showToast(`Đã ẩn điểm đến "${deleteTarget.name}". Review và lịch trình cũ được giữ nguyên.`);
       setDeleteTarget(null);
       loadDestinations();
       refreshGlobalStats();
       loadCategories();
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Lỗi xóa địa điểm', 'error');
+      showToast(err instanceof Error ? err.message : t('Lỗi xóa địa điểm'), 'error');
     } finally {
       setDeleteLoading(false);
     }
@@ -271,10 +259,8 @@ export const DestinationList: React.FC<Props> = ({ onTotalCountChange, externalS
   // Export CSV with UTF-8 BOM
   const handleExportCsv = () => {
     if (allDestinations.length === 0) return;
-    const headers = ['ID,Tên địa điểm,Danh mục,Địa chỉ,Vĩ độ,Kinh độ,Giờ mở cửa,Số điện thoại,Website,Giá thấp nhất (VNĐ),Giá cao nhất (VNĐ),Đánh giá,Lượt đánh giá,Trạng thái'];
-    const rows = allDestinations.map((d) =>
-      `"${d.id || ''}","${d.name || ''}","${d.category || ''}","${d.address || ''}","${d.latitude || ''}","${d.longitude || ''}","${d.openingHours || ''}","${d.phone || ''}","${d.website || ''}","${d.priceMinVnd || 0}","${d.priceMaxVnd || 0}","${d.rating || 4.5}","${d.reviewCount || 0}","${d.status}"`
-    );
+    const headers = [t('ID,Tên địa điểm,Danh mục,Địa chỉ,Vĩ độ,Kinh độ,Giờ mở cửa,Số điện thoại,Website,Giá thấp nhất (VNĐ),Giá cao nhất (VNĐ),Đánh giá,Lượt đánh giá,Trạng thái')];
+    const rows = allDestinations.map(destinationCsvRow);
     const csvContent = '\uFEFF' + headers.concat(rows).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -283,11 +269,11 @@ export const DestinationList: React.FC<Props> = ({ onTotalCountChange, externalS
     link.download = `smarttravel_danang_destinations_${new Date().toISOString().slice(0, 10)}.csv`;
     link.click();
     URL.revokeObjectURL(url);
-    showToast('Đã xuất file CSV địa điểm thành công!');
+    showToast(t('Đã xuất file CSV địa điểm thành công!'));
   };
 
   return (
-    <div>
+    <div className="admin-page admin-page-destinations">
       {/* Toast Feedback */}
       {toast && (
         <div
@@ -318,7 +304,7 @@ export const DestinationList: React.FC<Props> = ({ onTotalCountChange, externalS
           <button
             type="button"
             onClick={() => setToast(null)}
-            aria-label="Đóng thông báo"
+            aria-label={t("Đóng thông báo")}
             className="btn-action-touch"
             style={{
               background: 'none',
@@ -336,7 +322,7 @@ export const DestinationList: React.FC<Props> = ({ onTotalCountChange, externalS
       )}
 
       {/* Header Section */}
-      <div
+      <div className="admin-page-heading"
         style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -348,17 +334,7 @@ export const DestinationList: React.FC<Props> = ({ onTotalCountChange, externalS
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-            <h1
-              style={{
-                fontSize: '22px',
-                fontWeight: 700,
-                color: '#0f172a',
-                margin: 0,
-                letterSpacing: '-0.3px',
-              }}
-            >
-              Quản lý Địa điểm Đà Nẵng
-            </h1>
+            <h1>{t("Quản lý Địa điểm Đà Nẵng")} </h1>
             <span
               style={{
                 backgroundColor: '#e0f2fe',
@@ -372,9 +348,7 @@ export const DestinationList: React.FC<Props> = ({ onTotalCountChange, externalS
               {isFiltered ? `Hiển thị ${sortedDestinations.length}/${globalStats.total}` : `${globalStats.total}`} địa điểm
             </span>
           </div>
-          <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#475569' }}>
-            Kho dữ liệu điểm đến du lịch Đà Nẵng, tọa độ GPS, chi phí và thông tin liên hệ cho thuật toán SmartTravel
-          </p>
+          <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#475569' }}>{t("Kho dữ liệu điểm đến du lịch Đà Nẵng, tọa độ GPS, chi phí và thông tin liên hệ cho thuật toán SmartTravel")} </p>
         </div>
 
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -400,7 +374,7 @@ export const DestinationList: React.FC<Props> = ({ onTotalCountChange, externalS
             }}
           >
             <RefreshCwIcon size={15} color="#475569" />
-            <span>Làm mới</span>
+            <span>{t("Làm mới")}</span>
           </button>
 
           <button
@@ -424,7 +398,7 @@ export const DestinationList: React.FC<Props> = ({ onTotalCountChange, externalS
             }}
           >
             <PlusIcon size={16} color="#ffffff" />
-            <span>Thêm địa điểm mới</span>
+            <span>{t("Thêm địa điểm mới")}</span>
           </button>
         </div>
       </div>

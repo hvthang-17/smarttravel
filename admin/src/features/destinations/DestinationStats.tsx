@@ -1,3 +1,4 @@
+import { t } from '../../core/language';
 import React from 'react';
 import { MapPinIcon, CheckCircleIcon, EyeOffIcon, StarIcon } from '../../components/Icons';
 
@@ -5,7 +6,7 @@ interface Props {
   totalCount: number;
   activeCount: number;
   inactiveCount: number;
-  averageRating: number;
+  averageRating: number | null;
 }
 
 export const DestinationStats: React.FC<Props> = ({
@@ -24,7 +25,7 @@ export const DestinationStats: React.FC<Props> = ({
           <div className="destination-stat-value" style={{ color: '#0f172a' }}>
             {totalCount.toLocaleString('vi-VN')}
           </div>
-          <div className="destination-stat-label">Tổng số địa điểm</div>
+          <div className="destination-stat-label">{t("Tổng số địa điểm")}</div>
         </div>
       </div>
 
@@ -36,7 +37,7 @@ export const DestinationStats: React.FC<Props> = ({
           <div className="destination-stat-value" style={{ color: '#166534' }}>
             {activeCount.toLocaleString('vi-VN')}
           </div>
-          <div className="destination-stat-label">Đang hoạt động</div>
+          <div className="destination-stat-label">{t("Đang hoạt động")}</div>
         </div>
       </div>
 
@@ -48,7 +49,7 @@ export const DestinationStats: React.FC<Props> = ({
           <div className="destination-stat-value" style={{ color: '#475569' }}>
             {inactiveCount.toLocaleString('vi-VN')}
           </div>
-          <div className="destination-stat-label">Tạm ẩn</div>
+          <div className="destination-stat-label">{t("Tạm ẩn")}</div>
         </div>
       </div>
 
@@ -58,10 +59,10 @@ export const DestinationStats: React.FC<Props> = ({
         </div>
         <div>
           <div className="destination-stat-value" style={{ color: '#b45309' }}>
-            {averageRating > 0 ? averageRating.toFixed(1) : '4.5'}
+            {averageRating?.toFixed(1) ?? t('Chưa có')}
             <span style={{ fontSize: '13px', fontWeight: 500, color: '#92400e', marginLeft: '4px' }}>/ 5.0</span>
           </div>
-          <div className="destination-stat-label">Đánh giá trung bình</div>
+          <div className="destination-stat-label">{t("Đánh giá trung bình")}</div>
         </div>
       </div>
     </div>

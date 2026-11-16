@@ -1,3 +1,4 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:smarttravel_mobile/features/auth/data/models/user_model.dart';
@@ -54,7 +55,7 @@ class ShareProfileBottomSheet extends StatelessWidget {
           children: [
             Icon(Icons.link, color: Colors.white, size: 20),
             SizedBox(width: 8),
-            Text('Đã sao chép liên kết hồ sơ du khách!'),
+            AppText('Đã sao chép liên kết hồ sơ du khách!'),
           ],
         ),
         backgroundColor: Color(0xFF2A9D8F),
@@ -72,7 +73,7 @@ class ShareProfileBottomSheet extends StatelessWidget {
           children: [
             Icon(Icons.copy_rounded, color: Colors.white, size: 20),
             SizedBox(width: 8),
-            Text('Đã sao chép tóm tắt hồ sơ du lịch!'),
+            AppText('Đã sao chép tóm tắt hồ sơ du lịch!'),
           ],
         ),
         backgroundColor: Color(0xFF0077B6),
@@ -163,7 +164,7 @@ class ShareProfileBottomSheet extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 const Expanded(
-                  child: Text(
+                  child: AppText(
                     'Chia sẻ hồ sơ du khách',
                     style: TextStyle(
                       fontSize: 18,
@@ -226,7 +227,7 @@ class ShareProfileBottomSheet extends StatelessWidget {
                                 Row(
                                   children: [
                                     Flexible(
-                                      child: Text(
+                                      child: AppText(
                                         name,
                                         style: const TextStyle(
                                           color: Colors.white,
@@ -241,7 +242,7 @@ class ShareProfileBottomSheet extends StatelessWidget {
                                   ],
                                 ),
                                 const SizedBox(height: 2),
-                                Text(
+                                AppText(
                                   persona,
                                   style: const TextStyle(
                                     color: Color(0xFFE0F2FE),
@@ -263,7 +264,7 @@ class ShareProfileBottomSheet extends StatelessWidget {
                               children: [
                                 Icon(Icons.location_on, size: 12, color: Colors.white),
                                 SizedBox(width: 2),
-                                Text(
+                                AppText(
                                   'Đà Nẵng',
                                   style: TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold),
                                 ),
@@ -296,7 +297,7 @@ class ShareProfileBottomSheet extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 // Link Share Field
-                const Text(
+                const AppText(
                   'Liên kết hồ sơ công khai',
                   style: TextStyle(
                     fontSize: 13,
@@ -317,7 +318,7 @@ class ShareProfileBottomSheet extends StatelessWidget {
                       const Icon(Icons.link, size: 18, color: Color(0xFF0077B6)),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: Text(
+                        child: AppText(
                           _shareUrl,
                           style: const TextStyle(
                             fontSize: 13,
@@ -335,7 +336,7 @@ class ShareProfileBottomSheet extends StatelessWidget {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           visualDensity: VisualDensity.compact,
                         ),
-                        child: const Text('Sao chép', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        child: const AppText('Sao chép', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                       ),
                     ],
                   ),
@@ -343,7 +344,7 @@ class ShareProfileBottomSheet extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 // Share Channels
-                const Text(
+                const AppText(
                   'Chia sẻ qua ứng dụng',
                   style: TextStyle(
                     fontSize: 13,
@@ -399,11 +400,11 @@ class ShareProfileBottomSheet extends StatelessWidget {
   Widget _buildCardMiniStat(String value, String label) {
     return Column(
       children: [
-        Text(
+        AppText(
           value,
           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
         ),
-        Text(
+        AppText(
           label,
           style: const TextStyle(color: Color(0xFFE0F2FE), fontSize: 10),
         ),
@@ -435,7 +436,7 @@ class ShareProfileBottomSheet extends StatelessWidget {
               child: Icon(icon, color: color, size: 22),
             ),
             const SizedBox(height: 6),
-            Text(
+            AppText(
               label,
               style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Color(0xFF475569)),
             ),

@@ -1,3 +1,7 @@
+import { t, localizedText } from '../../../core/language';
+import { Link } from 'react-router-dom';
+import { googleRating, googleReviewCount, smartTravelReviewLabel } from '../destinationContract';
+import { formatOpeningHours } from '../formatOpeningHours';
 import React, { useState, useEffect, useMemo } from 'react';
 import { Destination } from '../../../types/destination';
 import { Category, resolveImageUrl } from '../../../core/categoryApi';
@@ -74,7 +78,7 @@ export const DestinationDetailModal: React.FC<Props> = ({
 
   const meta = getCategoryMeta(destination.category, categoriesList);
   const CategoryIcon = meta.Icon;
-  const destCode = `#DEST-${String(destination.id || 1).padStart(3, '0')}`;
+  const destCode = destination.id == null ? 'Chưa có ID' : `#DEST-${String(destination.id).padStart(3, '0')}`;
   const isActive = destination.status === 'ACTIVE';
   const currentDisplayUrl = resolveImageUrl(activeImgUrl || destination.imageUrl);
   const mapsUrl = buildGoogleMapsUrl(destination.latitude, destination.longitude);
@@ -108,7 +112,7 @@ export const DestinationDetailModal: React.FC<Props> = ({
           {currentDisplayUrl ? (
             <img
               src={currentDisplayUrl}
-              alt={destination.name}
+              alt={localizedText(destination.name, destination.nameEn)}
               style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.9, transition: 'opacity 0.2s ease' }}
             />
           ) : (
@@ -130,7 +134,7 @@ export const DestinationDetailModal: React.FC<Props> = ({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Đóng cửa sổ chi tiết"
+            aria-label={t("Đóng cửa sổ chi tiết")}
             className="btn-action-touch"
             style={{
               position: 'absolute',
@@ -182,7 +186,7 @@ export const DestinationDetailModal: React.FC<Props> = ({
                 }}
               >
                 <CategoryIcon size={13} color={meta.color} />
-                <span>{meta.label}</span>
+                <span>{t(meta.label)}</span>
               </span>
 
               <span
@@ -200,7 +204,7 @@ export const DestinationDetailModal: React.FC<Props> = ({
                 }}
               >
                 {isActive ? <CheckCircleIcon size={13} color="#15803d" /> : <EyeOffIcon size={13} color="#334155" />}
-                <span>{isActive ? 'Đang hoạt động' : 'Tạm ẩn'}</span>
+                <span>{isActive ? 'Đang hoạt động' : t('Tạm ẩn')}</span>
               </span>
             </div>
 
@@ -274,9 +278,7 @@ export const DestinationDetailModal: React.FC<Props> = ({
                         borderRadius: '2px',
                         lineHeight: 1,
                       }}
-                    >
-                      Bìa
-                    </span>
+                    >{t("Bìa")} </span>
                   )}
                 </button>
               );
@@ -289,11 +291,11 @@ export const DestinationDetailModal: React.FC<Props> = ({
           {/* Title & Address */}
           <div style={{ marginBottom: '16px' }}>
             <h2 id="destination-detail-title" style={{ fontSize: '20px', fontWeight: 700, color: '#0f172a', margin: '0 0 6px 0' }}>
-              {destination.name}
+              {localizedText(destination.name, destination.nameEn)}
             </h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#475569' }}>
               <MapPinIcon size={14} color="#0077b6" />
-              <span>{destination.address || 'TP. Đà Nẵng, Việt Nam'}</span>
+              <span>{destination.address || t('TP. Đà Nẵng, Việt Nam')}</span>
             </div>
           </div>
 
@@ -309,39 +311,43 @@ export const DestinationDetailModal: React.FC<Props> = ({
             <div style={{ backgroundColor: '#fef3c7', padding: '10px 12px', borderRadius: '8px', border: '1px solid #fde68a' }}>
               <div style={{ fontSize: '11px', color: '#92400e', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <StarIcon size={12} color="#d97706" fill="#f59e0b" />
-                <span>ĐÁNH GIÁ</span>
+                <span>Google Maps</span>
               </div>
               <div style={{ fontSize: '16px', fontWeight: 700, color: '#92400e', marginTop: '2px' }}>
-                {destination.rating != null ? Number(destination.rating).toFixed(1) : '4.5'}
+                {googleRating(destination)?.toFixed(1) ?? t('Chưa có')}
                 <span style={{ fontSize: '11px', fontWeight: 500, color: '#92400e', marginLeft: '4px' }}>
-                  ({destination.reviewCount || 0} lượt)
+                  ({googleReviewCount(destination) ?? t('chưa rõ')} lượt)
                 </span>
               </div>
             </div>
 
+            <div style={{ backgroundColor: '#f0f9ff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #bae6fd' }}>
+              <div style={{ fontSize: '11px', color: '#0369a1', fontWeight: 600 }}>SmartTravel</div>
+              <div style={{ margin: '4px 0', fontWeight: 600 }}>{t(smartTravelReviewLabel(destination))}</div>
+              <Link to={`/reviews?destinationId=${destination.id}`}>{t("Xem đánh giá")}</Link>
+            </div>
+
             <div style={{ backgroundColor: '#f0fdf4', padding: '10px 12px', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
-              <div style={{ fontSize: '11px', color: '#166534', fontWeight: 600 }}>CHI PHÍ THAM KHẢO</div>
+              <div style={{ fontSize: '11px', color: '#166534', fontWeight: 600 }}>{t("CHI PHÍ THAM KHẢO")}</div>
               <div style={{ fontSize: '14px', fontWeight: 700, color: '#15803d', marginTop: '3px' }}>
-                {formatVndPrice(destination.priceMinVnd, destination.priceMaxVnd)}
+                {t(formatVndPrice(destination.priceMinVnd, destination.priceMaxVnd))}
               </div>
             </div>
 
             <div style={{ backgroundColor: '#f0f9ff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #bae6fd' }}>
               <div style={{ fontSize: '11px', color: '#0369a1', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <ClockIcon size={12} color="#0369a1" />
-                <span>GIỜ MỞ CỬA</span>
+                <span>{t("GIỜ MỞ CỬA")}</span>
               </div>
               <div style={{ fontSize: '13px', fontWeight: 600, color: '#0369a1', marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {destination.openingHours || 'Chưa cập nhật'}
+                {t(formatOpeningHours(destination.openingHours))}
               </div>
             </div>
           </div>
 
           {/* Description Section */}
           <div style={{ marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '13px', fontWeight: 600, color: '#334155', margin: '0 0 6px 0', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
-              Mô tả điểm đến
-            </h3>
+            <h3 style={{ fontSize: '13px', fontWeight: 600, color: '#334155', margin: '0 0 6px 0', textTransform: 'uppercase', letterSpacing: '0.3px' }}>{t("Mô tả điểm đến")} </h3>
             <div
               style={{
                 fontSize: '13.5px',
@@ -353,18 +359,16 @@ export const DestinationDetailModal: React.FC<Props> = ({
                 border: '1px solid #e2e8f0',
               }}
             >
-              {destination.description || 'Chưa có thông tin mô tả chi tiết cho địa điểm này.'}
+              {destination.description || t('Chưa có thông tin mô tả chi tiết cho địa điểm này.')}
             </div>
           </div>
 
           {/* Location & Coordinates Section */}
           <div style={{ marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '13px', fontWeight: 600, color: '#334155', margin: '0 0 8px 0', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
-              Tọa độ địa lý & Bản đồ
-            </h3>
+            <h3 style={{ fontSize: '13px', fontWeight: 600, color: '#334155', margin: '0 0 8px 0', textTransform: 'uppercase', letterSpacing: '0.3px' }}>{t("Tọa độ địa lý & Bản đồ")} </h3>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#f8fafc', padding: '10px 14px', borderRadius: '8px', border: '1px solid #e2e8f0', flexWrap: 'wrap', gap: '8px' }}>
               <div style={{ fontSize: '13px', color: '#0f172a', fontFamily: 'monospace' }}>
-                <strong>Vĩ độ:</strong> {Number(destination.latitude).toFixed(6)} | <strong>Kinh độ:</strong> {Number(destination.longitude).toFixed(6)}
+                <strong>{t("Vĩ độ:")}</strong> {Number(destination.latitude).toFixed(6)} | <strong>{t("Kinh độ:")}</strong> {Number(destination.longitude).toFixed(6)}
                 {destination.osmId && (
                   <span style={{ marginLeft: '10px', color: '#64748b' }}>(OSM: {destination.osmId})</span>
                 )}
@@ -396,9 +400,7 @@ export const DestinationDetailModal: React.FC<Props> = ({
           {/* Contact Details */}
           {(destination.phone || destination.website) && (
             <div style={{ marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '13px', fontWeight: 600, color: '#334155', margin: '0 0 8px 0', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
-                Thông tin liên hệ
-              </h3>
+              <h3 style={{ fontSize: '13px', fontWeight: 600, color: '#334155', margin: '0 0 8px 0', textTransform: 'uppercase', letterSpacing: '0.3px' }}>{t("Thông tin liên hệ")} </h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
                 {destination.phone && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#0f172a' }}>
@@ -423,9 +425,7 @@ export const DestinationDetailModal: React.FC<Props> = ({
 
         {/* Modal Footer */}
         <div className="destination-modal-footer">
-          <button type="button" onClick={onClose} className="destination-btn-cancel">
-            Đóng
-          </button>
+          <button type="button" onClick={onClose} className="destination-btn-cancel">{t("Đóng")} </button>
           <button
             type="button"
             onClick={onEdit}
@@ -433,7 +433,7 @@ export const DestinationDetailModal: React.FC<Props> = ({
             style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
           >
             <PencilIcon size={14} color="#ffffff" />
-            <span>Chỉnh sửa địa điểm này</span>
+            <span>{t("Chỉnh sửa địa điểm này")}</span>
           </button>
         </div>
       </div>

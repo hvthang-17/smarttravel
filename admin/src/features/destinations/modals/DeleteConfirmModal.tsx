@@ -1,3 +1,4 @@
+import { t } from '../../../core/language';
 import React, { useEffect } from 'react';
 import { AlertTriangleIcon, TrashIcon, XIcon } from '../../../components/Icons';
 
@@ -69,10 +70,8 @@ export const DeleteConfirmModal: React.FC<Props> = ({
               <AlertTriangleIcon size={20} color="#b91c1c" />
             </div>
             <div>
-              <h3 id="delete-confirm-title" style={{ margin: 0, fontSize: '17px', color: '#0f172a', fontWeight: 700 }}>
-                Xác nhận xóa điểm đến
-              </h3>
-              <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748b' }}>Hành động này không thể hoàn tác</p>
+              <h3 id="delete-confirm-title" style={{ margin: 0, fontSize: '17px', color: '#0f172a', fontWeight: 700 }}>{t("Ẩn điểm đến")} </h3>
+              <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748b' }}>{t("Có thể khôi phục bằng cách bật lại trạng thái")}</p>
             </div>
           </div>
           <button
@@ -80,16 +79,14 @@ export const DeleteConfirmModal: React.FC<Props> = ({
             onClick={onClose}
             disabled={loading}
             className="user-modal-close-btn"
-            aria-label="Đóng hộp thoại xóa"
+            aria-label={t("Đóng hộp thoại xóa")}
           >
             <XIcon size={18} />
           </button>
         </div>
 
         <div className="destination-modal-body" style={{ paddingTop: '16px' }}>
-          <p style={{ fontSize: '13.5px', color: '#334155', lineHeight: '1.5', margin: 0 }}>
-            Bạn có chắc chắn muốn xóa điểm đến <strong>&ldquo;{destinationName}&rdquo;</strong> khỏi hệ sinh thái du lịch Đà Nẵng không?
-          </p>
+          <p style={{ fontSize: '13.5px', color: '#334155', lineHeight: '1.5', margin: 0 }}>{t("Ẩn")} <strong>&ldquo;{destinationName}&rdquo;</strong>{t("khỏi danh sách công khai và gợi ý mới? Review và lịch trình đã lưu vẫn được giữ nguyên.")} </p>
         </div>
 
         <div className="destination-modal-footer">
@@ -98,9 +95,7 @@ export const DeleteConfirmModal: React.FC<Props> = ({
             onClick={onClose}
             disabled={loading}
             className="destination-btn-cancel"
-          >
-            Hủy
-          </button>
+          >{t("Hủy")} </button>
           <button
             type="button"
             onClick={onConfirm}
@@ -121,7 +116,7 @@ export const DeleteConfirmModal: React.FC<Props> = ({
             }}
           >
             <TrashIcon size={14} color="#ffffff" />
-            <span>{loading ? 'Đang xóa...' : 'Xác nhận xóa'}</span>
+            <span>{loading ? 'Đang ẩn...' : t('Xác nhận ẩn')}</span>
           </button>
         </div>
       </div>

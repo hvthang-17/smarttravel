@@ -1,3 +1,4 @@
+import { t } from '../core/language';
 import React, { useState, useEffect } from 'react';
 import {
   WavesIcon,
@@ -16,7 +17,7 @@ import {
 import { AuthUser, canManageUsers, canViewAuditLogs, ROLE_LABELS, ROLE_BADGE_STYLES } from '../types/auth';
 import { clearStoredAuth } from '../core/authApi';
 
-export type AdminTab = 'dashboard' | 'destinations' | 'categories' | 'users' | 'audit';
+export type AdminTab = 'dashboard' | 'destinations' | 'categories' | 'users' | 'audit' | 'reviews' | 'trips';
 
 interface SidebarProps {
   currentTab: AdminTab;
@@ -58,33 +59,45 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navItems = [
     {
       id: 'dashboard' as AdminTab,
-      label: 'Tổng quan',
+      label: t('Tổng quan'),
       Icon: LayoutDashboardIcon,
       allowed: true,
     },
     {
       id: 'destinations' as AdminTab,
-      label: 'Quản lý địa điểm',
+      label: t('Quản lý địa điểm'),
       Icon: MapPinIcon,
       badge: typeof destinationCount === 'number' && destinationCount > 0 ? String(destinationCount) : undefined,
       allowed: true,
     },
     {
       id: 'categories' as AdminTab,
-      label: 'Danh mục',
+      label: t('Danh mục'),
       Icon: TagIcon,
       allowed: true,
     },
     {
       id: 'users' as AdminTab,
-      label: 'Người dùng',
+      label: t('Người dùng'),
       Icon: UsersIcon,
       allowed: canManageUsers(userRole),
       lockBadge: !canManageUsers(userRole) ? 'Admin only' : undefined,
     },
     {
+      id: 'trips' as AdminTab,
+      label: t('Lịch trình'),
+      Icon: MapPinIcon,
+      allowed: true,
+    },
+    {
+      id: 'reviews' as AdminTab,
+      label: t('Kiểm duyệt đánh giá'),
+      Icon: ClipboardListIcon,
+      allowed: true,
+    },
+    {
       id: 'audit' as AdminTab,
-      label: 'Nhật ký thao tác',
+      label: t('Nhật ký thao tác'),
       Icon: ClipboardListIcon,
       allowed: canViewAuditLogs(userRole),
       lockBadge: !canViewAuditLogs(userRole) ? 'Admin only' : undefined,
@@ -92,27 +105,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   return (
-    <aside
-      style={{
-        width: isCollapsed ? '68px' : '240px',
-        backgroundColor: '#ffffff',
-        borderRight: '1px solid #e5e7eb',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        flexShrink: 0,
-        height: '100%',
-        maxHeight: '100%',
-        transition: 'width 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-        userSelect: 'none',
-        overflow: 'hidden',
-      }}
+    <aside className="admin-sidebar" data-collapsed={isCollapsed}
+      style={{ width: isCollapsed ? '68px' : '248px' }}
     >
       {/* 1. Brand Logo Header (SmartTravel ADMIN) - Spacious & Clean without button overlap (R-03, C-1) */}
       <div
         style={{
-          height: '64px',
-          borderBottom: '1px solid #e5e7eb',
+          height: '72px',
+          borderBottom: '1px solid #285969',
           display: 'flex',
           alignItems: 'center',
           justifyContent: isCollapsed ? 'center' : 'flex-start',
@@ -138,7 +138,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               width: '34px',
               height: '34px',
               borderRadius: '8px',
-              backgroundColor: '#0077b6',
+              backgroundColor: '#ffffff',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -146,7 +146,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               flexShrink: 0,
             }}
           >
-            <WavesIcon size={18} color="#ffffff" strokeWidth={2.2} />
+            <WavesIcon size={18} color="#073e51" strokeWidth={2.2} />
           </div>
 
           {!isCollapsed && (
@@ -155,7 +155,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 style={{
                   fontSize: '17px',
                   fontWeight: 700,
-                  color: '#0f172a',
+                  color: '#ffffff',
                   letterSpacing: '-0.3px',
                   whiteSpace: 'nowrap',
                 }}
@@ -166,17 +166,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 style={{
                   fontSize: '10px',
                   fontWeight: 700,
-                  backgroundColor: '#f1f5f9',
-                  color: '#475569',
+                  backgroundColor: '#1b5264',
+                  color: '#e3f0f5',
                   padding: '2px 6px',
                   borderRadius: '4px',
-                  border: '1px solid #e2e8f0',
-                  textTransform: 'uppercase',
+                  border: '1px solid #427384',
+                  textTransform: 'none',
                   letterSpacing: '0.4px',
                   flexShrink: 0,
                 }}
               >
-                ADMIN
+                Admin
               </span>
             </div>
           )}
@@ -198,14 +198,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
             style={{
               fontSize: '12px',
               fontWeight: 600,
-              color: '#64748b',
+              color: '#c5dce4',
               padding: '0 12px',
               marginBottom: '8px',
               whiteSpace: 'nowrap',
             }}
-          >
-            Bảng điều khiển
-          </div>
+          >{t("Bảng điều khiển")} </div>
         ) : (
           <div style={{ height: '8px' }} />
         )}
@@ -227,30 +225,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   }
                 }}
                 disabled={!isAllowed}
-                className="btn-action-touch"
+                className="admin-nav-item"
+                aria-current={isActive ? 'page' : undefined}
                 title={!isAllowed ? `${item.label} (Yêu cầu quyền ROLE_ADMIN)` : item.label}
                 aria-label={item.label}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: isCollapsed ? 'center' : 'space-between',
-                  padding: isCollapsed ? '10px 0' : '10px 12px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  backgroundColor: isActive ? '#e0f2fe' : 'transparent',
-                  color: !isAllowed ? '#94a3b8' : isActive ? '#0369a1' : '#334155',
-                  fontWeight: isActive ? 600 : 500,
-                  fontSize: '13.5px',
-                  cursor: !isAllowed ? 'not-allowed' : 'pointer',
-                  textAlign: 'left',
-                  transition: 'all 0.15s ease',
-                  position: 'relative',
-                  width: '100%',
-                  opacity: !isAllowed ? 0.65 : 1,
-                }}
+                style={{ justifyContent: isCollapsed ? 'center' : 'space-between', padding: isCollapsed ? '12px 0' : '12px' }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <ItemIcon size={18} color={!isAllowed ? '#94a3b8' : isActive ? '#0284c7' : '#64748b'} />
+                  <ItemIcon size={18} color="currentColor" />
                   {!isCollapsed && (
                     <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {item.label}
@@ -266,11 +248,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         style={{
                           fontSize: '10px',
                           fontWeight: 600,
-                          backgroundColor: '#f1f5f9',
-                          color: '#64748b',
+                          backgroundColor: '#1b5264',
+                          color: '#c5dce4',
                           padding: '1px 5px',
                           borderRadius: '4px',
-                          border: '1px solid #e2e8f0',
+                          border: '1px solid #427384',
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: '2px',
@@ -305,7 +287,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* 3. Bottom Footer Actions & Collapse Toggle */}
       <div
         style={{
-          borderTop: '1px solid #e5e7eb',
+          borderTop: '1px solid #285969',
           padding: isCollapsed ? '12px 8px' : '14px 14px',
           display: 'flex',
           flexDirection: 'column',
@@ -340,7 +322,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   flexShrink: 0,
                 }}
               >
-                {ROLE_LABELS[currentUser.role]}
+                {t(ROLE_LABELS[currentUser.role])}
               </span>
             </div>
             <div style={{ fontSize: '11px', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -360,7 +342,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             justifyContent: isCollapsed ? 'center' : 'flex-start',
             gap: '10px',
             fontSize: '13px',
-            color: '#dc2626',
+            color: '#ffc7b9',
             background: 'none',
             border: 'none',
             padding: isCollapsed ? '8px 0' : '8px 12px',
@@ -370,10 +352,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
             textAlign: 'left',
             width: '100%',
           }}
-          title="Đăng xuất khỏi hệ thống"
+          title={t("Đăng xuất khỏi hệ thống")}
         >
-          <LogOutIcon size={16} color="#dc2626" />
-          {!isCollapsed && <span style={{ whiteSpace: 'nowrap' }}>Đăng xuất</span>}
+          <LogOutIcon size={16} color="#ffc7b9" />
+          {!isCollapsed && <span style={{ whiteSpace: 'nowrap' }}>{t("Đăng xuất")}</span>}
         </button>
       </div>
 
@@ -411,12 +393,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <h3
               id="logout-dialog-title"
               style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 600, color: '#0f172a' }}
-            >
-              Xác nhận đăng xuất
-            </h3>
-            <p style={{ margin: '0 0 20px 0', fontSize: '13.5px', color: '#475569', lineHeight: 1.5 }}>
-              Bạn có chắc chắn muốn kết thúc phiên làm việc quản trị SmartTravel hiện tại không?
-            </p>
+            >{t("Xác nhận đăng xuất")} </h3>
+            <p style={{ margin: '0 0 20px 0', fontSize: '13.5px', color: '#475569', lineHeight: 1.5 }}>{t("Bạn có chắc chắn muốn kết thúc phiên làm việc quản trị SmartTravel hiện tại không?")} </p>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
               <button
                 type="button"
@@ -432,9 +410,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   fontWeight: 500,
                   cursor: 'pointer',
                 }}
-              >
-                Hủy bỏ
-              </button>
+              >{t("Hủy bỏ")} </button>
               <button
                 type="button"
                 onClick={() => {
@@ -457,9 +433,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   fontWeight: 600,
                   cursor: 'pointer',
                 }}
-              >
-                Đăng xuất
-              </button>
+              >{t("Đăng xuất")} </button>
             </div>
           </div>
         </div>

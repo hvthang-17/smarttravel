@@ -1,105 +1,51 @@
+import { t, localizedText } from '../../../core/language';
 import React from 'react';
-import { Category } from '../../../core/categoryApi';
+import type { Category } from '../../../core/categoryApi';
 
 interface Props {
-  name: string;
-  category: string;
-  status: 'ACTIVE' | 'INACTIVE';
-  description: string;
-  categoriesList: Category[];
-  onChangeName: (val: string) => void;
-  onChangeCategory: (val: string) => void;
-  onChangeStatus: (val: 'ACTIVE' | 'INACTIVE') => void;
-  onChangeDescription: (val: string) => void;
-  disabled?: boolean;
-  hasNameError?: boolean;
+  name: string; nameEn: string; category: string; status: 'ACTIVE' | 'INACTIVE';
+  description: string; descriptionEn: string; categoriesList: Category[];
+  onChangeName: (value: string) => void; onChangeNameEn: (value: string) => void;
+  onChangeCategory: (value: string) => void; onChangeStatus: (value: 'ACTIVE' | 'INACTIVE') => void;
+  onChangeDescription: (value: string) => void; onChangeDescriptionEn: (value: string) => void;
+  disabled?: boolean; hasNameError?: boolean;
 }
-
-export const DestinationBasicInfoSection: React.FC<Props> = ({
-  name,
-  category,
-  status,
-  description,
-  categoriesList,
-  onChangeName,
-  onChangeCategory,
-  onChangeStatus,
-  onChangeDescription,
-  disabled = false,
-  hasNameError = false,
-}) => {
-  return (
-    <div className="destination-section-box">
+export const DestinationBasicInfoSection: React.FC<Props> = (props) => (
+  <div className="destination-section-box">
+    <div className="user-form-group" style={{ marginBottom: 0 }}>
+      <label className="user-form-label" htmlFor="destination-name">{t("Tên địa điểm (tiếng Việt) *")}</label>
+      <input id="destination-name" type="text" value={props.name} maxLength={180} required disabled={props.disabled}
+        onChange={event => props.onChangeName(event.target.value)} className="user-form-input" aria-invalid={props.hasNameError} />
+    </div>
+    <div className="user-form-group" style={{ marginBottom: 0 }}>
+      <label className="user-form-label" htmlFor="destination-name-en">{t("Tên tiếng Anh (tùy chọn)")}</label>
+      <input id="destination-name-en" type="text" value={props.nameEn} maxLength={180} disabled={props.disabled}
+        onChange={event => props.onChangeNameEn(event.target.value)} className="user-form-input" />
+    </div>
+    <div className="destination-field-row">
       <div className="user-form-group" style={{ marginBottom: 0 }}>
-        <label className="user-form-label">
-          Tên địa điểm <span style={{ color: '#ef4444' }}>*</span>
-        </label>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => onChangeName(e.target.value)}
-          className={`user-form-input ${hasNameError ? 'input-field-error' : ''}`}
-          placeholder="VD: Cầu Rồng, Bãi biển Mỹ Khê..."
-          required
-          disabled={disabled}
-          aria-invalid={hasNameError}
-        />
+        <label className="user-form-label" htmlFor="destination-category">{t("Danh mục *")}</label>
+        <select id="destination-category" className="user-form-select" value={props.category} required disabled={props.disabled}
+          onChange={event => props.onChangeCategory(event.target.value)}>
+          {!props.category && <option value="">{props.categoriesList.length ? 'Chọn danh mục hoạt động' : t('Chưa có danh mục hoạt động')}</option>}
+          {props.categoriesList.map(category => <option key={category.id} value={category.name}>{localizedText(category.name, category.nameEn)}</option>)}
+        </select>
       </div>
-
-      <div className="destination-field-row">
-        <div className="user-form-group" style={{ marginBottom: 0 }}>
-          <label className="user-form-label">Danh mục</label>
-          <select
-            value={category}
-            onChange={(e) => onChangeCategory(e.target.value)}
-            className="user-form-select"
-            disabled={disabled}
-          >
-            {categoriesList.length > 0 ? (
-              categoriesList.map((cat) => (
-                <option key={cat.code} value={cat.name}>
-                  {cat.name}
-                </option>
-              ))
-            ) : (
-              <>
-                <option value="Biển & Thiên nhiên">Biển & Thiên nhiên</option>
-                <option value="Ẩm thực & Đặc sản">Ẩm thực & Đặc sản</option>
-                <option value="Văn hóa & Di sản">Văn hóa & Di sản</option>
-                <option value="Sống ảo & Check-in">Sống ảo & Check-in</option>
-                <option value="Nghỉ dưỡng & Khách sạn">Nghỉ dưỡng & Khách sạn</option>
-                <option value="Chợ đêm & Giải trí">Chợ đêm & Giải trí</option>
-                <option value="Cà phê & Thư giãn">Cà phê & Thư giãn</option>
-              </>
-            )}
-          </select>
-        </div>
-
-        <div className="user-form-group" style={{ marginBottom: 0 }}>
-          <label className="user-form-label">Trạng thái hiển thị</label>
-          <select
-            value={status}
-            onChange={(e) => onChangeStatus(e.target.value as 'ACTIVE' | 'INACTIVE')}
-            className="user-form-select"
-            disabled={disabled}
-          >
-            <option value="ACTIVE">Hoạt động (Hiển thị)</option>
-            <option value="INACTIVE">Tạm ẩn</option>
-          </select>
-        </div>
-      </div>
-
       <div className="user-form-group" style={{ marginBottom: 0 }}>
-        <label className="user-form-label">Mô tả chi tiết</label>
-        <textarea
-          value={description}
-          onChange={(e) => onChangeDescription(e.target.value)}
-          className="user-form-textarea"
-          rows={3}
-          placeholder="Giới thiệu nét đặc sắc, lịch sử, lưu ý khi ghé thăm..."
-          disabled={disabled}
-        />
+        <label className="user-form-label" htmlFor="destination-status">{t("Trạng thái hiển thị")}</label>
+        <select id="destination-status" className="user-form-select" value={props.status} disabled={props.disabled}
+          onChange={event => props.onChangeStatus(event.target.value as 'ACTIVE' | 'INACTIVE')}>
+          <option value="ACTIVE">{t("Hoạt động (Hiển thị)")}</option><option value="INACTIVE">{t("Tạm ẩn")}</option>
+        </select>
       </div>
     </div>
-  );
-};
+    {([{ id: 'description', label: t('Mô tả tiếng Việt'), value: props.description, onChange: props.onChangeDescription },
+      { id: 'description-en', label: t('Mô tả tiếng Anh (tùy chọn)'), value: props.descriptionEn, onChange: props.onChangeDescriptionEn }]).map(field => (
+      <div className="user-form-group" style={{ marginBottom: 0 }} key={field.id}>
+        <label className="user-form-label" htmlFor={`destination-${field.id}`}>{field.label}</label>
+        <textarea id={`destination-${field.id}`} value={field.value} onChange={event => field.onChange(event.target.value)}
+          className="user-form-textarea" rows={3} disabled={props.disabled} />
+      </div>
+    ))}
+  </div>
+);

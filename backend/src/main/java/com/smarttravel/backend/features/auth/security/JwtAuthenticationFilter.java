@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -18,6 +17,7 @@ import com.smarttravel.backend.features.auth.repository.UserRepository;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    public record Session(long userId, long authVersion) {}
 
     private final JwtTokenProvider tokenProvider;
     private final UserRepository userRepository;
@@ -37,11 +37,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String email = tokenProvider.getEmailFromToken(jwt);
 
                 userRepository.findByEmail(email).filter(user -> "ACTIVE".equals(user.getStatus())
+                                && user.getId() == tokenProvider.getUserIdFromToken(jwt)
                                 && user.getAuthVersion() == tokenProvider.getAuthVersionFromToken(jwt))
                         .ifPresent(user -> {
                             var authentication = new UsernamePasswordAuthenticationToken(
                                     user.getEmail(), null, Collections.singletonList(new SimpleGrantedAuthority(user.getRole())));
-                            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                            authentication.setDetails(new Session(user.getId(), user.getAuthVersion()));
                             SecurityContextHolder.getContext().setAuthentication(authentication);
                         });
             }

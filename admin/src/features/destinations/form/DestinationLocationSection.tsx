@@ -1,3 +1,4 @@
+import { t } from '../../../core/language';
 import React, { useState } from 'react';
 import {
   ExternalLinkIcon,
@@ -73,7 +74,7 @@ export const DestinationLocationSection: React.FC<Props> = ({
       });
     } else if (value.includes('http') || value.includes('maps') || value.includes(',') || value.includes('!')) {
       setCoordFeedback({
-        message: 'Chưa tìm thấy tọa độ từ liên kết. Hãy thử copy đường link đầy đủ của Google Maps.',
+        message: t('Chưa tìm thấy tọa độ từ liên kết. Hãy thử copy đường link đầy đủ của Google Maps.'),
         type: 'error',
       });
     }
@@ -84,7 +85,7 @@ export const DestinationLocationSection: React.FC<Props> = ({
     const query = address.trim() || destinationName?.trim();
     if (!query) {
       setCoordFeedback({
-        message: 'Vui lòng nhập Tên địa điểm hoặc Địa chỉ trước khi tìm kiếm tọa độ.',
+        message: t('Vui lòng nhập Tên địa điểm hoặc Địa chỉ trước khi tìm kiếm tọa độ.'),
         type: 'info',
       });
       return;
@@ -112,7 +113,7 @@ export const DestinationLocationSection: React.FC<Props> = ({
       }
     } catch (err: unknown) {
       setCoordFeedback({
-        message: err instanceof Error ? err.message : 'Lỗi kết nối tra cứu tọa độ trực tuyến.',
+        message: err instanceof Error ? err.message : t('Lỗi kết nối tra cứu tọa độ trực tuyến.'),
         type: 'error',
       });
     } finally {
@@ -124,37 +125,33 @@ export const DestinationLocationSection: React.FC<Props> = ({
     <div className="destination-section-box">
       {/* Header with Quick Actions */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-        <span style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>
-          Vị trí & Bản đồ
-        </span>
+        <span style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>{t("Vị trí & Bản đồ")} </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           <button
             type="button"
             onClick={onResetDefaultDaNang}
             disabled={disabled}
             className="destination-quick-link"
-            title="Đặt tọa độ trung tâm Đà Nẵng (16.0610, 108.2274)"
-          >
-            Mặc định Đà Nẵng
-          </button>
+            title={t("Đặt tọa độ trung tâm Đà Nẵng (16.0610, 108.2274)")}
+          >{t("Mặc định Đà Nẵng")} </button>
 
           <button
             type="button"
             onClick={handleGeocodeFromAddress}
             disabled={disabled || isGeocoding}
             className="destination-quick-link"
-            title="Tự động tìm kiếm tọa độ từ Địa chỉ / Tên qua OpenStreetMap"
+            title={t("Tự động tìm kiếm tọa độ từ Địa chỉ / Tên qua OpenStreetMap")}
             style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
           >
             {isGeocoding ? (
               <>
                 <RefreshCwIcon size={12} className="spin-animation" color="#0077b6" />
-                <span>Đang tìm...</span>
+                <span>{t("Đang tìm...")}</span>
               </>
             ) : (
               <>
                 <SearchIcon size={12} color="#0077b6" />
-                <span>Tìm từ địa chỉ</span>
+                <span>{t("Tìm từ địa chỉ")}</span>
               </>
             )}
           </button>
@@ -165,7 +162,7 @@ export const DestinationLocationSection: React.FC<Props> = ({
               target="_blank"
               rel="noopener noreferrer"
               className="destination-external-link"
-              title="Mở Google Maps kiểm tra vị trí ghim"
+              title={t("Mở Google Maps kiểm tra vị trí ghim")}
             >
               <span>Xem Maps</span>
               <ExternalLinkIcon size={12} color="#475569" />
@@ -178,17 +175,17 @@ export const DestinationLocationSection: React.FC<Props> = ({
       <div className="destination-coord-helper-box">
         <label className="user-form-label" style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px' }}>
           <CompassIcon size={13} color="#0077b6" />
-          <span>Lấy nhanh tọa độ từ link Google Maps hoặc chuỗi số:</span>
+          <span>{t("Lấy nhanh tọa độ từ link Google Maps hoặc chuỗi số:")}</span>
         </label>
         <input
           type="text"
           value={quickCoordInput}
           onChange={(e) => handleQuickCoordChange(e.target.value)}
           className="user-form-input"
-          placeholder="Dán link Google Maps hoặc tọa độ (VD: 16.0610, 108.2274)..."
+          placeholder={t("Dán link Google Maps hoặc tọa độ (VD: 16.0610, 108.2274)...")}
           disabled={disabled}
           style={{ fontSize: '12.5px' }}
-          aria-label="Dán link Google Maps hoặc tọa độ để tự động điền"
+          aria-label={t("Dán link Google Maps hoặc tọa độ để tự động điền")}
         />
         {coordFeedback && (
           <div role="status" className={`destination-coord-feedback ${coordFeedback.type}`}>
@@ -202,13 +199,15 @@ export const DestinationLocationSection: React.FC<Props> = ({
 
       {/* Address */}
       <div className="user-form-group" style={{ marginBottom: 0 }}>
-        <label className="user-form-label">Địa chỉ</label>
+        <label className="user-form-label" htmlFor="destination-address">{t("Địa chỉ")}</label>
         <input
           type="text"
-          value={address}
+          maxLength={255}
+          id="destination-address"
+            value={address}
           onChange={(e) => onChangeAddress(e.target.value)}
           className="user-form-input"
-          placeholder="Số nhà, tên đường, quận/huyện..."
+          placeholder={t("Số nhà, tên đường, quận/huyện...")}
           disabled={disabled}
         />
       </div>
@@ -216,10 +215,11 @@ export const DestinationLocationSection: React.FC<Props> = ({
       {/* Lat & Lng */}
       <div className="destination-field-row">
         <div className="user-form-group" style={{ marginBottom: 0 }}>
-          <label className="user-form-label">Vĩ độ (Lat) *</label>
+          <label className="user-form-label" htmlFor="destination-latitude">{t("Vĩ độ (Lat) *")}</label>
           <input
             type="number"
             step="0.0000001"
+            id="destination-latitude"
             value={latitude}
             onChange={(e) => onChangeLatitude(e.target.value)}
             className={`user-form-input ${hasCoordError ? 'input-field-error' : ''}`}
@@ -230,10 +230,11 @@ export const DestinationLocationSection: React.FC<Props> = ({
           />
         </div>
         <div className="user-form-group" style={{ marginBottom: 0 }}>
-          <label className="user-form-label">Kinh độ (Lng) *</label>
+          <label className="user-form-label" htmlFor="destination-longitude">{t("Kinh độ (Lng) *")}</label>
           <input
             type="number"
             step="0.0000001"
+            id="destination-longitude"
             value={longitude}
             onChange={(e) => onChangeLongitude(e.target.value)}
             className={`user-form-input ${hasCoordError ? 'input-field-error' : ''}`}
@@ -247,10 +248,12 @@ export const DestinationLocationSection: React.FC<Props> = ({
 
       {/* OSM ID */}
       <div className="user-form-group" style={{ marginBottom: 0 }}>
-        <label className="user-form-label">Mã OpenStreetMap (tùy chọn)</label>
+        <label className="user-form-label" htmlFor="destination-osm-id">{t("Mã OpenStreetMap (tùy chọn)")}</label>
         <input
           type="text"
-          value={osmId}
+          maxLength={50}
+            id="destination-osm-id"
+            value={osmId}
           onChange={(e) => onChangeOsmId(e.target.value)}
           className="user-form-input"
           placeholder="VD: way/304384"

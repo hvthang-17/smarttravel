@@ -1,3 +1,4 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:smarttravel_mobile/core/theme/app_theme.dart';
 import 'package:smarttravel_mobile/features/home/presentation/widgets/home_category_pills.dart';
@@ -40,7 +41,7 @@ class HomeFilterBottomSheet extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Lọc theo danh mục', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const AppText('Lọc theo danh mục', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
             ],
           ),
@@ -54,7 +55,7 @@ class HomeFilterBottomSheet extends StatelessWidget {
                 avatar: c.icon != null
                     ? Icon(c.icon, size: 16, color: isSelected ? Colors.white : AppTheme.primaryBlue)
                     : null,
-                label: Text(c.label),
+                label: AppText(c.label),
                 selected: isSelected,
                 selectedColor: AppTheme.primaryBlue,
                 labelStyle: TextStyle(

@@ -1,4 +1,5 @@
 import React from 'react';
+import { localizedText, t } from '../../core/language';
 import {
   LandmarkIcon,
   UtensilsIcon,
@@ -58,7 +59,7 @@ export function getCategoryMeta(categoryName?: string, categoriesList: Category[
 
     return {
       code: matched.code,
-      label: matched.name,
+      label: localizedText(matched.name, matched.nameEn),
       Icon: IconComponent,
       bg: `${matched.colorHex || '#0077B6'}15`,
       color: matched.colorHex || '#0077B6',
@@ -88,27 +89,10 @@ export function getCategoryMeta(categoryName?: string, categoriesList: Category[
     return FALLBACK_CATEGORIES[2];
   }
 
-  return { code: 'OTHER', label: categoryName, Icon: TagIcon, bg: '#f1f5f9', color: '#475569' };
+  return { code: 'OTHER', label: /^[A-Z_]+$/.test(categoryName) ? t('Khác') : categoryName, Icon: TagIcon, bg: '#f1f5f9', color: '#475569' };
 }
 
-export function formatVndPrice(min?: number, max?: number): string {
-  const minVal = min ?? 0;
-  const maxVal = max ?? 0;
-
-  if (minVal === 0 && maxVal === 0) {
-    return 'Miễn phí';
-  }
-  if (minVal > 0 && maxVal > minVal) {
-    return `${(minVal / 1000).toLocaleString('vi-VN')}k - ${(maxVal / 1000).toLocaleString('vi-VN')}k VNĐ`;
-  }
-  if (minVal > 0) {
-    return `${minVal.toLocaleString('vi-VN')} VNĐ`;
-  }
-  if (maxVal > 0) {
-    return `Tối đa ${maxVal.toLocaleString('vi-VN')} VNĐ`;
-  }
-  return 'Miễn phí';
-}
+export { formatPrice as formatVndPrice } from './destinationContract';
 
 export function buildGoogleMapsUrl(latitude: number, longitude: number): string {
   return `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
