@@ -1,6 +1,9 @@
 package com.smarttravel.backend.features.auth.dto;
 
 public class AuthResponse {
+    private com.smarttravel.backend.features.profile.domain.TravelerProfile travelerProfile;
+    public com.smarttravel.backend.features.profile.domain.TravelerProfile getTravelerProfile() { return travelerProfile; }
+    public void setTravelerProfile(com.smarttravel.backend.features.profile.domain.TravelerProfile value) { travelerProfile = value; }
     private String token;
     private Long id;
     private String email;

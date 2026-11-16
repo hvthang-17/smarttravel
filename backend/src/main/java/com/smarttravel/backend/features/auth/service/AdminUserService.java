@@ -22,11 +22,20 @@ public class AdminUserService {
     private final UserRepository userRepository;
     private final ItineraryRepository itineraryRepository;
     private final PasswordEncoder passwordEncoder;
+    private final com.smarttravel.backend.features.auth.repository.PasswordResetRepository resetTokens;
+    private final com.smarttravel.backend.features.audit.repository.AuditLogRepository auditLogs;
+    private final com.smarttravel.backend.features.audit.service.AuditService audit;
 
-    public AdminUserService(UserRepository userRepository, ItineraryRepository itineraryRepository, PasswordEncoder passwordEncoder) {
+    public AdminUserService(UserRepository userRepository, ItineraryRepository itineraryRepository, PasswordEncoder passwordEncoder,
+                            com.smarttravel.backend.features.audit.service.AuditService audit,
+                            com.smarttravel.backend.features.auth.repository.PasswordResetRepository resetTokens,
+                            com.smarttravel.backend.features.audit.repository.AuditLogRepository auditLogs) {
         this.userRepository = userRepository;
         this.itineraryRepository = itineraryRepository;
         this.passwordEncoder = passwordEncoder;
+        this.audit = audit;
+        this.resetTokens = resetTokens;
+        this.auditLogs = auditLogs;
     }
 
     public List<AdminUserResponseDto> getAllUsers(String search, String role, String status) {
@@ -50,6 +59,23 @@ public class AdminUserService {
                 })
                 .map(this::toDto)
                 .collect(Collectors.toList());
+    }
+
+    public record UserPage(List<AdminUserResponseDto> items, boolean hasNext) {}
+
+    @Transactional(readOnly = true)
+    public UserPage page(String search, String role, String status, int page, int size) {
+        if (search.length() > 255 || !Set.of("ALL", "ROLE_ADMIN", "ROLE_USER").contains(role)
+                || !Set.of("ALL", "ACTIVE", "LOCKED", "INACTIVE").contains(status)
+                || page < 0 || page > 100_000 || size < 1 || size > 100) {
+            throw new IllegalArgumentException("Bộ lọc người dùng không hợp lệ");
+        }
+        var result = userRepository.adminPage(search.strip().toLowerCase(java.util.Locale.ROOT), role, status,
+                org.springframework.data.domain.PageRequest.of(page, size));
+        var counts = new java.util.HashMap<Long, Long>();
+        if (!result.isEmpty()) itineraryRepository.countByOwners(result.stream().map(User::getId).toList())
+                .forEach(entry -> counts.put(entry.getOwnerId(), entry.getTripCount()));
+        return new UserPage(result.stream().map(u -> toDto(u, counts.getOrDefault(u.getId(), 0L))).toList(), result.hasNext());
     }
 
     public AdminUserResponseDto getUserById(Long id) {
@@ -84,13 +110,14 @@ public class AdminUserService {
         user.setStatus(assignedStatus);
 
         User saved = userRepository.save(user);
+        audit.record("USER", saved.getId(), "CREATE", java.util.Map.of("role", saved.getRole(), "status", saved.getStatus()));
         return toDto(saved);
     }
 
     @Transactional
     public AdminUserResponseDto updateUser(Long id, AdminUpdateUserRequest request) {
         List<User> admins = userRepository.lockAdministrators();
-        User user = userRepository.findById(id)
+        User user = userRepository.lockById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng với ID: " + id));
         String nextRole = request.getRole() == null || request.getRole().isBlank() ? user.getRole() : request.getRole().trim();
         String nextStatus = request.getStatus() == null || request.getStatus().isBlank() ? user.getStatus() : request.getStatus().trim().toUpperCase();
@@ -98,7 +125,7 @@ public class AdminUserService {
         protectAdministrator(user, nextRole, nextStatus, admins);
         if (!user.getRole().equals(nextRole) || !user.getStatus().equals(nextStatus)
                 || (request.getPassword() != null && !request.getPassword().isBlank())) {
-            user.revokeSessions();
+            revokeCredentials(user);
         }
 
         if (request.getFullName() != null && !request.getFullName().isBlank()) {
@@ -119,28 +146,35 @@ public class AdminUserService {
         }
 
         User saved = userRepository.save(user);
+        var fields = new java.util.ArrayList<String>();
+        if (request.getFullName() != null && !request.getFullName().isBlank()) fields.add("fullName");
+        if (request.getRole() != null && !request.getRole().isBlank()) fields.add("role");
+        if (request.getStatus() != null && !request.getStatus().isBlank()) fields.add("status");
+        audit.record("USER", saved.getId(), "UPDATE", java.util.Map.of("fields", fields, "role", saved.getRole(), "status", saved.getStatus(),
+                "credentialsChanged", request.getPassword() != null && !request.getPassword().isBlank()));
         return toDto(saved);
     }
 
     @Transactional
     public AdminUserResponseDto updateUserStatus(Long id, String status) {
         List<User> admins = userRepository.lockAdministrators();
-        User user = userRepository.findById(id)
+        User user = userRepository.lockById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng với ID: " + id));
 
         String nextStatus = status.trim().toUpperCase();
         validateRoleAndStatus(user.getRole(), nextStatus);
         protectAdministrator(user, user.getRole(), nextStatus, admins);
-        if (!user.getStatus().equals(nextStatus)) user.revokeSessions();
+        if (!user.getStatus().equals(nextStatus)) revokeCredentials(user);
         user.setStatus(nextStatus);
         User saved = userRepository.save(user);
+        audit.record("USER", saved.getId(), "STATUS", java.util.Map.of("status", saved.getStatus()));
         return toDto(saved);
     }
 
     @Transactional
     public void deleteUser(Long id, String currentUserEmail) {
         List<User> admins = userRepository.lockAdministrators();
-        User user = userRepository.findById(id)
+        User user = userRepository.lockById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng với ID: " + id));
 
         if (currentUserEmail != null && currentUserEmail.equalsIgnoreCase(user.getEmail())) {
@@ -148,7 +182,14 @@ public class AdminUserService {
         }
 
         protectAdministrator(user, user.getRole(), "INACTIVE", admins);
+        auditLogs.anonymizeActor(user.getId());
         userRepository.delete(user);
+        audit.record("USER", user.getId(), "DELETE", java.util.Map.of());
+    }
+
+    private void revokeCredentials(User user) {
+        user.revokeSessions();
+        resetTokens.consumeAll(user.getId(), java.time.LocalDateTime.now(java.time.ZoneOffset.UTC));
     }
 
     private void validateRoleAndStatus(String role, String status) {
@@ -171,13 +212,10 @@ public class AdminUserService {
     }
 
     private AdminUserResponseDto toDto(User u) {
-        int tripsCount = 0;
-        try {
-            tripsCount = itineraryRepository.findByUserId(u.getId()).size();
-        } catch (Exception e) {
-            tripsCount = 0;
-        }
+        return toDto(u, itineraryRepository.countByUserId(u.getId()));
+    }
 
+    private AdminUserResponseDto toDto(User u, long tripsCount) {
         return new AdminUserResponseDto(
                 u.getId(),
                 u.getEmail(),
@@ -186,7 +224,7 @@ public class AdminUserService {
                 u.getStatus(),
                 u.getCreatedAt(),
                 u.getUpdatedAt(),
-                tripsCount
+                Math.toIntExact(tripsCount)
         );
     }
 }

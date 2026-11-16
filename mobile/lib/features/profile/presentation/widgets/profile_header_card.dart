@@ -1,16 +1,14 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:smarttravel_mobile/features/auth/data/models/user_model.dart';
 import 'package:smarttravel_mobile/features/profile/presentation/widgets/edit_profile_dialog.dart';
-import 'package:smarttravel_mobile/features/profile/presentation/widgets/share_profile_dialog.dart';
 
 class ProfileHeaderCard extends StatelessWidget {
   final UserState authState;
-  final Set<String> selectedInterests;
 
   const ProfileHeaderCard({
     super.key,
     required this.authState,
-    required this.selectedInterests,
   });
 
   @override
@@ -73,7 +71,7 @@ class ProfileHeaderCard extends StatelessWidget {
                     Row(
                       children: [
                         Flexible(
-                          child: Text(
+                          child: AppText(
                             name,
                             style: const TextStyle(
                               fontSize: 18,
@@ -88,7 +86,7 @@ class ProfileHeaderCard extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 3),
-                    Text(
+                    AppText(
                       email,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -101,14 +99,14 @@ class ProfileHeaderCard extends StatelessWidget {
                         color: const Color(0xFFE0F2FE),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Text(
+                      child: AppText(
                         persona,
                         style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF0284C7)),
                       ),
                     ),
                     if (authState.bio != null && authState.bio!.isNotEmpty) ...[
                       const SizedBox(height: 6),
-                      Text(
+                      AppText(
                         authState.bio!,
                         style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Color(0xFF64748B)),
                         maxLines: 2,
@@ -132,24 +130,7 @@ class ProfileHeaderCard extends StatelessWidget {
                   ),
                   onPressed: () => EditProfileBottomSheet.show(context, authState),
                   icon: const Icon(Icons.edit, size: 16, color: Color(0xFF0F172A)),
-                  label: const Text('Chỉnh sửa', style: TextStyle(color: Color(0xFF0F172A), fontSize: 13)),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    side: const BorderSide(color: Color(0xFFE2E8F0)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  onPressed: () => ShareProfileBottomSheet.show(
-                    context,
-                    userState: authState,
-                    interests: selectedInterests,
-                  ),
-                  icon: const Icon(Icons.share_outlined, size: 16, color: Color(0xFF0F172A)),
-                  label: const Text('Chia sẻ', style: TextStyle(color: Color(0xFF0F172A), fontSize: 13)),
+                  label: const AppText('Chỉnh sửa', style: TextStyle(color: Color(0xFF0F172A), fontSize: 13)),
                 ),
               ),
             ],

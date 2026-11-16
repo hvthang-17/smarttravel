@@ -26,13 +26,15 @@ public class JwtTokenProvider {
         return signingKey;
     }
 
-    public String generateToken(String email, String role, long authVersion) {
+    public String generateToken(String email, String role, long authVersion, long userId) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
 
         return Jwts.builder()
                 .subject(email)
                 .claim("role", role)
+                .claim("userId", userId)
+                .id(java.util.UUID.randomUUID().toString())
                 .claim("authVersion", authVersion)
                 .issuedAt(now)
                 .expiration(expiryDate)
@@ -53,6 +55,12 @@ public class JwtTokenProvider {
         Number version = Jwts.parser().verifyWith(getSigningKey()).build()
                 .parseSignedClaims(token).getPayload().get("authVersion", Number.class);
         return version == null ? -1 : version.longValue();
+    }
+
+    public long getUserIdFromToken(String token) {
+        Number id = Jwts.parser().verifyWith(getSigningKey()).build()
+                .parseSignedClaims(token).getPayload().get("userId", Number.class);
+        return id == null ? -1 : id.longValue();
     }
 
     public boolean validateToken(String token) {

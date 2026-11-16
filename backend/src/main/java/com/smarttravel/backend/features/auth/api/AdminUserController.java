@@ -38,6 +38,13 @@ public class AdminUserController {
         return ResponseEntity.ok(ApiResponse.success(user, "Lấy chi tiết người dùng thành công"));
     }
 
+    @GetMapping("/page")
+    public ApiResponse<AdminUserService.UserPage> page(@RequestParam(defaultValue = "") String search,
+            @RequestParam(defaultValue = "ALL") String role, @RequestParam(defaultValue = "ALL") String status,
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
+        return ApiResponse.success(adminUserService.page(search, role, status, page, size));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<AdminUserResponseDto>> createUser(
             @Valid @RequestBody AdminCreateUserRequest request) {

@@ -1,3 +1,4 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -80,7 +81,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 8),
                     ),
-                    child: const Text(
+                    child: const AppText(
                       'Bỏ qua',
                       style: TextStyle(
                         fontSize: 14,
@@ -139,7 +140,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         const Spacer(flex: 2),
 
                         // Headline Title
-                        Text(
+                        AppText(
                           page.title,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
@@ -155,7 +156,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         // Body Description
                         ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 290),
-                          child: Text(
+                          child: AppText(
                             page.description,
                             textAlign: TextAlign.center,
                             style: const TextStyle(
@@ -216,7 +217,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child: Text(
+                      child: AppText(
                         _pages[_currentPage].buttonText,
                         style: const TextStyle(
                           fontSize: 16,

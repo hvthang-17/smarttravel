@@ -1,3 +1,4 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -73,12 +74,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               children: [
                 _buildHeader(context),
                 const SizedBox(height: 32),
-                const Text(
+                const AppText(
                   'Tạo tài khoản mới',
                   style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
                 ),
                 const SizedBox(height: 6),
-                const Text(
+                const AppText(
                   'Bắt đầu trải nghiệm du lịch thông minh',
                   style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
                 ),
@@ -99,7 +100,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: 16),
                 _buildPasswordField('Mật khẩu', _passwordController, _obscurePassword, () {
                   setState(() => _obscurePassword = !_obscurePassword);
-                }, (val) => val == null || val.length < 6 ? 'Mật khẩu phải từ 6 ký tự trở lên' : null),
+                }, (val) => val == null || val.length < 8 || val.length > 72 ? 'Mật khẩu phải có 8–72 ký tự' : null),
                 const SizedBox(height: 16),
                 _buildPasswordField('Xác nhận mật khẩu', _confirmPasswordController, _obscureConfirmPassword, () {
                   setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
@@ -120,16 +121,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           width: 20,
                           child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                         )
-                      : const Text('Tạo tài khoản', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                      : const AppText('Tạo tài khoản', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                 ),
                 const SizedBox(height: 28),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('Đã có tài khoản? ', style: TextStyle(color: Color(0xFF64748B), fontSize: 14)),
+                    const AppText('Đã có tài khoản? ', style: TextStyle(color: Color(0xFF64748B), fontSize: 14)),
                     GestureDetector(
                       onTap: () => context.push('/login'),
-                      child: const Text(
+                      child: const AppText(
                         'Đăng nhập',
                         style: TextStyle(color: Color(0xFF0077B6), fontSize: 14, fontWeight: FontWeight.bold),
                       ),
@@ -173,7 +174,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             children: [
               Icon(Icons.explore, size: 16, color: Color(0xFF0077B6)),
               SizedBox(width: 6),
-              Text(
+              AppText(
                 'SMARTTRAVEL',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF0077B6), letterSpacing: 0.5),
               ),
@@ -196,7 +197,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         children: [
           const Icon(Icons.error_outline, color: Color(0xFFDC2626), size: 20),
           const SizedBox(width: 8),
-          Expanded(child: Text(message, style: const TextStyle(color: Color(0xFFDC2626), fontSize: 13))),
+          Expanded(child: AppText(message, style: const TextStyle(color: Color(0xFFDC2626), fontSize: 13))),
         ],
       ),
     );
@@ -207,7 +208,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF0F172A))),
+        AppText(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF0F172A))),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
@@ -224,12 +225,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF0F172A))),
+        AppText(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF0F172A))),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           obscureText: obscure,
-          decoration: _inputDecoration('Tối thiểu 6 ký tự').copyWith(
+          decoration: _inputDecoration('Tối thiểu 8 ký tự').copyWith(
             suffixIcon: IconButton(
               icon: Icon(obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
                   color: const Color(0xFF64748B), size: 20),
@@ -257,17 +258,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         ),
         const SizedBox(width: 8),
         const Expanded(
-          child: Text.rich(
-            TextSpan(
-              style: TextStyle(fontSize: 13, color: Color(0xFF475569)),
-              children: [
-                TextSpan(text: 'Tôi đồng ý với '),
-                TextSpan(text: 'Điều khoản', style: TextStyle(color: Color(0xFF0077B6), fontWeight: FontWeight.w600)),
-                TextSpan(text: ' & '),
-                TextSpan(text: 'Chính sách bảo mật', style: TextStyle(color: Color(0xFF0077B6), fontWeight: FontWeight.w600)),
-              ],
-            ),
-          ),
+          child: AppText('Tôi đồng ý với Điều khoản & Chính sách bảo mật',
+            style: TextStyle(fontSize: 13, color: Color(0xFF475569))),
         ),
       ],
     );
@@ -275,7 +267,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
-      hintText: hint,
+      hint: AppText(hint),
       hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
       filled: true,
       fillColor: Colors.white,

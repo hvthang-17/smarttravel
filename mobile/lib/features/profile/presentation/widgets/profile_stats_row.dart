@@ -1,6 +1,9 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
+import 'package:smarttravel_mobile/features/auth/presentation/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smarttravel_mobile/features/itinerary/data/repositories/itinerary_repository.dart';
+import 'package:smarttravel_mobile/features/itinerary/presentation/providers/itinerary_provider.dart';
 
 class ProfileStatsData {
   final int total;
@@ -15,6 +18,9 @@ class ProfileStatsData {
 }
 
 final userItinerariesStatsProvider = FutureProvider.autoDispose<ProfileStatsData>((ref) async {
+  final token = ref.watch(authNotifierProvider.select((user) => user.token));
+  ref.watch(tripListsRevisionProvider);
+  if (token == null) return const ProfileStatsData(total: 0, completed: 0, destinations: 0);
   try {
     final itineraries = await ref.watch(itineraryRepositoryProvider).getMyItineraries();
     final now = DateTime.now();
@@ -60,7 +66,7 @@ class ProfileStatsRow extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
-      child: statsAsync.when(
+      child: statsAsync.when(skipLoadingOnReload: false,
         data: (stats) => Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -99,12 +105,12 @@ class ProfileStatsRow extends ConsumerWidget {
     return Expanded(
       child: Column(
         children: [
-          Text(
+          AppText(
             number,
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: numColor),
           ),
           const SizedBox(height: 4),
-          Text(
+          AppText(
             label,
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),

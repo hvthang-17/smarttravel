@@ -1,3 +1,4 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smarttravel_mobile/features/auth/presentation/providers/auth_provider.dart';
@@ -15,77 +16,26 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-  Set<String> _selectedInterests = {
-    'Biển & Nghỉ dưỡng',
-    'Ẩm thực đường phố',
-    'Check-in & Sống ảo',
-  };
-
-  void _showNotificationsSheet() {
-    showModalBottomSheet<void>(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => const Padding(
-        padding: EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.notifications_active, color: Color(0xFF0077B6)),
-                SizedBox(width: 8),
-                Text('Thông báo & Cập nhật', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ],
-            ),
-            SizedBox(height: 16),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: CircleAvatar(
-                backgroundColor: Color(0xFFE0F2FE),
-                child: Icon(Icons.wb_sunny, color: Color(0xFF0077B6), size: 20),
-              ),
-              title: Text('Thời tiết Đà Nẵng hôm nay', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-              subtitle: Text('Trời nắng nhẹ, thuận lợi tham quan Bán đảo Sơn Trà và Bà Nà Hills.', style: TextStyle(fontSize: 12)),
-            ),
-            Divider(),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: CircleAvatar(
-                backgroundColor: Color(0xFFFEF3C7),
-                child: Icon(Icons.event, color: Color(0xFFD97706), size: 20),
-              ),
-              title: Text('Cầu Rồng phun lửa cuối tuần', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-              subtitle: Text('21:00 Thứ Bảy & Chủ Nhật hàng tuần tại bờ Đông Cầu Rồng.', style: TextStyle(fontSize: 12)),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   void _showQuickSettingsDialog() {
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Cài đặt ứng dụng'),
-        content: const Column(
+        title: const AppText('Cài đặt ứng dụng'),
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Phiên bản: SmartTravel v1.0.0', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-            SizedBox(height: 8),
-            Text('Dữ liệu điểm đến: Đà Nẵng, Việt Nam', style: TextStyle(fontSize: 13, color: Color(0xFF64748B))),
-            SizedBox(height: 8),
-            Text('Ngôn ngữ: Tiếng Việt (Mặc định)', style: TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+            const AppText('Phiên bản: SmartTravel v1.0.0', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+            const SizedBox(height: 8),
+            const AppText('Dữ liệu điểm đến: Đà Nẵng, Việt Nam', style: TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+            const SizedBox(height: 8),
+            AppText(ref.read(authNotifierProvider).travelerProfile?.language == 'en' ? 'Ngôn ngữ ưu tiên: English' : 'Ngôn ngữ ưu tiên: Tiếng Việt', style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Đóng'),
+            child: const AppText('Đóng'),
           ),
         ],
       ),
@@ -99,15 +49,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
-        title: const Text('Hồ sơ cá nhân'),
+        title: const AppText('Hồ sơ cá nhân'),
         actions: [
           IconButton(
-            tooltip: 'Thông báo',
-            icon: const Icon(Icons.notifications_none_outlined),
-            onPressed: _showNotificationsSheet,
-          ),
-          IconButton(
-            tooltip: 'Cài đặt',
+            tooltip: AppLanguage.text(context, 'Cài đặt'),
             icon: const Icon(Icons.settings_outlined),
             onPressed: _showQuickSettingsDialog,
           ),
@@ -119,17 +64,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               children: [
                 ProfileHeaderCard(
                   authState: authState,
-                  selectedInterests: _selectedInterests,
                 ),
                 const SizedBox(height: 16),
                 const ProfileStatsRow(),
                 const SizedBox(height: 24),
-                ProfileTravelPreferences(
-                  initialInterests: _selectedInterests,
-                  onInterestsChanged: (updated) => setState(() => _selectedInterests = updated),
-                ),
+                ProfileTravelPreferences(key: ValueKey(authState.token)),
                 const SizedBox(height: 24),
-                const ProfileSettingsSection(),
+                ProfileSettingsSection(key: ValueKey(authState.token)),
                 const SizedBox(height: 32),
               ],
             )
