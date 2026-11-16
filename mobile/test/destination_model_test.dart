@@ -50,22 +50,22 @@ void main() {
       expect(model.status, equals('ACTIVE'));
     });
 
-    test('fromJson handles null values with safe defaults', () {
+    test('fromJson preserves missing IDs, ratings and coordinates as NULL', () {
       final json = <String, dynamic>{};
 
       final model = DestinationModel.fromJson(json);
 
-      expect(model.id, equals(0));
+      expect(model.id, isNull);
       expect(model.name, isEmpty);
       expect(model.category, isEmpty);
       expect(model.description, isNull);
       expect(model.address, isNull);
       expect(model.imageUrl, isNull);
       expect(model.subImages, isEmpty);
-      expect(model.rating, equals(0.0));
-      expect(model.reviewCount, equals(0));
-      expect(model.latitude, equals(0.0));
-      expect(model.longitude, equals(0.0));
+      expect(model.rating, isNull);
+      expect(model.reviewCount, isNull);
+      expect(model.latitude, isNull);
+      expect(model.longitude, isNull);
       expect(model.status, equals('ACTIVE'));
     });
   });

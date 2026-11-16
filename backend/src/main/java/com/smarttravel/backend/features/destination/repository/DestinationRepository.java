@@ -12,6 +12,20 @@ import java.util.Optional;
 
 @Repository
 public interface DestinationRepository extends JpaRepository<Destination, Long> {
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_READ)
+    @Query("select d from Destination d join fetch d.category where d.id = :id")
+    Optional<Destination> lockForPublicSelection(Long id);
+
+    @Query("""
+            select d from Destination d join fetch d.category c
+            where d.status = 'ACTIVE' and c.status = 'ACTIVE' and c.code in :codes
+              and (:search = '' or locate(:search, lower(d.name)) > 0 or locate(:search, lower(d.nameEn)) > 0)
+              and (:min is null or coalesce(d.priceMaxVnd, d.priceMinVnd) >= :min)
+              and (:max is null or coalesce(d.priceMinVnd, d.priceMaxVnd) <= :max)
+            order by d.id
+            """)
+    org.springframework.data.domain.Slice<Destination> discover(String search, java.util.Set<String> codes,
+            Long min, Long max, org.springframework.data.domain.Pageable pageable);
 
     @Override
     @EntityGraph(attributePaths = {"category"})

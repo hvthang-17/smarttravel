@@ -1,220 +1,224 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:smarttravel_mobile/core/theme/app_theme.dart';
-import 'package:smarttravel_mobile/features/destination/presentation/providers/destination_provider.dart';
-import 'package:smarttravel_mobile/features/destination/presentation/widgets/destination_card_skeleton.dart';
+import 'package:smarttravel_mobile/features/auth/presentation/providers/auth_provider.dart';
+import '../../data/models/discovery_models.dart';
+import '../providers/destination_provider.dart';
+import '../widgets/destination_result_tile.dart';
 
-class DestinationListScreen extends ConsumerWidget {
-  const DestinationListScreen({super.key});
+class DestinationListScreen extends ConsumerStatefulWidget {
+  const DestinationListScreen(
+      {super.key, this.initialSearch = '', this.initialCategory});
+  final String initialSearch;
+  final String? initialCategory;
 
-  final List<String> categories = const [
-    'Tất cả',
-    'Biển',
-    'Văn hóa',
-    'Ẩm thực',
-    'Thiên nhiên',
-    'Check-in',
-  ];
+  @override
+  ConsumerState<DestinationListScreen> createState() =>
+      _DestinationListScreenState();
+}
 
-  String _formatPrice(int amount) {
-    if (amount >= 1000000) {
-      return '${(amount / 1000000).toStringAsFixed(1)}tr';
-    } else if (amount >= 1000) {
-      return '${(amount / 1000).toStringAsFixed(0)}k';
-    }
-    return '$amountđ';
+class _DestinationListScreenState extends ConsumerState<DestinationListScreen> {
+  late final _search = TextEditingController(text: widget.initialSearch);
+  final _min = TextEditingController();
+  final _max = TextEditingController();
+  final _form = GlobalKey<FormState>();
+  late String? _category = widget.initialCategory;
+  late DiscoveryQuery _query = (
+    search: widget.initialSearch,
+    category: widget.initialCategory,
+    minPrice: null,
+    maxPrice: null,
+    page: 0
+  );
+
+  @override
+  void dispose() {
+    _search.dispose();
+    _min.dispose();
+    _max.dispose();
+    super.dispose();
+  }
+
+  String? _priceError(String? raw) {
+    final text = raw?.trim() ?? '';
+    if (text.isEmpty) return null;
+    final value = int.tryParse(text);
+    return value == null || value < 0 ? 'Nhập số tiền từ 0 đ' : null;
+  }
+
+  void _apply(String? codes) {
+    if (_form.currentState?.validate() != true) return;
+    FocusScope.of(context).unfocus();
+    setState(() => _query = (
+          search: _search.text.trim(),
+          category: codes,
+          minPrice: int.tryParse(_min.text.trim()),
+          maxPrice: int.tryParse(_max.text.trim()),
+          page: 0,
+        ));
+  }
+
+  void _openPage(int page) {
+    setState(() => _query = (
+          search: _query.search,
+          category: _query.category,
+          minPrice: _query.minPrice,
+          maxPrice: _query.maxPrice,
+          page: page
+        ));
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final selectedCategory = ref.watch(selectedCategoryProvider);
-    final destinationsState = ref.watch(destinationListProvider);
+  Widget build(BuildContext context) {
+    final profile =
+        ref.watch(authNotifierProvider.select((user) => user.travelerProfile));
+    final language = profile?.language ?? 'vi';
+    final catalog = ref.watch(destinationCatalogProvider);
+    final categories = catalog.valueOrNull ?? const <DestinationCategory>[];
+    final interests = categories
+        .where((category) =>
+            profile?.preferredCategories.contains(category.code) == true)
+        .map((category) => category.code)
+        .toList();
+    final options = {
+      '': 'Tất cả danh mục',
+      if (interests.isNotEmpty) 'interests': 'Danh mục yêu thích của tôi',
+      for (final category in categories)
+        category.code: category.label(language),
+    };
+    final dropdown = options.containsKey(_category) ? _category! : '';
+    String? codes() => _category == 'interests'
+        ? (interests.isEmpty ? null : interests.join(','))
+        : _category;
+    final results = ref.watch(discoveryProvider(_query));
 
     return Scaffold(
-      backgroundColor: AppTheme.bgCanvas,
-      appBar: AppBar(
-        title: const Text('Danh sách điểm đến'),
-      ),
-      body: Column(
+      appBar: AppBar(title: const AppText('Khám phá địa điểm')),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
         children: [
-          // Category filter chips
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: categories.map((category) {
-                final isSelected = selectedCategory == category;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: FilterChip(
-                    label: Text(
-                      category,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? AppTheme.primaryBlue : AppTheme.textPrimary,
-                      ),
-                    ),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      if (selected) {
-                        ref.read(selectedCategoryProvider.notifier).state = category;
-                      }
-                    },
-                    selectedColor: AppTheme.primarySurface,
-                    checkmarkColor: AppTheme.primaryBlue,
-                    backgroundColor: AppTheme.surfaceCard,
-                    side: BorderSide(
-                      color: isSelected ? AppTheme.primaryBlue : AppTheme.borderSubtle,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
+          Form(
+            key: _form,
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextFormField(
+                    controller: _search,
+                    maxLength: 180,
+                    textInputAction: TextInputAction.search,
+                    onFieldSubmitted: (_) => _apply(codes()),
+                    decoration: const InputDecoration(
+                        label: AppText('Tên địa điểm'),
+                        prefixIcon: Icon(Icons.search),
+                        counterText: ''),
                   ),
-                );
-              }).toList(),
-            ),
-          ),
-          const Divider(height: 1, color: AppTheme.borderSubtle),
-          Expanded(
-            child: destinationsState.when(
-              data: (destinations) {
-                final filtered = destinations.where((item) {
-                  if (selectedCategory == 'Tất cả') return true;
-                  return item.category.toLowerCase().contains(selectedCategory.toLowerCase());
-                }).toList();
-
-                if (filtered.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      'Chưa có địa điểm nào trong danh mục này.',
-                      style: TextStyle(color: AppTheme.textMuted),
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: filtered.length,
-                  itemBuilder: (context, index) {
-                    final item = filtered[index];
-                    final isFree = (item.priceMinVnd == null || item.priceMinVnd == 0);
-                    final location = item.address?.trim().isNotEmpty == true
-                        ? (item.address!.contains(',')
-                            ? item.address!.split(',').first.trim()
-                            : item.address!)
-                        : 'Đà Nẵng';
-
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        side: const BorderSide(color: AppTheme.borderSubtle),
-                      ),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(14),
-                        onTap: () => context.push('/destinations/${item.id}'),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Row(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: SizedBox(
-                                  width: 60,
-                                  height: 60,
-                                  child: item.imageUrl?.trim().isNotEmpty == true
-                                      ? Image.network(
-                                          item.imageUrl!,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (_, __, ___) => _buildFallbackThumbnail(item.category),
-                                        )
-                                      : _buildFallbackThumbnail(item.category),
-                                ),
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      item.name,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppTheme.textPrimary,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      '${item.category} • $location • ★ ${item.rating > 0 ? item.rating.toStringAsFixed(1) : "Mới"}',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: AppTheme.textMuted,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                isFree ? 'Miễn phí' : _formatPrice(item.priceMinVnd!),
-                                style: TextStyle(
-                                  color: isFree
-                                      ? AppTheme.statusSuccess
-                                      : AppTheme.secondaryCoral,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-              loading: () => const DestinationListSkeleton(),
-              error: (err, stack) => Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('Lỗi tải dữ liệu: $err'),
-                    const SizedBox(height: 12),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    key: ValueKey(dropdown),
+                    isExpanded: true,
+                    initialValue: dropdown,
+                    decoration: const InputDecoration(label: AppText('Danh mục')),
+                    items: [
+                      for (final entry in options.entries)
+                        DropdownMenuItem(
+                            value: entry.key,
+                            child: AppText(entry.value,
+                                overflow: TextOverflow.ellipsis))
+                    ],
+                    onChanged: catalog.hasValue
+                        ? (value) => setState(
+                            () => _category = value == '' ? null : value)
+                        : null,
+                  ),
+                  if (catalog.hasError)
+                    TextButton(
+                        onPressed: () =>
+                            ref.invalidate(destinationCatalogProvider),
+                        child: const AppText('Thử tải lại danh mục')),
+                  const SizedBox(height: 12),
+                  Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Expanded(
+                        child: TextFormField(
+                            controller: _min,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                                label: AppText('Giá từ (đ/người)')),
+                            validator: _priceError)),
+                    const SizedBox(width: 12),
+                    Expanded(
+                        child: TextFormField(
+                            controller: _max,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                                label: AppText('Giá đến (đ/người)')),
+                            validator: (value) {
+                              final error = _priceError(value);
+                              if (error != null) return error;
+                              final low = int.tryParse(_min.text.trim());
+                              final high = int.tryParse(value?.trim() ?? '');
+                              return low != null && high != null && high < low
+                                  ? 'Thấp hơn giá từ'
+                                  : null;
+                            })),
+                  ]),
+                  if (_query.minPrice != null || _query.maxPrice != null)
+                    const Padding(
+                        padding: EdgeInsets.only(top: 8),
+                        child: AppText(
+                            'Đang lọc theo giá. Kết quả bỏ qua địa điểm chưa có giá tham khảo.')),
+                  const SizedBox(height: 12),
+                  Wrap(spacing: 8, runSpacing: 8, children: [
                     FilledButton(
-                      onPressed: () => ref.refresh(destinationListProvider),
-                      child: const Text('Thử lại'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+                        onPressed: () => _apply(codes()),
+                        child: const AppText('Áp dụng bộ lọc')),
+                    TextButton(
+                        onPressed: () {
+                          _search.clear();
+                          _min.clear();
+                          _max.clear();
+                          setState(() => _category = null);
+                          _apply(null);
+                        },
+                        child: const AppText('Xóa bộ lọc')),
+                  ]),
+                ]),
+          ),
+          const SizedBox(height: 16),
+          ...results.when(
+            skipLoadingOnRefresh: false,
+            loading: () => <Widget>[const LinearProgressIndicator()],
+            error: (_, __) => <Widget>[
+              const AppText('Không tải được địa điểm.'),
+              TextButton(
+                  onPressed: () => ref.invalidate(discoveryProvider(_query)),
+                  child: const AppText('Thử lại')),
+            ],
+            data: (page) => <Widget>[
+              if (page.items.isEmpty)
+                const AppText('Không có địa điểm khớp với bộ lọc.'),
+              for (final item in page.items)
+                DestinationResultTile(destination: item, language: language),
+              if (_query.page > 0 || page.hasNext)
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                          tooltip: AppLanguage.text(context, 'Trang trước'),
+                          onPressed: _query.page == 0
+                              ? null
+                              : () => _openPage(_query.page - 1),
+                          icon: const Icon(Icons.chevron_left)),
+                      AppText('Trang ${_query.page + 1}'),
+                      IconButton(
+                          tooltip: AppLanguage.text(context, 'Trang tiếp'),
+                          onPressed: page.hasNext
+                              ? () => _openPage(_query.page + 1)
+                              : null,
+                          icon: const Icon(Icons.chevron_right)),
+                    ]),
+            ],
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFallbackThumbnail(String category) {
-    return Container(
-      color: AppTheme.primarySurface,
-      child: Icon(
-        category.contains('Biển')
-            ? Icons.beach_access
-            : category.contains('Ẩm thực')
-                ? Icons.restaurant
-                : category.contains('Văn hóa')
-                    ? Icons.account_balance
-                    : Icons.landscape,
-        color: AppTheme.primaryBlue,
-        size: 28,
       ),
     );
   }

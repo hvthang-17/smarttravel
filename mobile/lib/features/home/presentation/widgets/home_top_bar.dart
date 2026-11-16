@@ -1,3 +1,4 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smarttravel_mobile/core/theme/app_theme.dart';
@@ -55,28 +56,6 @@ class HomeTopBar extends StatelessWidget {
           ),
           Row(
             children: [
-              Semantics(
-                label: 'Thông báo',
-                button: true,
-                child: IconButton(
-                  icon: const Icon(
-                    Icons.notifications_none_outlined,
-                    color: AppTheme.textPrimary,
-                    size: 26,
-                  ),
-                  tooltip: 'Thông báo',
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Không có thông báo mới.'),
-                        behavior: SnackBarBehavior.floating,
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(width: 4),
               InkWell(
                 onTap: () {
                   if (!isAuthenticated) {
@@ -89,7 +68,7 @@ class HomeTopBar extends StatelessWidget {
                 child: CircleAvatar(
                   radius: 18,
                   backgroundColor: AppTheme.primaryBlue,
-                  child: Text(
+                  child: AppText(
                     userName.isNotEmpty ? userName[0].toUpperCase() : 'M',
                     style: const TextStyle(
                       color: Colors.white,

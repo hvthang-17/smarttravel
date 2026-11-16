@@ -1,3 +1,4 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:smarttravel_mobile/core/theme/app_theme.dart';
 
@@ -23,7 +24,7 @@ class DestinationSubImagesGallery extends StatelessWidget {
                 errorBuilder: (_, __, ___) => Container(
                   color: Colors.black54,
                   padding: const EdgeInsets.all(32),
-                  child: const Text(
+                  child: const AppText(
                     'Không thể tải ảnh',
                     style: TextStyle(color: Colors.white),
                   ),
@@ -47,7 +48,7 @@ class DestinationSubImagesGallery extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        const AppText(
           'Thư viện hình ảnh',
           style: TextStyle(
             fontSize: 16,

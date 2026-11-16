@@ -1,3 +1,5 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
+import '../destination_display.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:smarttravel_mobile/core/theme/app_theme.dart';
@@ -9,20 +11,19 @@ class DestinationVisitInfoCard extends StatelessWidget {
   const DestinationVisitInfoCard({super.key, required this.destination});
 
   Future<void> _openGoogleMaps(BuildContext context) async {
-    final uri = Uri.parse(
-      'https://www.google.com/maps/search/?api=1&query=${destination.latitude},${destination.longitude}',
-    );
+    final uri = destinationMapUri(destination);
+    if (uri == null) return;
     try {
       final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
       if (!launched && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Không thể mở ứng dụng bản đồ.')),
+          const SnackBar(content: AppText('Không thể mở ứng dụng bản đồ.')),
         );
       }
     } catch (_) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Lỗi khi mở liên kết bản đồ.')),
+          const SnackBar(content: AppText('Lỗi khi mở liên kết bản đồ.')),
         );
       }
     }
@@ -32,7 +33,7 @@ class DestinationVisitInfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final addressText = destination.address?.trim().isNotEmpty == true
         ? destination.address!
-        : 'Đà Nẵng, Việt Nam';
+        : 'Chưa cập nhật địa chỉ';
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -44,7 +45,7 @@ class DestinationVisitInfoCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          const AppText(
             'Thông tin tham quan',
             style: TextStyle(
               fontSize: 16,
@@ -62,19 +63,13 @@ class DestinationVisitInfoCard extends StatelessWidget {
           _buildInfoRow(
             Icons.schedule,
             'Thời lượng gợi ý',
-            'Khoảng 1.5 - 3 giờ',
-          ),
-          const Divider(height: 20, color: AppTheme.surfaceSubtle),
-          _buildInfoRow(
-            Icons.directions_car_outlined,
-            'Phương tiện',
-            'Xe máy, Ô tô, Taxi / Grab',
+            destination.visitDurationMinutes == null ? 'Chưa rõ' : '${destination.visitDurationMinutes} phút',
           ),
           const Divider(height: 20, color: AppTheme.surfaceSubtle),
           _buildInfoRow(
             Icons.explore_outlined,
             'Tọa độ GPS',
-            '${destination.latitude.toStringAsFixed(4)}, ${destination.longitude.toStringAsFixed(4)}',
+            destination.hasCoordinates ? '${destination.latitude!.toStringAsFixed(4)}, ${destination.longitude!.toStringAsFixed(4)}' : 'Chưa rõ',
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -88,13 +83,13 @@ class DestinationVisitInfoCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              onPressed: () => _openGoogleMaps(context),
+              onPressed: destination.hasCoordinates ? () => _openGoogleMaps(context) : null,
               icon: const Icon(
                 Icons.map_outlined,
                 size: 18,
                 color: AppTheme.primaryBlue,
               ),
-              label: const Text(
+              label: const AppText(
                 'Xem vị trí trên Google Maps',
                 style: TextStyle(
                   fontSize: 13,
@@ -117,7 +112,7 @@ class DestinationVisitInfoCard extends StatelessWidget {
         const SizedBox(width: 10),
         SizedBox(
           width: 110,
-          child: Text(
+          child: AppText(
             label,
             style: const TextStyle(
               fontSize: 13,
@@ -126,7 +121,7 @@ class DestinationVisitInfoCard extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: Text(
+          child: AppText(
             value,
             style: const TextStyle(
               fontSize: 13,
