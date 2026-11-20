@@ -1,3 +1,4 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:smarttravel_mobile/core/theme/app_theme.dart';
 import 'package:smarttravel_mobile/features/itinerary/data/models/itinerary_model.dart';
@@ -5,19 +6,21 @@ import 'package:smarttravel_mobile/features/itinerary/data/models/itinerary_mode
 class EditActivityItemTile extends StatelessWidget {
   final ItineraryItemModel item;
   final int index;
-  final int totalCount;
   final VoidCallback? onMoveUp;
   final VoidCallback? onMoveDown;
   final VoidCallback onDelete;
+  final VoidCallback onEdit;
+  final VoidCallback onReplace;
 
   const EditActivityItemTile({
     super.key,
     required this.item,
     required this.index,
-    required this.totalCount,
     this.onMoveUp,
     this.onMoveDown,
     required this.onDelete,
+    required this.onEdit,
+    required this.onReplace,
   });
 
   String _formatVnd(int amount) {
@@ -37,6 +40,12 @@ class EditActivityItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dest = item.destination;
+    final time = item.startTime?.split(':').take(2).join(':') ?? 'Chưa đặt giờ';
+    final minutes = item.previewDurationMinutes;
+    final cost = item.estimatedCostVnd;
+    final price = cost == null ? 'Chưa rõ giá'
+        : !item.upperPriceKnown ? 'Từ ${_formatVnd(cost)} đ'
+        : cost == 0 ? 'Miễn phí' : '${_formatVnd(cost)} đ';
     final IconData categoryIcon = dest?.category.contains('Biển') == true
         ? Icons.beach_access
         : dest?.category.contains('Ẩm thực') == true
@@ -63,8 +72,6 @@ class EditActivityItemTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.drag_indicator, color: AppTheme.textMuted, size: 20),
-          const SizedBox(width: 8),
           Container(
             width: 28,
             height: 28,
@@ -73,8 +80,8 @@ class EditActivityItemTile extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: Center(
-              child: Text(
-                '0${index + 1}',
+              child: AppText(
+                '${index + 1}',
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -93,7 +100,7 @@ class EditActivityItemTile extends StatelessWidget {
                     Icon(categoryIcon, size: 16, color: AppTheme.primaryBlue),
                     const SizedBox(width: 6),
                     Expanded(
-                      child: Text(
+                      child: AppText(
                         dest?.name ?? 'Điểm tham quan',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -107,38 +114,28 @@ class EditActivityItemTile extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  '${item.startTime ?? "08:00"} - ${item.durationMinutes ?? 90}p • ${item.notes ?? ""}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                AppText(
+                  '$time · ${minutes == null ? 'Chưa rõ thời lượng' : '$minutes phút'}',
                   style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
                 ),
+                if (item.notes?.isNotEmpty == true)
+                  AppText(item.notes!, maxLines: 2, overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
                 const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Container(
+                Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
                         color: const Color(0xFFE0F2FE),
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: Text(
-                        item.estimatedCostVnd != null && item.estimatedCostVnd! > 0
-                            ? '${_formatVnd(item.estimatedCostVnd!)}đ'
-                            : 'Miễn phí',
+                      child: AppText(
+                        price,
                         style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF0284C7),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '• ${dest?.category ?? "Đà Nẵng"}',
-                      style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
-                    ),
-                  ],
                 ),
               ],
             ),
@@ -150,7 +147,7 @@ class EditActivityItemTile extends StatelessWidget {
                 width: 44,
                 height: 44,
                 child: IconButton(
-                  tooltip: 'Chuyển lên trước',
+                  tooltip: AppLanguage.text(context, 'Chuyển lên trước'),
                   onPressed: onMoveUp,
                   icon: Icon(
                     Icons.keyboard_arrow_up,
@@ -163,7 +160,7 @@ class EditActivityItemTile extends StatelessWidget {
                 width: 44,
                 height: 44,
                 child: IconButton(
-                  tooltip: 'Chuyển xuống sau',
+                  tooltip: AppLanguage.text(context, 'Chuyển xuống sau'),
                   onPressed: onMoveDown,
                   icon: Icon(
                     Icons.keyboard_arrow_down,
@@ -172,14 +169,14 @@ class EditActivityItemTile extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(
-                width: 44,
-                height: 44,
-                child: IconButton(
-                  tooltip: 'Xóa điểm này',
-                  onPressed: onDelete,
-                  icon: const Icon(Icons.delete_outline, size: 20, color: AppTheme.statusError),
-                ),
+              PopupMenuButton<VoidCallback>(
+                tooltip: AppLanguage.text(context, 'Tùy chọn hoạt động'),
+                onSelected: (action) => action(),
+                itemBuilder: (_) => [
+                  PopupMenuItem(value: onEdit, child: const AppText('Sửa giờ, thời lượng, ghi chú')),
+                  PopupMenuItem(value: onReplace, child: const AppText('Thay địa điểm')),
+                  PopupMenuItem(value: onDelete, child: const AppText('Xóa điểm này')),
+                ],
               ),
             ],
           ),

@@ -1,3 +1,4 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:smarttravel_mobile/core/theme/app_theme.dart';
 
@@ -5,12 +6,16 @@ class EditItinerarySummaryCard extends StatelessWidget {
   final int dayNumber;
   final int placesCount;
   final int dayCostVnd;
+  final bool costComplete;
+  final bool saving;
 
   const EditItinerarySummaryCard({
     super.key,
     required this.dayNumber,
     required this.placesCount,
     required this.dayCostVnd,
+    this.costComplete = false,
+    this.saving = false,
   });
 
   String _formatVnd(int amount) {
@@ -38,47 +43,19 @@ class EditItinerarySummaryCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.bar_chart, color: AppTheme.primaryBlue, size: 18),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Tổng quan Ngày $dayNumber sau chỉnh sửa',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimary,
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE0F2FE),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text(
-                  'Tự động cập nhật',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF0284C7),
-                  ),
-                ),
-              ),
-            ],
+          Align(
+            alignment: Alignment.centerLeft,
+            child: AppText('Ngày $dayNumber',
+              style: const TextStyle(fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
           ),
-          const SizedBox(height: 14),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 16,
+            runSpacing: 8,
             children: [
               _buildStatColumn('Số địa điểm', '$placesCount điểm đến'),
-              _buildStatColumn('Ước tính chi phí', '${_formatVnd(dayCostVnd)} VNĐ'),
-              _buildStatColumn('Thời gian di chuyển', '~${(placesCount * 1.5).toStringAsFixed(1)} giờ'),
+              _buildStatColumn(saving ? 'Chi phí đã lưu' : costComplete ? 'Ước tính chi phí' : 'Chi phí đã biết', '${_formatVnd(dayCostVnd)} VNĐ'),
+              _buildStatColumn('Thời gian di chuyển', saving ? 'Đang tính lại' : 'Tính lại khi lưu'),
             ],
           ),
         ],
@@ -90,9 +67,9 @@ class EditItinerarySummaryCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+        AppText(label, style: const TextStyle(fontSize: 11, color: AppTheme.textMuted)),
         const SizedBox(height: 2),
-        Text(
+        AppText(
           value,
           style: const TextStyle(
             fontSize: 12,
