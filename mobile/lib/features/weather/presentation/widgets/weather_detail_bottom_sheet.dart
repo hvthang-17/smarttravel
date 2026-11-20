@@ -1,3 +1,4 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smarttravel_mobile/features/weather/data/models/weather_model.dart';
@@ -21,6 +22,23 @@ class WeatherDetailBottomSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final current = ref.watch(weatherProvider);
+    final weather = current.valueOrNull ?? this.weather;
+    if (!weather.available) {
+      return Material(
+        color: Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        child: SafeArea(top: false, child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            AppText('Chưa có dữ liệu thời tiết', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 12),
+            TextButton(onPressed: current.isLoading ? null : () => ref.invalidate(weatherProvider),
+              child: AppText(current.isLoading ? 'Đang tải…' : 'Thử lại')),
+          ]),
+        )),
+      );
+    }
     final maxSheetHeight = MediaQuery.of(context).size.height * 0.88;
 
     return Container(
@@ -60,29 +78,29 @@ class WeatherDetailBottomSheet extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Thời tiết thực tế Đà Nẵng',
+                      const AppText(
+                        'Dự báo thời tiết',
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF0F172A),
                         ),
                       ),
-                      Text(
-                        'Cập nhật: ${weather.updatedAt} • ${weather.isFromGps ? "Theo định vị GPS" : "Toàn thành phố"}',
+                      AppText(
+                        '${weather.stale ? 'Dữ liệu cũ · ' : ''}Mốc dự báo ${weather.modelTime} · Open-Meteo',
                         style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
                       ),
                     ],
                   ),
                 ),
                 IconButton(
-                  tooltip: 'Làm mới',
+                  tooltip: AppLanguage.text(context, 'Làm mới'),
                   icon: const Icon(Icons.refresh_rounded, color: Color(0xFF0077B6)),
                   onPressed: () {
                     ref.invalidate(weatherProvider);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Đang cập nhật lại thời tiết Đà Nẵng...'),
+                        content: AppText('Đang cập nhật lại thời tiết Đà Nẵng...'),
                         duration: Duration(seconds: 1),
                         behavior: SnackBarBehavior.floating,
                       ),
@@ -130,8 +148,8 @@ class WeatherDetailBottomSheet extends ConsumerWidget {
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  '${weather.temperature.round()}',
+                                AppText(
+                                  '${weather.temperature?.round() ?? '—'}',
                                   style: const TextStyle(
                                     fontSize: 52,
                                     fontWeight: FontWeight.bold,
@@ -139,7 +157,7 @@ class WeatherDetailBottomSheet extends ConsumerWidget {
                                     height: 1.0,
                                   ),
                                 ),
-                                const Text(
+                                const AppText(
                                   '°C',
                                   style: TextStyle(
                                     fontSize: 24,
@@ -150,7 +168,7 @@ class WeatherDetailBottomSheet extends ConsumerWidget {
                               ],
                             ),
                             const SizedBox(height: 4),
-                            Text(
+                            AppText(
                               weather.condition,
                               style: const TextStyle(
                                 fontSize: 16,
@@ -159,7 +177,7 @@ class WeatherDetailBottomSheet extends ConsumerWidget {
                               ),
                             ),
                             const SizedBox(height: 2),
-                            Text(
+                            AppText(
                               'Cảm giác như ${weather.apparentTempFormatted}',
                               style: const TextStyle(fontSize: 12, color: Color(0xFFE0F2FE)),
                             ),
@@ -184,7 +202,7 @@ class WeatherDetailBottomSheet extends ConsumerWidget {
                                     color: Colors.white,
                                   ),
                                   const SizedBox(width: 3),
-                                  Text(
+                                  AppText(
                                     weather.cityName,
                                     style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold),
                                   ),
@@ -213,7 +231,7 @@ class WeatherDetailBottomSheet extends ConsumerWidget {
                           children: [
                             Icon(Icons.tips_and_updates, color: Color(0xFFD97706), size: 18),
                             SizedBox(width: 8),
-                            Text(
+                            AppText(
                               'Gợi ý lịch trình theo thời tiết hôm nay',
                               style: TextStyle(
                                 fontSize: 13,
@@ -224,8 +242,8 @@ class WeatherDetailBottomSheet extends ConsumerWidget {
                           ],
                         ),
                         const SizedBox(height: 8),
-                        Text(
-                          weather.travelAdvice,
+                        AppText(
+                          weather.travelAdvice ?? 'Chưa có khuyến nghị.',
                           style: const TextStyle(
                             fontSize: 13,
                             height: 1.5,
@@ -236,7 +254,7 @@ class WeatherDetailBottomSheet extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  const Text(
+                  const AppText(
                     'Dự báo thời tiết Đà Nẵng 7 ngày tới',
                     style: TextStyle(
                       fontSize: 15,

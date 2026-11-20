@@ -1,244 +1,194 @@
 package com.smarttravel.backend.features.weather.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smarttravel.backend.features.weather.dto.DailyForecastDto;
 import com.smarttravel.backend.features.weather.dto.WeatherResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.net.URI;
+import java.time.*;
+import java.util.*;
 
 @Service
 public class WeatherService {
+    public static final String TIMEZONE = "Asia/Ho_Chi_Minh";
+    private static final ZoneId ZONE = ZoneId.of(TIMEZONE);
+    private static final Duration FRESHNESS = Duration.ofMinutes(15);
+    private static final Duration MAX_STALE = Duration.ofHours(6);
+    private static final String CURRENT = "temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m";
+    private static final String DAILY = "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max";
 
-    private static final Logger log = LoggerFactory.getLogger(WeatherService.class);
+    private record Key(int lat100, int lon100, String locale) {}
+    private record Entry(WeatherResponse reading, Instant retryAfter) {}
+    private final RestTemplate client;
+    private final Clock clock;
+    private final String endpoint;
+    private final LinkedHashMap<Key, Entry> cache = new LinkedHashMap<>(32, .75f, true);
+    private final Object[] stripes = new Object[32];
 
-    private final RestTemplate restTemplate;
-    private final ObjectMapper objectMapper;
+    @Autowired
+    public WeatherService(RestTemplateBuilder builder,
+                          @Value("${app.weather.endpoint:https://api.open-meteo.com/v1/forecast}") String endpoint) {
+        this(builder.connectTimeout(Duration.ofSeconds(3)).readTimeout(Duration.ofSeconds(3)).build(),
+                Clock.systemUTC(), endpoint);
+    }
 
-    private static class CachedEntry {
-        final WeatherResponse response;
-        final long timestamp;
+    public WeatherService(RestTemplate client, Clock clock, String endpoint) {
+        this.client = client;
+        this.clock = clock;
+        this.endpoint = endpoint;
+        Arrays.setAll(stripes, index -> new Object());
+    }
 
-        CachedEntry(WeatherResponse response, long timestamp) {
-            this.response = response;
-            this.timestamp = timestamp;
+    public WeatherResponse getDaNangWeather(Double lat, Double lon, String timezone, String locale) {
+        if (!TIMEZONE.equals(timezone) || !Set.of("vi", "en").contains(locale)) {
+            throw new IllegalArgumentException("Dùng timezone Asia/Ho_Chi_Minh và locale vi hoặc en");
+        }
+        if ((lat == null) != (lon == null) || (lat != null &&
+                (!Double.isFinite(lat) || !Double.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180))) {
+            throw new IllegalArgumentException("Cần cặp tọa độ hợp lệ");
+        }
+        var key = new Key(bucket(lat == null ? 16.0544 : lat), bucket(lon == null ? 108.2022 : lon), locale);
+        synchronized (stripes[key.hashCode() & 31]) {
+            return load(key);
         }
     }
 
-    // In-memory 15-minute cache keyed by rounded coordinates
-    private final Map<String, CachedEntry> cacheMap = new ConcurrentHashMap<>();
-    private static final long CACHE_DURATION_MS = 15 * 60 * 1000;
-
-    public WeatherService(RestTemplateBuilder restTemplateBuilder, ObjectMapper objectMapper) {
-        this.restTemplate = restTemplateBuilder
-                .setConnectTimeout(Duration.ofSeconds(4))
-                .setReadTimeout(Duration.ofSeconds(4))
-                .build();
-        this.objectMapper = objectMapper;
-    }
-
-    public WeatherResponse getDaNangWeather() {
-        return getDaNangWeather(null, null);
-    }
-
-    public synchronized WeatherResponse getDaNangWeather(Double lat, Double lon) {
-        double targetLat = (lat != null && lat >= -90 && lat <= 90) ? lat : 16.0544;
-        double targetLon = (lon != null && lon >= -180 && lon <= 180) ? lon : 108.2022;
-        String cacheKey = String.format("%.2f_%.2f", targetLat, targetLon);
-
-        long now = System.currentTimeMillis();
-        CachedEntry entry = cacheMap.get(cacheKey);
-        if (entry != null && (now - entry.timestamp < CACHE_DURATION_MS)) {
-            return entry.response;
+    private WeatherResponse load(Key key) {
+        var now = clock.instant();
+        var old = find(key);
+        if (old != null) {
+            var reading = old.reading();
+            if (reading != null && reading.updatedAt().plus(FRESHNESS).isAfter(now)
+                    && reading.validAt().plus(Duration.ofMinutes(30)).isAfter(now)) return reading.withStatus("CACHED");
+            if (old.retryAfter().isAfter(now)) return fallback(reading, key, now);
         }
-
-        String locationName = resolveLocationName(targetLat, targetLon);
-        String url = String.format(
-                "https://api.open-meteo.com/v1/forecast?latitude=%.4f&longitude=%.4f&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%%2FBangkok",
-                targetLat, targetLon
-        );
-
         try {
-            String jsonStr = restTemplate.getForObject(url, String.class);
-            if (jsonStr != null) {
-                JsonNode root = objectMapper.readTree(jsonStr);
-                WeatherResponse response = parseOpenMeteoResponse(root, locationName);
-                cacheMap.put(cacheKey, new CachedEntry(response, now));
-                return response;
+            var payload = client.getForObject(uri(key), JsonNode.class);
+            var reading = parse(payload, key, clock.instant());
+            put(key, new Entry(reading, Instant.EPOCH));
+            return reading;
+        } catch (RestClientException | IllegalArgumentException | DateTimeException error) {
+            var reading = old == null ? null : old.reading();
+            put(key, new Entry(reading, now.plusSeconds(60)));
+            return fallback(reading, key, now);
+        }
+    }
+
+    private URI uri(Key key) {
+        return UriComponentsBuilder.fromUriString(endpoint)
+                .queryParam("latitude", key.lat100() / 100.0)
+                .queryParam("longitude", key.lon100() / 100.0)
+                .queryParam("current", CURRENT).queryParam("daily", DAILY)
+                .queryParam("timezone", TIMEZONE).queryParam("forecast_days", 7)
+                .build().encode().toUri();
+    }
+
+    private static int bucket(double coordinate) {
+        return (int) Math.round(coordinate * 100);
+    }
+
+    private synchronized Entry find(Key key) { return cache.get(key); }
+
+    private synchronized void put(Key key, Entry entry) {
+        cache.put(key, entry);
+        if (cache.size() > 256) cache.pollFirstEntry();
+    }
+
+    private static WeatherResponse fallback(WeatherResponse previous, Key key, Instant now) {
+        if (previous != null && previous.validAt().plus(MAX_STALE).isAfter(now)) {
+            return previous.withStatus("STALE");
+        }
+        return new WeatherResponse(location(key), null, null, null, null, null, null,
+                key.locale().equals("vi") ? "Chưa có dữ liệu thời tiết" : "Weather unavailable",
+                null, null, null, List.of(), null, null, "UNAVAILABLE", null, TIMEZONE, key.locale());
+    }
+
+    private static WeatherResponse parse(JsonNode root, Key key, Instant now) {
+        if (root == null || root.path("error").asBoolean() || !root.path("current").isObject()) {
+            throw new IllegalArgumentException("Thiếu dữ liệu hiện tại");
+        }
+        var current = root.path("current");
+        var validAt = LocalDateTime.parse(current.path("time").asText()).atZone(ZONE).toInstant();
+        if (validAt.isAfter(now.plusSeconds(900)) || !validAt.plus(MAX_STALE).isAfter(now)) {
+            throw new IllegalArgumentException("Mốc thời tiết nằm ngoài khoảng hợp lệ");
+        }
+        int code = integer(current.path("weather_code"));
+        boolean day = integer(current.path("is_day")) == 1;
+        double temp = number(current.path("temperature_2m"));
+        var daily = daily(root.path("daily"), validAt.atZone(ZONE).toLocalDate(), key.locale());
+        int rain = daily.isEmpty() ? -1 : daily.getFirst().getPrecipitationProbability();
+        return new WeatherResponse(location(key), temp, number(current.path("apparent_temperature")),
+                integer(current.path("relative_humidity_2m")), number(current.path("wind_speed_10m")),
+                number(current.path("precipitation")), code, condition(code, key.locale()), icon(code, day), day,
+                advice(code, temp, rain, key.locale()), daily, now, validAt,
+                validAt.plus(Duration.ofMinutes(30)).isAfter(now) ? "FRESH" : "STALE",
+                "OPEN_METEO_MODEL", TIMEZONE, key.locale());
+    }
+
+    private static List<DailyForecastDto> daily(JsonNode source, LocalDate day, String locale) {
+        var result = new ArrayList<DailyForecastDto>();
+        var times = source.path("time");
+        for (int i = 0; i < Math.min(7, times.size()); i++) {
+            try {
+                var date = LocalDate.parse(times.path(i).asText());
+                if (date.isBefore(day)) continue;
+                int code = integer(source.path("weather_code").path(i));
+                result.add(new DailyForecastDto(date.toString(),
+                        number(source.path("temperature_2m_min").path(i)), number(source.path("temperature_2m_max").path(i)),
+                        integer(source.path("precipitation_probability_max").path(i)), code, condition(code, locale), icon(code, true)));
+            } catch (IllegalArgumentException | DateTimeException ignored) {
+                // A provider may omit an individual daily value.
             }
-        } catch (Exception ex) {
-            log.warn("Could not fetch live weather from Open-Meteo for ({}, {}): {}. Using fallback/cached.",
-                    targetLat, targetLon, ex.getMessage());
         }
-
-        if (entry != null) {
-            return entry.response;
-        }
-
-        return createFallbackWeather(locationName);
+        return List.copyOf(result);
     }
 
-    public static String resolveLocationName(double lat, double lon) {
-        if (distanceKm(lat, lon, 15.9988, 107.9880) < 8.0) return "Bà Nà Hills, Đà Nẵng";
-        if (distanceKm(lat, lon, 16.1150, 108.2750) < 7.0) return "Bán đảo Sơn Trà, Đà Nẵng";
-        if (distanceKm(lat, lon, 16.0590, 108.2430) < 4.0) return "Biển Mỹ Khê, Đà Nẵng";
-        if (distanceKm(lat, lon, 16.0040, 108.2630) < 5.0) return "Ngũ Hành Sơn, Đà Nẵng";
-        if (distanceKm(lat, lon, 16.0610, 108.2230) < 4.0) return "Hải Châu, Đà Nẵng";
-        if (distanceKm(lat, lon, 16.0544, 108.2022) < 35.0) return "Vị trí của bạn (Đà Nẵng)";
-        return "Đà Nẵng";
+    private static double number(JsonNode value) {
+        if (!value.isNumber() || !Double.isFinite(value.asDouble())) throw new IllegalArgumentException("Thiếu chỉ số thời tiết");
+        return value.asDouble();
     }
 
-    private static double distanceKm(double lat1, double lon1, double lat2, double lon2) {
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    private static int integer(JsonNode value) {
+        if (!value.isIntegralNumber() || !value.canConvertToInt()) throw new IllegalArgumentException("Chỉ số thời tiết không hợp lệ");
+        return value.asInt();
     }
 
-    private WeatherResponse parseOpenMeteoResponse(JsonNode root, String locationName) {
-        JsonNode current = root.path("current");
-        double temp = current.path("temperature_2m").asDouble(28.5);
-        double apparentTemp = current.path("apparent_temperature").asDouble(temp + 2);
-        int humidity = current.path("relative_humidity_2m").asInt(75);
-        double windSpeed = current.path("wind_speed_10m").asDouble(10.0);
-        double precipitation = current.path("precipitation").asDouble(0.0);
-        int weatherCode = current.path("weather_code").asInt(1);
-        boolean isDay = current.path("is_day").asInt(1) == 1;
-
-        String condition = mapWeatherCodeToCondition(weatherCode);
-        String icon = mapWeatherCodeToIcon(weatherCode, isDay);
-
-        // Daily forecast parsing
-        List<DailyForecastDto> dailyForecast = new ArrayList<>();
-        JsonNode daily = root.path("daily");
-        JsonNode times = daily.path("time");
-        JsonNode codes = daily.path("weather_code");
-        JsonNode maxTemps = daily.path("temperature_2m_max");
-        JsonNode minTemps = daily.path("temperature_2m_min");
-        JsonNode rainProbs = daily.path("precipitation_probability_max");
-
-        int count = Math.min(times.size(), 7);
-        int todayRainProb = 0;
-        for (int i = 0; i < count; i++) {
-            String date = times.path(i).asText();
-            int dayCode = codes.path(i).asInt(0);
-            double maxT = maxTemps.path(i).asDouble(30.0);
-            double minT = minTemps.path(i).asDouble(24.0);
-            int rainProb = rainProbs.path(i).asInt(0);
-            if (i == 0) todayRainProb = rainProb;
-
-            String dayCondition = mapWeatherCodeToCondition(dayCode);
-            String dayIcon = mapWeatherCodeToIcon(dayCode, true);
-
-            dailyForecast.add(new DailyForecastDto(
-                    date, minT, maxT, rainProb, dayCode, dayCondition, dayIcon
-            ));
-        }
-
-        String advice = generateTravelAdvice(weatherCode, temp, todayRainProb);
-        String updatedAt = DateTimeFormatter.ofPattern("HH:mm - dd/MM/yyyy")
-                .withZone(ZoneId.of("Asia/Bangkok"))
-                .format(Instant.now());
-
-        return new WeatherResponse(
-                locationName,
-                temp,
-                apparentTemp,
-                humidity,
-                windSpeed,
-                precipitation,
-                weatherCode,
-                condition,
-                icon,
-                isDay,
-                advice,
-                dailyForecast,
-                updatedAt
-        );
+    private static String location(Key key) {
+        boolean danang = Math.abs(key.lat100() - 1605) <= 33 && Math.abs(key.lon100() - 10820) <= 35;
+        return danang ? "Đà Nẵng" : key.locale().equals("vi") ? "Vị trí đã chọn" : "Selected location";
     }
 
-    private WeatherResponse createFallbackWeather(String locationName) {
-        String updatedAt = DateTimeFormatter.ofPattern("HH:mm - dd/MM/yyyy")
-                .withZone(ZoneId.of("Asia/Bangkok"))
-                .format(Instant.now());
-
-        List<DailyForecastDto> fallbackDaily = List.of(
-                new DailyForecastDto("Hôm nay", 24.0, 31.0, 10, 1, "Nắng ráo", "🌤️"),
-                new DailyForecastDto("Ngày mai", 24.5, 30.5, 20, 2, "Ít mây", "⛅"),
-                new DailyForecastDto("Hôm kia", 24.0, 29.5, 45, 51, "Mưa rào nhẹ", "🌦️"),
-                new DailyForecastDto("Thứ sáu", 23.5, 29.0, 30, 2, "Dịu mát", "⛅"),
-                new DailyForecastDto("Thứ bảy", 24.0, 30.0, 15, 1, "Nắng đẹp", "☀️")
-        );
-
-        return new WeatherResponse(
-                locationName != null ? locationName : "Đà Nẵng",
-                29.0,
-                32.5,
-                72,
-                8.5,
-                0.0,
-                1,
-                "Nắng ráo dịu nhẹ",
-                "🌤️",
-                true,
-                "Thời tiết Đà Nẵng nắng ráo rất đẹp! Rất thích hợp để tham quan Bán đảo Sơn Trà, Ngũ Hành Sơn, Bà Nà Hills và ngắm hoàng hôn biển Mỹ Khê.",
-                fallbackDaily,
-                updatedAt
-        );
+    private static String condition(int code, String locale) {
+        boolean vi = locale.equals("vi");
+        if (code == 0) return vi ? "Trời quang" : "Clear sky";
+        if (code <= 3) return vi ? "Có mây" : "Cloudy";
+        if (code == 45 || code == 48) return vi ? "Có sương mù" : "Fog";
+        if (code >= 95) return vi ? "Có dông" : "Thunderstorm";
+        if (code >= 71 && code <= 86 && (code < 80 || code >= 85)) return vi ? "Có tuyết" : "Snow";
+        if (code >= 51) return vi ? "Có mưa" : "Rain";
+        return vi ? "Chưa phân loại" : "Unclassified";
     }
 
-    public static String mapWeatherCodeToCondition(int code) {
-        if (code == 0) return "Trời quang đãng";
-        if (code == 1) return "Chủ yếu quang mây";
-        if (code == 2) return "Mây rải rác";
-        if (code == 3) return "Nhiều mây";
-        if (code == 45 || code == 48) return "Có sương mù";
-        if (code >= 51 && code <= 55) return "Mưa phùn nhẹ";
-        if (code >= 61 && code <= 65) return "Mưa rào rải rác";
-        if (code >= 80 && code <= 82) return "Mưa rào từng cơn";
-        if (code >= 95) return "Có dông sét";
-        return "Thời tiết dịu mát";
-    }
-
-    public static String mapWeatherCodeToIcon(int code, boolean isDay) {
-        if (code == 0) return isDay ? "☀️" : "🌙";
-        if (code == 1 || code == 2) return isDay ? "🌤️" : "☁️";
-        if (code == 3) return "☁️";
+    private static String icon(int code, boolean daylight) {
+        if (code == 0) return daylight ? "☀️" : "🌙";
+        if (code <= 3) return "☁️";
         if (code == 45 || code == 48) return "🌫️";
-        if (code >= 51 && code <= 55) return "🌦️";
-        if (code >= 61 && code <= 65) return "🌧️";
-        if (code >= 80 && code <= 82) return "⛈️";
-        if (code >= 95) return "🌩️";
-        return "⛅";
+        return code >= 95 ? "⛈️" : "🌧️";
     }
 
-    public static String generateTravelAdvice(int code, double temp, int rainProb) {
-        if (code >= 80 || rainProb >= 70) {
-            return "Thời tiết có thể có mưa to hoặc dông. Bạn nên ưu tiên các điểm tham quan trong nhà như Bảo tàng Điêu khắc Chăm, Chợ Cồn hoặc các quán cà phê ngắm cảnh sông Hàn.";
-        }
-        if (code >= 51 && code <= 65) {
-            return "Có mưa nhẹ hoặc mưa rào rải rác. Hãy mang theo ô/áo mưa khi dạo phố Bạch Đằng và lưu ý đường trơn khi lên Bán đảo Sơn Trà.";
-        }
-        if (temp >= 34) {
-            return "Thời tiết nắng nóng, thích hợp tắm biển Mỹ Khê vào sáng sớm hoặc chiều mát. Buổi trưa nên ghé các không gian nghỉ mát hoặc thưởng thức đặc sản Đà Nẵng.";
-        }
-        if (code <= 2) {
-            return "Thời tiết nắng ráo rất đẹp! Rất thích hợp để tham quan Bán đảo Sơn Trà, Ngũ Hành Sơn, Bà Nà Hills và ngắm hoàng hôn biển Mỹ Khê.";
-        }
-        return "Thời tiết mát mẻ dễ chịu, rất thích hợp cho mọi hoạt động khám phá và dạo phố Đà Nẵng hôm nay.";
+    private static String advice(int code, double temp, int rain, String locale) {
+        boolean vi = locale.equals("vi");
+        if (code >= 95 || rain >= 70) return vi ? "Ưu tiên hoạt động trong nhà và kiểm tra cảnh báo thời tiết."
+                : "Consider indoor activities and check local weather alerts.";
+        if (code >= 51) return vi ? "Chuẩn bị áo mưa và kiểm tra lại trước khi đi." : "Bring rain protection and check the forecast before leaving.";
+        if (temp >= 34) return vi ? "Ưu tiên giờ mát và mang theo nước." : "Choose cooler hours and bring water.";
+        return vi ? "Kiểm tra dự báo trước các hoạt động ngoài trời." : "Check the forecast before outdoor activities.";
     }
 }

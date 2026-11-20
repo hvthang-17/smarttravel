@@ -1,3 +1,4 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smarttravel_mobile/features/weather/data/models/weather_model.dart';
@@ -29,7 +30,7 @@ class WeatherPill extends ConsumerWidget {
         onTap: null,
       ),
       error: (_, __) {
-        final fallback = WeatherData.fallback();
+        const fallback = WeatherData.unavailable();
         return _buildPill(
           context: context,
           text: fallback.pillText,
@@ -86,7 +87,7 @@ class WeatherPill extends ConsumerWidget {
                   const Icon(Icons.near_me, size: 12, color: Color(0xFF0284C7)),
                   const SizedBox(width: 4),
                 ],
-                Text(
+                AppText(
                   text,
                   style: const TextStyle(
                     fontSize: 13,
