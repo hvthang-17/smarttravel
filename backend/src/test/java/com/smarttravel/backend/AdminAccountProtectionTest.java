@@ -20,9 +20,11 @@ class AdminAccountProtectionTest {
     @Test
     void lastActiveAdminCannotBeLockedDeletedOrDemoted() {
         var users = mock(UserRepository.class);
-        var service = new AdminUserService(users, mock(ItineraryRepository.class), new BCryptPasswordEncoder());
+        var service = new AdminUserService(users, mock(ItineraryRepository.class), new BCryptPasswordEncoder(), mock(com.smarttravel.backend.features.audit.service.AuditService.class),
+                mock(com.smarttravel.backend.features.auth.repository.PasswordResetRepository.class),
+                mock(com.smarttravel.backend.features.audit.repository.AuditLogRepository.class));
         var admin = new User("last@example.test", "hash", "Last admin", "ROLE_ADMIN");
-        when(users.findById(1L)).thenReturn(Optional.of(admin));
+        when(users.lockById(1L)).thenReturn(Optional.of(admin));
         when(users.lockAdministrators()).thenReturn(List.of(admin));
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken("other@example.test", null, List.of()));

@@ -1,3 +1,4 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:smarttravel_mobile/core/theme/app_theme.dart';
 
@@ -33,7 +34,7 @@ class MyTripsSummerTip extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                AppText(
                   'Mẹo nhỏ du lịch Đà Nẵng',
                   style: TextStyle(
                     fontSize: 14,
@@ -42,7 +43,7 @@ class MyTripsSummerTip extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 4),
-                Text(
+                AppText(
                   'Sáng sớm ngắm bình minh Mỹ Khê, chiều dạo mát sông Hàn và thưởng thức hải sản tươi sống để có trải nghiệm tuyệt vời nhất.',
                   style: TextStyle(
                     fontSize: 12,

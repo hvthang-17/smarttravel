@@ -1,3 +1,4 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smarttravel_mobile/core/theme/app_theme.dart';
@@ -26,12 +27,12 @@ class MyTripsEmptyState extends StatelessWidget {
             child: const Icon(Icons.luggage_outlined, size: 32, color: AppTheme.primaryBlue),
           ),
           const SizedBox(height: 16),
-          const Text(
+          const AppText(
             'Chưa có lịch trình nào',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
           ),
           const SizedBox(height: 8),
-          const Text(
+          const AppText(
             'Lên kế hoạch thông minh cho chuyến đi Đà Nẵng của bạn ngay bây giờ!',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
@@ -41,7 +42,7 @@ class MyTripsEmptyState extends StatelessWidget {
             style: FilledButton.styleFrom(backgroundColor: AppTheme.primaryBlue),
             onPressed: () => context.push('/trip-wizard'),
             icon: const Icon(Icons.auto_awesome, size: 16),
-            label: const Text('Bắt đầu tạo lịch trình'),
+            label: const AppText('Bắt đầu tạo lịch trình'),
           ),
         ],
       ),
