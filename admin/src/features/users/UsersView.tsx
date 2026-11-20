@@ -1,3 +1,4 @@
+import { t } from '../../core/language';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   CheckCircleIcon,
@@ -7,7 +8,6 @@ import {
 } from '../../components/Icons';
 import {
   ManagedUser,
-  fetchUsersApi,
   createUserApi,
   updateUserApi,
   toggleUserLockApi,
@@ -15,6 +15,7 @@ import {
   CreateUserData,
   UpdateUserData,
 } from '../../core/userApi';
+import { adminUsers, dashboard } from '../../core/operationsApi';
 import { UserStatsCards, UserStats } from './UserStatsCards';
 import { UserFilterBar } from './UserFilterBar';
 import { UserTable } from './UserTable';
@@ -40,12 +41,10 @@ export const UsersView: React.FC<UsersViewProps> = ({ currentUser: propCurrentUs
   // Data & loading state
   const [users, setUsers] = useState<ManagedUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [globalStats, setGlobalStats] = useState<UserStats>({
-    total: 0,
-    active: 0,
-    locked: 0,
-    admin: 0,
-  });
+  const [globalStats, setGlobalStats] = useState<UserStats | null>(null);
+  const [globalError, setGlobalError] = useState(false);
+  const [page, setPage] = useState(0);
+  const [hasNext, setHasNext] = useState(false);
 
   // Filter criteria
   const [search, setSearch] = useState('');
@@ -87,15 +86,16 @@ export const UsersView: React.FC<UsersViewProps> = ({ currentUser: propCurrentUs
   // Fetch true global metrics without filter bias (R-17)
   const refreshGlobalStats = useCallback(async () => {
     try {
-      const allUsers = await fetchUsersApi({});
+      const metrics = await dashboard();
       setGlobalStats({
-        total: allUsers.length,
-        active: allUsers.filter((u) => u.status === 'ACTIVE').length,
-        locked: allUsers.filter((u) => u.status === 'LOCKED').length,
-        admin: allUsers.filter((u) => u.role === 'ROLE_ADMIN').length,
+        total: metrics.totalUsers,
+        active: metrics.activeUsers,
+        locked: metrics.lockedUsers,
+        admin: metrics.administrators,
       });
+      setGlobalError(false);
     } catch {
-      // Ignore background stats fetch errors
+      setGlobalError(true);
     }
   }, []);
 
@@ -105,26 +105,25 @@ export const UsersView: React.FC<UsersViewProps> = ({ currentUser: propCurrentUs
     setLoading(true);
 
     try {
-      const data = await fetchUsersApi({
-        search,
-        role: roleFilter,
-        status: statusFilter,
-      });
+      const data = await adminUsers(search, roleFilter, statusFilter, page);
 
       // Discard response if a newer query has fired
       if (requestId === activeRequestId.current) {
-        setUsers(data);
+        setUsers(data.items);
+        setHasNext(data.hasNext);
       }
     } catch (err: any) {
       if (requestId === activeRequestId.current) {
-        showToast(err.message || 'Lỗi truy vấn cơ sở dữ liệu người dùng', 'error');
+        setUsers([]);
+        setHasNext(false);
+        showToast(err.message || t('Lỗi truy vấn cơ sở dữ liệu người dùng'), 'error');
       }
     } finally {
       if (requestId === activeRequestId.current) {
         setLoading(false);
       }
     }
-  }, [search, roleFilter, statusFilter, showToast]);
+  }, [search, roleFilter, statusFilter, page, showToast]);
 
   // Initial load
   useEffect(() => {
@@ -137,6 +136,7 @@ export const UsersView: React.FC<UsersViewProps> = ({ currentUser: propCurrentUs
 
   // Handlers
   const handleClearFilters = () => {
+    setPage(0);
     setSearch('');
     setRoleFilter('ALL');
     setStatusFilter('ALL');
@@ -148,7 +148,7 @@ export const UsersView: React.FC<UsersViewProps> = ({ currentUser: propCurrentUs
 
     try {
       const updated = await toggleUserLockApi(targetUser.id, targetUser.status);
-      setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+      await loadUsers();
       refreshGlobalStats();
       showToast(
         updated.status === 'LOCKED'
@@ -157,7 +157,7 @@ export const UsersView: React.FC<UsersViewProps> = ({ currentUser: propCurrentUs
         'success'
       );
     } catch (err: any) {
-      showToast(err.message || 'Không thể cập nhật trạng thái người dùng', 'error');
+      showToast(err.message || t('Không thể cập nhật trạng thái người dùng'), 'error');
     } finally {
       setActionPendingId(null);
     }
@@ -167,12 +167,12 @@ export const UsersView: React.FC<UsersViewProps> = ({ currentUser: propCurrentUs
     setModalLoading(true);
     try {
       const created = await createUserApi(data);
-      setUsers((prev) => [created, ...prev]);
+      if (page === 0) await loadUsers(); else setPage(0);
       refreshGlobalStats();
       setModalMode(null);
       showToast(`Tạo thành công tài khoản ${created.fullName}`, 'success');
     } catch (err: any) {
-      showToast(err.message || 'Không thể tạo tài khoản người dùng', 'error');
+      showToast(err.message || t('Không thể tạo tài khoản người dùng'), 'error');
     } finally {
       setModalLoading(false);
     }
@@ -182,13 +182,13 @@ export const UsersView: React.FC<UsersViewProps> = ({ currentUser: propCurrentUs
     setModalLoading(true);
     try {
       const updated = await updateUserApi(id, data);
-      setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+      await loadUsers();
       refreshGlobalStats();
       setModalMode(null);
       setSelectedUser(null);
       showToast(`Cập nhật thông tin ${updated.fullName} thành công`, 'success');
     } catch (err: any) {
-      showToast(err.message || 'Không thể cập nhật người dùng', 'error');
+      showToast(err.message || t('Không thể cập nhật người dùng'), 'error');
     } finally {
       setModalLoading(false);
     }
@@ -200,25 +200,25 @@ export const UsersView: React.FC<UsersViewProps> = ({ currentUser: propCurrentUs
 
     try {
       await deleteUserApi(selectedUser.id);
-      setUsers((prev) => prev.filter((u) => u.id !== selectedUser.id));
+      if (users.length === 1 && page > 0) setPage(page - 1); else await loadUsers();
       refreshGlobalStats();
       setIsDeleteOpen(false);
-      showToast(`Đã xóa vĩnh viễn tài khoản ${selectedUser.fullName}`, 'success');
+      showToast(`${t('Đã xóa tài khoản')}: ${selectedUser.fullName}`, 'success');
       setSelectedUser(null);
     } catch (err: any) {
-      showToast(err.message || 'Không thể xóa tài khoản người dùng', 'error');
+      showToast(err.message || t('Không thể xóa tài khoản người dùng'), 'error');
     } finally {
       setModalLoading(false);
     }
   };
 
   return (
-    <div className="user-page-container">
+    <div className="user-page-container admin-page admin-page-users">
       {/* Header section */}
-      <div className="user-header-section">
+      <div className="user-header-section admin-page-heading">
         <div className="user-title-group">
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-            <h1>Quản lý Tài khoản Người dùng</h1>
+            <h1>{t("Quản lý Tài khoản Người dùng")}</h1>
             <span
               style={{
                 backgroundColor: '#e0f2fe',
@@ -229,10 +229,10 @@ export const UsersView: React.FC<UsersViewProps> = ({ currentUser: propCurrentUs
                 borderRadius: '6px',
               }}
             >
-              {globalStats.total} tài khoản
+              {globalStats ? `${globalStats.total} tài khoản` : t('Tài khoản')}
             </span>
           </div>
-          <p>Phân quyền tài khoản quản trị, giám sát trạng thái du khách và kiểm soát vi phạm hệ thống</p>
+          <p>{t("Phân quyền tài khoản quản trị, giám sát trạng thái du khách và kiểm soát vi phạm hệ thống")}</p>
         </div>
 
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -260,7 +260,7 @@ export const UsersView: React.FC<UsersViewProps> = ({ currentUser: propCurrentUs
             }}
           >
             <RefreshCwIcon size={15} color="#475569" className={loading ? 'animate-spin' : ''} />
-            <span>Làm mới</span>
+            <span>{t("Làm mới")}</span>
           </button>
 
           <button
@@ -286,26 +286,24 @@ export const UsersView: React.FC<UsersViewProps> = ({ currentUser: propCurrentUs
             }}
           >
             <PlusIcon size={16} color="#ffffff" />
-            <span>Thêm người dùng mới</span>
+            <span>{t("Thêm người dùng mới")}</span>
           </button>
         </div>
       </div>
 
       {/* Global Overview KPI Cards (R-17) */}
-      <UserStatsCards stats={globalStats} loading={loading && users.length === 0} />
+      {globalStats && <UserStatsCards stats={globalStats} loading={false} />}
+      {globalError && <p role="alert">{t("Không tải được số liệu tài khoản.")}</p>}
 
       {/* Search & Filter Toolbar with 300ms Debounce (R-26) */}
       <UserFilterBar
         search={search}
-        onSearchChange={setSearch}
+        onSearchChange={value => { setPage(0); setSearch(value); }}
         roleFilter={roleFilter}
-        onRoleFilterChange={setRoleFilter}
+        onRoleFilterChange={value => { setPage(0); setRoleFilter(value); }}
         statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
-        onAddClick={() => {
-          setSelectedUser(null);
-          setModalMode('create');
-        }}
+        onStatusFilterChange={value => { setPage(0); setStatusFilter(value); }}
+
         onRefresh={() => {
           loadUsers();
           refreshGlobalStats();
@@ -334,6 +332,11 @@ export const UsersView: React.FC<UsersViewProps> = ({ currentUser: propCurrentUs
         }}
         onClearFilters={handleClearFilters}
       />
+      <nav aria-label={t("Phân trang tài khoản")} className="operations-filters">
+        <button type="button" disabled={loading || page === 0} onClick={() => setPage(page - 1)}>{t("Trang trước")}</button>
+        <span>Trang {page + 1}</span>
+        <button type="button" disabled={loading || !hasNext} onClick={() => setPage(page + 1)}>Trang sau</button>
+      </nav>
 
       {/* Unified User Form Modal (Create / Edit) */}
       <UserFormModal

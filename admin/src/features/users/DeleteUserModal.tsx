@@ -1,3 +1,4 @@
+import { t } from '../../core/language';
 import React, { useEffect } from 'react';
 import { AlertTriangleIcon, TrashIcon, XIcon } from '../../components/Icons';
 import { ManagedUser } from '../../core/userApi';
@@ -63,12 +64,8 @@ export const DeleteUserModal: React.FC<DeleteUserModalProps> = ({
               <AlertTriangleIcon size={20} color="#dc2626" />
             </div>
             <div>
-              <h3 id="delete-user-title" style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: '#0f172a' }}>
-                Xác nhận xóa tài khoản
-              </h3>
-              <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748b' }}>
-                Hành động này không thể hoàn tác
-              </p>
+              <h3 id="delete-user-title" style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: '#0f172a' }}>{t("Xác nhận xóa tài khoản")} </h3>
+              <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748b' }}>{t("Hành động này không thể hoàn tác")} </p>
             </div>
           </div>
           <button
@@ -76,15 +73,14 @@ export const DeleteUserModal: React.FC<DeleteUserModalProps> = ({
             onClick={onClose}
             disabled={loading}
             className="user-modal-close-btn"
-            aria-label="Đóng hộp thoại xóa"
+            aria-label={t("Đóng hộp thoại xóa")}
           >
             <XIcon size={18} />
           </button>
         </div>
 
         <div className="user-modal-body" style={{ paddingTop: '16px' }}>
-          <p style={{ fontSize: '13.5px', color: '#334155', lineHeight: 1.5, margin: 0 }}>
-            Bạn có chắc chắn muốn xóa vĩnh viễn tài khoản <strong>{user.fullName}</strong> ({user.email}) khỏi hệ thống không? Dữ liệu các chuyến đi và phân quyền liên quan sẽ bị xóa hoàn toàn.
+          <p style={{ fontSize: '13.5px', color: '#334155', lineHeight: 1.5, margin: 0 }}>{t("Bạn có chắc chắn muốn xóa vĩnh viễn tài khoản")} <strong>{user.fullName}</strong> ({user.email}) khỏi hệ thống không? Dữ liệu các chuyến đi và phân quyền liên quan sẽ bị xóa hoàn toàn.
           </p>
         </div>
 
@@ -95,9 +91,7 @@ export const DeleteUserModal: React.FC<DeleteUserModalProps> = ({
             disabled={loading}
             className="user-action-btn"
             style={{ width: 'auto', padding: '8px 16px', fontSize: '13px', fontWeight: 600 }}
-          >
-            Hủy bỏ
-          </button>
+          >{t("Hủy bỏ")} </button>
           <button
             type="button"
             onClick={onConfirm}
@@ -118,7 +112,7 @@ export const DeleteUserModal: React.FC<DeleteUserModalProps> = ({
             }}
           >
             <TrashIcon size={14} color="#ffffff" />
-            <span>{loading ? 'Đang xóa...' : 'Xóa vĩnh viễn'}</span>
+            <span>{loading ? 'Đang xóa...' : t('Xóa vĩnh viễn')}</span>
           </button>
         </div>
       </div>

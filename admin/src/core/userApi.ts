@@ -1,6 +1,6 @@
-import { RoleType } from '../types/auth';
+import type { RoleType } from '../types/auth';
 
-const API_BASE_URL = 'http://localhost:8080/api/v1';
+import { API_BASE_URL, apiFetch } from './session';
 
 export interface ManagedUser {
   id: number;
@@ -34,11 +34,9 @@ export async function fetchUsersApi(options?: UserFilterOptions): Promise<Manage
     params.append('status', options.status);
   }
 
-  const token = localStorage.getItem('smarttravel_admin_token') || '';
-  const response = await fetch(`${API_BASE_URL}/admin/users?${params.toString()}`, {
+  const response = await apiFetch(`${API_BASE_URL}/admin/users?${params.toString()}`, {
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
 
@@ -50,7 +48,7 @@ export async function fetchUsersApi(options?: UserFilterOptions): Promise<Manage
   const json = await response.json();
   const list = json.data || [];
 
-  return list.map((u: any) => ({
+  return list.map((u: ManagedUser) => ({
     id: u.id,
     email: u.email,
     fullName: u.fullName,
@@ -74,12 +72,10 @@ export interface CreateUserData {
  * Tạo người dùng mới và lưu trực tiếp vào cơ sở dữ liệu
  */
 export async function createUserApi(data: CreateUserData): Promise<ManagedUser> {
-  const token = localStorage.getItem('smarttravel_admin_token') || '';
-  const response = await fetch(`${API_BASE_URL}/admin/users`, {
+  const response = await apiFetch(`${API_BASE_URL}/admin/users`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify({
       email: data.email.trim().toLowerCase(),
@@ -120,12 +116,10 @@ export interface UpdateUserData {
  * Cập nhật thông tin người dùng trực tiếp vào Database
  */
 export async function updateUserApi(id: number, data: UpdateUserData): Promise<ManagedUser> {
-  const token = localStorage.getItem('smarttravel_admin_token') || '';
-  const response = await fetch(`${API_BASE_URL}/admin/users/${id}`, {
+  const response = await apiFetch(`${API_BASE_URL}/admin/users/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify({
       fullName: data.fullName.trim(),
@@ -159,12 +153,10 @@ export async function updateUserApi(id: number, data: UpdateUserData): Promise<M
  */
 export async function toggleUserLockApi(id: number, currentStatus: string): Promise<ManagedUser> {
   const nextStatus = currentStatus === 'LOCKED' ? 'ACTIVE' : 'LOCKED';
-  const token = localStorage.getItem('smarttravel_admin_token') || '';
-  const response = await fetch(`${API_BASE_URL}/admin/users/${id}/status`, {
+  const response = await apiFetch(`${API_BASE_URL}/admin/users/${id}/status`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify({ status: nextStatus }),
   });
@@ -192,12 +184,10 @@ export async function toggleUserLockApi(id: number, currentStatus: string): Prom
  * Xóa tài khoản người dùng vĩnh viễn khỏi Database
  */
 export async function deleteUserApi(id: number): Promise<void> {
-  const token = localStorage.getItem('smarttravel_admin_token') || '';
-  const response = await fetch(`${API_BASE_URL}/admin/users/${id}`, {
+  const response = await apiFetch(`${API_BASE_URL}/admin/users/${id}`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
 

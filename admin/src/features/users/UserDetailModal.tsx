@@ -1,3 +1,4 @@
+import { t } from '../../core/language';
 import React, { useEffect } from 'react';
 import {
   XIcon,
@@ -59,7 +60,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
         month: '2-digit',
         year: 'numeric',
       })
-    : 'Chưa cập nhật';
+    : t('Chưa cập nhật');
 
   const renderRoleBadge = () => {
     switch (user.role) {
@@ -67,21 +68,21 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
         return (
           <span className="user-badge role-admin">
             <ShieldCheckIcon size={13} color="#075985" />
-            <span>Quản trị viên (Admin)</span>
+            <span>{t("Quản trị viên (Admin)")}</span>
           </span>
         );
       case 'ROLE_MODERATOR':
         return (
           <span className="user-badge role-moderator">
             <ShieldIcon size={13} color="#065f46" />
-            <span>Điều phối viên (Moderator)</span>
+            <span>{t("Điều phối viên (Moderator)")}</span>
           </span>
         );
       default:
         return (
           <span className="user-badge role-user">
             <UserIcon size={13} color="#334155" />
-            <span>Khách du lịch (User)</span>
+            <span>{t("Khách du lịch (User)")}</span>
           </span>
         );
     }
@@ -98,18 +99,14 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
       <div className="user-modal-box animate-fade-in" style={{ maxWidth: '480px' }}>
         <div className="user-modal-header">
           <div>
-            <h2 id="user-detail-title" style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: '#0f172a' }}>
-              Hồ sơ tài khoản
-            </h2>
-            <p style={{ margin: '2px 0 0 0', fontSize: '12.5px', color: '#64748b' }}>
-              Chi tiết thông tin định danh và phân quyền hệ thống
-            </p>
+            <h2 id="user-detail-title" style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: '#0f172a' }}>{t("Hồ sơ tài khoản")} </h2>
+            <p style={{ margin: '2px 0 0 0', fontSize: '12.5px', color: '#64748b' }}>{t("Chi tiết thông tin định danh và phân quyền hệ thống")} </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="user-modal-close-btn"
-            aria-label="Đóng hộp thoại chi tiết người dùng"
+            aria-label={t("Đóng hộp thoại chi tiết người dùng")}
           >
             <XIcon size={18} />
           </button>
@@ -152,7 +149,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
                 <span style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>
                   {user.fullName}
                 </span>
-                {isSelf && <span className="user-badge badge-self">Bạn</span>}
+                {isSelf && <span className="user-badge badge-self">{t("Bạn")}</span>}
               </div>
               <div style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
                 {user.email}
@@ -163,21 +160,21 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
           {/* Details list */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '10px', borderBottom: '1px solid #f1f5f9' }}>
-              <span style={{ fontSize: '13px', color: '#64748b' }}>Vai trò</span>
+              <span style={{ fontSize: '13px', color: '#64748b' }}>{t("Vai trò")}</span>
               {renderRoleBadge()}
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '10px', borderBottom: '1px solid #f1f5f9' }}>
-              <span style={{ fontSize: '13px', color: '#64748b' }}>Trạng thái</span>
+              <span style={{ fontSize: '13px', color: '#64748b' }}>{t("Trạng thái")}</span>
               {user.status === 'ACTIVE' ? (
                 <span className="user-badge status-active">
                   <CheckCircleIcon size={13} color="#065f46" />
-                  <span>Đang hoạt động</span>
+                  <span>{t("Đang hoạt động")}</span>
                 </span>
               ) : (
                 <span className="user-badge status-locked">
                   <LockIcon size={13} color="#991b1b" />
-                  <span>Tạm khóa tài khoản</span>
+                  <span>{t("Tạm khóa tài khoản")}</span>
                 </span>
               )}
             </div>
@@ -193,20 +190,18 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
                   color: '#991b1b',
                   lineHeight: 1.4,
                 }}
-              >
-                Tài khoản này hiện đang tạm dừng hoạt động và không thể đăng nhập vào ứng dụng hoặc hệ thống quản trị. Quản trị viên có thể kích hoạt lại bất kỳ lúc nào.
-              </div>
+              >{t("Tài khoản này hiện đang tạm dừng hoạt động và không thể đăng nhập vào ứng dụng hoặc hệ thống quản trị. Quản trị viên có thể kích hoạt lại bất kỳ lúc nào.")} </div>
             )}
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '10px', borderBottom: '1px solid #f1f5f9' }}>
-              <span style={{ fontSize: '13px', color: '#64748b' }}>Ngày khởi tạo</span>
+              <span style={{ fontSize: '13px', color: '#64748b' }}>{t("Ngày khởi tạo")}</span>
               <span style={{ fontSize: '13px', color: '#0f172a', fontWeight: 500 }}>{formattedDate}</span>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '10px', borderBottom: '1px solid #f1f5f9' }}>
               <span style={{ fontSize: '13px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <MapIcon size={14} color="#64748b" />
-                <span>Lịch trình du lịch</span>
+                <span>{t("Lịch trình du lịch")}</span>
               </span>
               <span style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>
                 {user.tripsCount || 0} chuyến đi
@@ -224,7 +219,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
                 lineHeight: 1.5,
               }}
             >
-              <strong>Quyền hạn:</strong> {ROLE_DESCRIPTIONS[user.role] || ROLE_LABELS[user.role]}
+              <strong>{t("Quyền hạn:")}</strong> {ROLE_DESCRIPTIONS[user.role] || ROLE_LABELS[user.role]}
             </div>
           </div>
         </div>
@@ -235,9 +230,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
             onClick={onClose}
             className="user-action-btn"
             style={{ width: 'auto', padding: '8px 16px', fontSize: '13px', fontWeight: 600 }}
-          >
-            Đóng
-          </button>
+          >{t("Đóng")} </button>
           <button
             type="button"
             onClick={() => {
@@ -246,9 +239,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
             }}
             className="user-btn-add"
             style={{ fontSize: '13px', padding: '8px 16px' }}
-          >
-            Chỉnh sửa thông tin
-          </button>
+          >{t("Chỉnh sửa thông tin")} </button>
         </div>
       </div>
     </div>
