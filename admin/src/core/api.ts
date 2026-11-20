@@ -1,6 +1,6 @@
-import { ApiResponse, Destination } from '../types/destination';
+import type { ApiResponse, Destination } from '../types/destination';
 
-const API_BASE_URL = 'http://localhost:8080/api/v1';
+import { API_BASE_URL, apiFetch } from './session';
 
 export interface FetchDestinationsOptions {
   category?: string;
@@ -23,7 +23,7 @@ export async function fetchDestinations(options?: FetchDestinationsOptions): Pro
     params.append('search', options.search.trim());
   }
 
-  const response = await fetch(`${API_BASE_URL}/destinations?${params.toString()}`);
+  const response = await apiFetch(`${API_BASE_URL}/destinations?${params.toString()}`);
   if (!response.ok) {
     throw new Error(`Failed to fetch destinations: ${response.statusText}`);
   }
@@ -32,7 +32,7 @@ export async function fetchDestinations(options?: FetchDestinationsOptions): Pro
 }
 
 export async function fetchDestinationById(id: number): Promise<Destination> {
-  const response = await fetch(`${API_BASE_URL}/destinations/${id}`);
+  const response = await apiFetch(`${API_BASE_URL}/destinations/${id}`);
   if (!response.ok) {
     throw new Error(`Failed to fetch destination: ${response.statusText}`);
   }
@@ -41,7 +41,7 @@ export async function fetchDestinationById(id: number): Promise<Destination> {
 }
 
 export async function createDestination(destination: Omit<Destination, 'id'>): Promise<Destination> {
-  const response = await fetch(`${API_BASE_URL}/destinations`, {
+  const response = await apiFetch(`${API_BASE_URL}/destinations`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(destination),
@@ -55,8 +55,8 @@ export async function createDestination(destination: Omit<Destination, 'id'>): P
   return json.data;
 }
 
-export async function updateDestination(id: number, destination: Omit<Destination, 'id'>): Promise<Destination> {
-  const response = await fetch(`${API_BASE_URL}/destinations/${id}`, {
+export async function updateDestination(id: number, destination: Pick<Destination, 'name' | 'latitude' | 'longitude'> & Partial<Omit<Destination, 'id'>>): Promise<Destination> {
+  const response = await apiFetch(`${API_BASE_URL}/destinations/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(destination),
@@ -71,7 +71,7 @@ export async function updateDestination(id: number, destination: Omit<Destinatio
 }
 
 export async function deleteDestination(id: number): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/destinations/${id}`, {
+  const response = await apiFetch(`${API_BASE_URL}/destinations/${id}`, {
     method: 'DELETE',
   });
   if (!response.ok) {
@@ -85,7 +85,7 @@ export async function uploadDestinationImage(file: File): Promise<{ url: string;
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await fetch(`${API_BASE_URL}/destinations/upload-image`, {
+  const response = await apiFetch(`${API_BASE_URL}/destinations/upload-image`, {
     method: 'POST',
     body: formData,
   });
@@ -104,7 +104,7 @@ export async function uploadDestinationMultipleImages(files: File[]): Promise<st
   const formData = new FormData();
   files.forEach((f) => formData.append('files', f));
 
-  const response = await fetch(`${API_BASE_URL}/destinations/upload-images`, {
+  const response = await apiFetch(`${API_BASE_URL}/destinations/upload-images`, {
     method: 'POST',
     body: formData,
   });

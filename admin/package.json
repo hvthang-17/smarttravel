@@ -4,6 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "test:destinations": "node --test tests/destination-form.test.mjs tests/catalog.test.mjs",
+    "test:security": "node --experimental-vm-modules --test tests/security.test.mjs",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "tsc -b",

@@ -1,3 +1,4 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:smarttravel_mobile/features/weather/data/models/weather_model.dart';
 
@@ -38,7 +39,7 @@ class Weather7DayForecastCard extends StatelessWidget {
                   children: [
                     SizedBox(
                       width: 85,
-                      child: Text(
+                      child: AppText(
                         _formatDayLabel(day.date, index),
                         style: TextStyle(
                           fontSize: 13,
@@ -50,7 +51,7 @@ class Weather7DayForecastCard extends StatelessWidget {
                     Icon(day.materialIcon, size: 20, color: day.materialIconColor),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
+                      child: AppText(
                         day.condition,
                         style: const TextStyle(fontSize: 12, color: Color(0xFF475569)),
                         overflow: TextOverflow.ellipsis,
@@ -77,7 +78,7 @@ class Weather7DayForecastCard extends StatelessWidget {
                                   : const Color(0xFF0284C7),
                             ),
                             const SizedBox(width: 2),
-                            Text(
+                            AppText(
                               '${day.precipitationProbability}%',
                               style: TextStyle(
                                 fontSize: 10,
@@ -90,7 +91,7 @@ class Weather7DayForecastCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                    Text(
+                    AppText(
                       '${day.minTemp.round()}° - ${day.maxTemp.round()}°C',
                       style: const TextStyle(
                         fontSize: 12,

@@ -1,3 +1,4 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:smarttravel_mobile/features/weather/data/models/weather_model.dart';
 
@@ -15,14 +16,14 @@ class WeatherMetricsGrid extends StatelessWidget {
             _buildMetricTile(
               icon: Icons.water_drop_outlined,
               label: 'Độ ẩm',
-              value: '${weather.humidity}%',
+              value: weather.humidity == null ? 'Chưa rõ' : '${weather.humidity}%',
               color: const Color(0xFF0284C7),
             ),
             const SizedBox(width: 10),
             _buildMetricTile(
               icon: Icons.air,
               label: 'Tốc độ gió',
-              value: '${weather.windSpeed.toStringAsFixed(1)} km/h',
+              value: weather.windSpeed == null ? 'Chưa rõ' : '${weather.windSpeed!.toStringAsFixed(1)} km/h',
               color: const Color(0xFF10B981),
             ),
           ],
@@ -33,14 +34,14 @@ class WeatherMetricsGrid extends StatelessWidget {
             _buildMetricTile(
               icon: Icons.umbrella_outlined,
               label: 'Lượng mưa',
-              value: '${weather.precipitation.toStringAsFixed(1)} mm',
+              value: weather.precipitation == null ? 'Chưa rõ' : '${weather.precipitation!.toStringAsFixed(1)} mm',
               color: const Color(0xFF8B5CF6),
             ),
             const SizedBox(width: 10),
             _buildMetricTile(
-              icon: weather.isDay ? Icons.wb_sunny_outlined : Icons.nightlight_round,
+              icon: weather.isDay == true ? Icons.wb_sunny_outlined : Icons.nightlight_round,
               label: 'Thời điểm',
-              value: weather.isDay ? 'Ban ngày' : 'Ban đêm',
+              value: weather.isDay == null ? 'Chưa rõ' : weather.isDay! ? 'Ban ngày' : 'Ban đêm',
               color: const Color(0xFFF77F00),
             ),
           ],
@@ -78,9 +79,9 @@ class WeatherMetricsGrid extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                  AppText(label, style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
                   const SizedBox(height: 2),
-                  Text(
+                  AppText(
                     value,
                     style: const TextStyle(
                       fontSize: 13,

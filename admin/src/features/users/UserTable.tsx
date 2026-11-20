@@ -1,3 +1,4 @@
+import { t } from '../../core/language';
 import React from 'react';
 import {
   EyeIcon,
@@ -41,21 +42,21 @@ export const UserTable: React.FC<UserTableProps> = ({
         return (
           <span className="user-badge role-admin">
             <ShieldCheckIcon size={13} color="#075985" />
-            <span>Quản trị viên</span>
+            <span>{t("Quản trị viên")}</span>
           </span>
         );
       case 'ROLE_MODERATOR':
         return (
           <span className="user-badge role-moderator">
             <ShieldIcon size={13} color="#065f46" />
-            <span>Điều phối viên</span>
+            <span>{t("Điều phối viên")}</span>
           </span>
         );
       default:
         return (
           <span className="user-badge role-user">
             <UserIcon size={13} color="#334155" />
-            <span>Khách du lịch</span>
+            <span>{t("Khách du lịch")}</span>
           </span>
         );
     }
@@ -66,14 +67,14 @@ export const UserTable: React.FC<UserTableProps> = ({
       return (
         <span className="user-badge status-active">
           <CheckCircleIcon size={13} color="#065f46" />
-          <span>Hoạt động</span>
+          <span>{t("Hoạt động")}</span>
         </span>
       );
     }
     return (
       <span className="user-badge status-locked">
         <LockIcon size={13} color="#991b1b" />
-        <span>Tạm khóa</span>
+        <span>{t("Tạm khóa")}</span>
       </span>
     );
   };
@@ -106,12 +107,12 @@ export const UserTable: React.FC<UserTableProps> = ({
           <table className="user-table">
             <thead>
               <tr>
-                <th style={{ width: '32%' }}>Người dùng & Email</th>
-                <th style={{ width: '18%' }}>Vai trò</th>
-                <th style={{ width: '14%' }}>Ngày đăng ký</th>
-                <th style={{ width: '12%', textAlign: 'center' }}>Lịch trình</th>
-                <th style={{ width: '14%' }}>Trạng thái</th>
-                <th style={{ width: '10%', textAlign: 'center' }}>Thao tác</th>
+                <th style={{ width: '32%' }}>{t("Người dùng & Email")}</th>
+                <th style={{ width: '18%' }}>{t("Vai trò")}</th>
+                <th style={{ width: '14%' }}>{t("Ngày đăng ký")}</th>
+                <th style={{ width: '12%', textAlign: 'center' }}>{t("Lịch trình")}</th>
+                <th style={{ width: '14%' }}>{t("Trạng thái")}</th>
+                <th style={{ width: '10%', textAlign: 'center' }}>{t("Thao tác")}</th>
               </tr>
             </thead>
             <tbody>
@@ -158,12 +159,8 @@ export const UserTable: React.FC<UserTableProps> = ({
         >
           <UserIcon size={28} color="#94a3b8" />
         </div>
-        <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>
-          Không tìm thấy tài khoản người dùng
-        </h3>
-        <p style={{ fontSize: '13.5px', color: '#64748b', maxWidth: '420px', margin: '0 auto 16px auto' }}>
-          Không có kết quả nào phù hợp với bộ lọc hiện tại. Thử thay đổi từ khóa hoặc thiết lập lại bộ lọc.
-        </p>
+        <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>{t("Không tìm thấy tài khoản người dùng")} </h3>
+        <p style={{ fontSize: '13.5px', color: '#64748b', maxWidth: '420px', margin: '0 auto 16px auto' }}>{t("Không có kết quả nào phù hợp với bộ lọc hiện tại. Thử thay đổi từ khóa hoặc thiết lập lại bộ lọc.")} </p>
         <button
           type="button"
           onClick={onClearFilters}
@@ -177,9 +174,7 @@ export const UserTable: React.FC<UserTableProps> = ({
             borderColor: '#bae6fd',
             backgroundColor: '#f0f9ff',
           }}
-        >
-          Xóa tất cả bộ lọc
-        </button>
+        >{t("Xóa tất cả bộ lọc")} </button>
       </div>
     );
   }
@@ -191,12 +186,12 @@ export const UserTable: React.FC<UserTableProps> = ({
         <table className="user-table">
           <thead>
             <tr>
-              <th>Người dùng & Email</th>
-              <th>Vai trò</th>
-              <th>Ngày đăng ký</th>
-              <th style={{ textAlign: 'center' }}>Lịch trình</th>
-              <th>Trạng thái</th>
-              <th style={{ textAlign: 'center' }}>Thao tác</th>
+              <th>{t("Người dùng & Email")}</th>
+              <th>{t("Vai trò")}</th>
+              <th>{t("Ngày đăng ký")}</th>
+              <th style={{ textAlign: 'center' }}>{t("Lịch trình")}</th>
+              <th>{t("Trạng thái")}</th>
+              <th style={{ textAlign: 'center' }}>{t("Thao tác")}</th>
             </tr>
           </thead>
           <tbody>
@@ -229,7 +224,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                           <span style={{ fontWeight: 600, color: '#0f172a' }}>{u.fullName}</span>
-                          {isSelf && <span className="user-badge badge-self">Bạn</span>}
+                          {isSelf && <span className="user-badge badge-self">{t("Bạn")}</span>}
                         </div>
                         <div style={{ fontSize: '12.5px', color: '#64748b', marginTop: '1px' }}>
                           {u.email}
@@ -260,7 +255,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                         type="button"
                         onClick={() => onViewDetail(u)}
                         className="user-action-btn"
-                        title="Xem chi tiết người dùng"
+                        title={t("Xem chi tiết người dùng")}
                         aria-label={`Xem chi tiết ${u.fullName}`}
                       >
                         <EyeIcon size={15} color="#475569" />
@@ -269,7 +264,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                         type="button"
                         onClick={() => onEdit(u)}
                         className="user-action-btn"
-                        title="Chỉnh sửa thông tin"
+                        title={t("Chỉnh sửa thông tin")}
                         aria-label={`Chỉnh sửa ${u.fullName}`}
                       >
                         <PencilIcon size={14} color="#475569" />
@@ -284,7 +279,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                             ? 'Không thể tự khóa tài khoản của bạn'
                             : u.status === 'LOCKED'
                             ? 'Mở khóa tài khoản'
-                            : 'Tạm khóa tài khoản'
+                            : t('Tạm khóa tài khoản')
                         }
                         aria-label={
                           u.status === 'LOCKED'
@@ -303,7 +298,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                         onClick={() => onDelete(u)}
                         disabled={isPending || Boolean(isSelf)}
                         className="user-action-btn btn-delete"
-                        title={isSelf ? 'Không thể tự xóa tài khoản của bạn' : 'Xóa tài khoản'}
+                        title={isSelf ? 'Không thể tự xóa tài khoản của bạn' : t('Xóa tài khoản')}
                         aria-label={`Xóa tài khoản ${u.fullName}`}
                       >
                         <TrashIcon size={14} color="#dc2626" />
@@ -349,7 +344,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                       <span style={{ fontWeight: 600, color: '#0f172a', fontSize: '14px' }}>
                         {u.fullName}
                       </span>
-                      {isSelf && <span className="user-badge badge-self">Bạn</span>}
+                      {isSelf && <span className="user-badge badge-self">{t("Bạn")}</span>}
                     </div>
                     <div style={{ fontSize: '12px', color: '#64748b' }}>{u.email}</div>
                   </div>
@@ -358,15 +353,15 @@ export const UserTable: React.FC<UserTableProps> = ({
               </div>
 
               <div className="user-mobile-card-row">
-                <span>Vai trò:</span>
+                <span>{t("Vai trò:")}</span>
                 {getRoleBadge(u.role)}
               </div>
               <div className="user-mobile-card-row">
-                <span>Ngày tạo:</span>
+                <span>{t("Ngày tạo:")}</span>
                 <span style={{ color: '#0f172a', fontWeight: 500 }}>{formatDate(u.createdAt)}</span>
               </div>
               <div className="user-mobile-card-row">
-                <span>Lịch trình đã tạo:</span>
+                <span>{t("Lịch trình đã tạo:")}</span>
                 <span style={{ color: '#0f172a', fontWeight: 600 }}>{u.tripsCount || 0}</span>
               </div>
 

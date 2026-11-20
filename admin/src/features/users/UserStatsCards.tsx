@@ -1,3 +1,4 @@
+import { t } from '../../core/language';
 import React from 'react';
 import { UsersIcon, CheckCircleIcon, LockIcon, ShieldCheckIcon } from '../../components/Icons';
 
@@ -16,28 +17,28 @@ interface UserStatsCardsProps {
 export const UserStatsCards: React.FC<UserStatsCardsProps> = ({ stats, loading = false }) => {
   const cards = [
     {
-      label: 'Tổng số tài khoản',
+      label: t('Tổng số tài khoản'),
       value: stats.total,
       icon: <UsersIcon size={22} color="#0077b6" />,
       bg: '#e0f2fe',
       color: '#0f172a',
     },
     {
-      label: 'Đang hoạt động',
+      label: t('Đang hoạt động'),
       value: stats.active,
       icon: <CheckCircleIcon size={22} color="#059669" />,
       bg: '#ecfdf5',
       color: '#166534',
     },
     {
-      label: 'Tạm khóa',
+      label: t('Tạm khóa'),
       value: stats.locked,
       icon: <LockIcon size={22} color="#dc2626" />,
       bg: '#fee2e2',
       color: '#991b1b',
     },
     {
-      label: 'Quản trị viên',
+      label: t('Quản trị viên'),
       value: stats.admin,
       icon: <ShieldCheckIcon size={22} color="#7c3aed" />,
       bg: '#f3e8ff',

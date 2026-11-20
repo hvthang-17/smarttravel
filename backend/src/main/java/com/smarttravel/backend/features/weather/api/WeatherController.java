@@ -22,8 +22,10 @@ public class WeatherController {
     @GetMapping({"/current", "/danang"})
     public ResponseEntity<ApiResponse<WeatherResponse>> getCurrentWeather(
             @RequestParam(value = "lat", required = false) Double lat,
-            @RequestParam(value = "lon", required = false) Double lon) {
-        WeatherResponse weather = weatherService.getDaNangWeather(lat, lon);
-        return ResponseEntity.ok(ApiResponse.success(weather, "Lấy thông tin thời tiết thành công"));
+            @RequestParam(value = "lon", required = false) Double lon,
+            @RequestParam(defaultValue = WeatherService.TIMEZONE) String timezone,
+            @RequestParam(defaultValue = "vi") String locale) {
+        WeatherResponse weather = weatherService.getDaNangWeather(lat, lon, timezone, locale);
+        return ResponseEntity.ok(ApiResponse.success(weather));
     }
 }

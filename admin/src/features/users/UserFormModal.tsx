@@ -1,3 +1,5 @@
+import { t } from '../../core/language';
+import { useDialogFocus } from '../../components/useDialogFocus';
 import React, { useState, useEffect } from 'react';
 import {
   XIcon,
@@ -36,6 +38,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
   const [role, setRole] = useState<RoleType>('ROLE_USER');
   const [status, setStatus] = useState<'ACTIVE' | 'LOCKED'>('ACTIVE');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const dialogRef = useDialogFocus(isOpen);
 
   // Reset or initialize form values
   useEffect(() => {
@@ -77,26 +80,26 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
     const nextErrors: Record<string, string> = {};
 
     if (!fullName.trim()) {
-      nextErrors.fullName = 'Họ và tên không được để trống';
+      nextErrors.fullName = t('Họ và tên không được để trống');
     } else if (fullName.trim().length < 2) {
-      nextErrors.fullName = 'Họ và tên phải có tối thiểu 2 ký tự';
+      nextErrors.fullName = t('Họ và tên phải có tối thiểu 2 ký tự');
     }
 
     if (mode === 'create') {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!email.trim()) {
-        nextErrors.email = 'Email không được để trống';
+        nextErrors.email = t('Email không được để trống');
       } else if (!emailRegex.test(email.trim())) {
-        nextErrors.email = 'Địa chỉ email không đúng định dạng';
+        nextErrors.email = t('Địa chỉ email không đúng định dạng');
       }
 
       if (!password) {
-        nextErrors.password = 'Mật khẩu khởi tạo không được để trống';
-      } else if (password.length < 6) {
-        nextErrors.password = 'Mật khẩu phải có tối thiểu 6 ký tự';
+        nextErrors.password = t('Mật khẩu khởi tạo không được để trống');
+      } else if (password.length < 8 || password.length > 72) {
+        nextErrors.password = t('Mật khẩu phải có 8–72 ký tự');
       }
-    } else if (password && password.length < 6) {
-      nextErrors.password = 'Mật khẩu mới phải có tối thiểu 6 ký tự';
+    } else if (password && (password.length < 8 || password.length > 72)) {
+      nextErrors.password = t('Mật khẩu mới phải có 8–72 ký tự');
     }
 
     setErrors(nextErrors);
@@ -120,7 +123,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
         fullName: fullName.trim(),
         role,
         status,
-        ...(password.trim() ? { password: password.trim() } : {}),
+        ...(password ? { password } : {}),
       });
     }
   };
@@ -134,20 +137,14 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
   const rolesList: { key: RoleType; label: string; desc: string; icon: React.ReactNode }[] = [
     {
       key: 'ROLE_USER',
-      label: 'Khách du lịch',
-      desc: 'Quyền xem điểm đến, tạo và chia sẻ lịch trình du lịch cá nhân',
+      label: t('Khách du lịch'),
+      desc: t('Quyền xem điểm đến, tạo và chia sẻ lịch trình du lịch cá nhân'),
       icon: <UserIcon size={18} color="#0284c7" />,
     },
     {
-      key: 'ROLE_MODERATOR',
-      label: 'Điều phối viên',
-      desc: 'Quản trị điểm đến, duyệt đánh giá và hỗ trợ nội dung điểm du lịch',
-      icon: <ShieldIcon size={18} color="#059669" />,
-    },
-    {
       key: 'ROLE_ADMIN',
-      label: 'Quản trị viên',
-      desc: 'Toàn quyền cấu hình hệ thống, quản lý người dùng và phân quyền',
+      label: t('Quản trị viên'),
+      desc: t('Toàn quyền cấu hình hệ thống, quản lý người dùng và phân quyền'),
       icon: <ShieldCheckIcon size={18} color="#7c3aed" />,
     },
   ];
@@ -160,7 +157,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
       aria-modal="true"
       aria-labelledby="user-form-modal-title"
     >
-      <div className="user-modal-box animate-fade-in">
+      <div ref={dialogRef} className="user-modal-box animate-fade-in">
         {/* Modal Header */}
         <div className="user-modal-header">
           <div>
@@ -168,12 +165,12 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
               id="user-form-modal-title"
               style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: '#0f172a' }}
             >
-              {mode === 'create' ? 'Tạo tài khoản người dùng mới' : 'Chỉnh sửa tài khoản người dùng'}
+              {mode === 'create' ? 'Tạo tài khoản người dùng mới' : t('Chỉnh sửa tài khoản người dùng')}
             </h3>
             <p style={{ margin: '2px 0 0 0', fontSize: '12.5px', color: '#64748b' }}>
               {mode === 'create'
                 ? 'Thêm tài khoản vào cơ sở dữ liệu và cấp quyền truy cập'
-                : `Cập nhật thông tin và vai trò cho ${user?.fullName || 'người dùng'}`}
+                : `Cập nhật thông tin và vai trò cho ${user?.fullName || t('người dùng')}`}
             </p>
           </div>
           <button
@@ -181,7 +178,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
             onClick={onClose}
             disabled={loading}
             className="user-modal-close-btn"
-            aria-label="Đóng hộp thoại"
+            aria-label={t("Đóng hộp thoại")}
           >
             <XIcon size={18} />
           </button>
@@ -192,14 +189,13 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
           <div className="user-modal-body">
             {/* Full Name */}
             <div className="user-form-group">
-              <label htmlFor="user-fullname" className="user-form-label">
-                Họ và tên <span style={{ color: '#dc2626' }}>*</span>
+              <label htmlFor="user-fullname" className="user-form-label">{t("Họ và tên")} <span style={{ color: '#dc2626' }}>*</span>
               </label>
               <input
                 id="user-fullname"
                 type="text"
                 className="user-form-input"
-                placeholder="Ví dụ: Nguyễn Văn An"
+                placeholder={t("Ví dụ: Nguyễn Văn An")}
                 value={fullName}
                 onChange={(e) => {
                   setFullName(e.target.value);
@@ -212,8 +208,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
 
             {/* Email */}
             <div className="user-form-group">
-              <label htmlFor="user-email" className="user-form-label">
-                Địa chỉ Email {mode === 'create' && <span style={{ color: '#dc2626' }}>*</span>}
+              <label htmlFor="user-email" className="user-form-label">{t("Địa chỉ Email")} {mode === 'create' && <span style={{ color: '#dc2626' }}>*</span>}
               </label>
               <input
                 id="user-email"
@@ -228,9 +223,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
                 disabled={mode === 'edit' || loading}
               />
               {mode === 'edit' && (
-                <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
-                  Email được dùng làm định danh đăng nhập nên không thể sửa đổi
-                </div>
+                <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>{t("Email được dùng làm định danh đăng nhập nên không thể sửa đổi")} </div>
               )}
               {errors.email && <div className="user-form-error">{errors.email}</div>}
             </div>
@@ -239,13 +232,11 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
             <div className="user-form-group">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <label htmlFor="user-password" className="user-form-label">
-                  {mode === 'create' ? 'Mật khẩu khởi tạo ' : 'Mật khẩu mới (Tùy chọn) '}
+                  {mode === 'create' ? 'Mật khẩu khởi tạo ' : t('Mật khẩu mới (Tùy chọn) ')}
                   {mode === 'create' && <span style={{ color: '#dc2626' }}>*</span>}
                 </label>
                 {mode === 'edit' && (
-                  <span style={{ fontSize: '11.5px', color: '#64748b' }}>
-                    Để trống nếu giữ mật khẩu hiện tại
-                  </span>
+                  <span style={{ fontSize: '11.5px', color: '#64748b' }}>{t("Để trống nếu giữ mật khẩu hiện tại")} </span>
                 )}
               </div>
               <div style={{ position: 'relative' }}>
@@ -253,7 +244,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
                   id="user-password"
                   type={showPassword ? 'text' : 'password'}
                   className="user-form-input"
-                  placeholder={mode === 'create' ? 'Tối thiểu 6 ký tự' : 'Nhập mật khẩu mới nếu muốn đổi'}
+                  placeholder={mode === 'create' ? 'Tối thiểu 8 ký tự' : t('Nhập mật khẩu mới nếu muốn đổi')}
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
@@ -276,7 +267,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
                     width: '30px',
                     height: '30px',
                   }}
-                  aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'}
+                  aria-label={showPassword ? 'Ẩn mật khẩu' : t('Hiển thị mật khẩu')}
                 >
                   {showPassword ? <EyeOffIcon size={16} color="#64748b" /> : <EyeIcon size={16} color="#64748b" />}
                 </button>
@@ -286,8 +277,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
 
             {/* Role Selection */}
             <div className="user-form-group">
-              <label className="user-form-label">
-                Phân quyền vai trò <span style={{ color: '#dc2626' }}>*</span>
+              <label className="user-form-label">{t("Phân quyền vai trò")} <span style={{ color: '#dc2626' }}>*</span>
               </label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {rolesList.map((r) => {
@@ -338,7 +328,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
 
             {/* Status Selection */}
             <div className="user-form-group" style={{ marginBottom: 0 }}>
-              <label className="user-form-label">Trạng thái tài khoản</label>
+              <label className="user-form-label">{t("Trạng thái tài khoản")}</label>
               <div style={{ display: 'flex', gap: '12px' }}>
                 <label
                   style={{
@@ -364,7 +354,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
                     onChange={() => setStatus('ACTIVE')}
                     disabled={loading}
                   />
-                  <span>Đang hoạt động</span>
+                  <span>{t("Đang hoạt động")}</span>
                 </label>
 
                 <label
@@ -391,7 +381,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
                     onChange={() => setStatus('LOCKED')}
                     disabled={loading}
                   />
-                  <span>Tạm khóa tài khoản</span>
+                  <span>{t("Tạm khóa tài khoản")}</span>
                 </label>
               </div>
             </div>
@@ -412,9 +402,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
                 color: '#475569',
                 borderColor: '#cbd5e1',
               }}
-            >
-              Hủy bỏ
-            </button>
+            >{t("Hủy bỏ")} </button>
             <button
               type="submit"
               disabled={loading}
@@ -426,7 +414,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
                   : 'Đang lưu...'
                 : mode === 'create'
                 ? 'Tạo tài khoản'
-                : 'Lưu thay đổi'}
+                : t('Lưu thay đổi')}
             </button>
           </div>
         </form>
