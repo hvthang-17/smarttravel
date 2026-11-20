@@ -5,7 +5,7 @@ class AppTheme {
   static const Color primaryBlue = Color(0xFF0077B6);
   static const Color primaryHover = Color(0xFF0096C7);
   static const Color primarySurface = Color(0xFFEDF6F9);
-  static const Color secondaryCoral = Color(0xFFF77F00);
+  static const Color secondaryCoral = Color(0xFFAD5300);
   static const Color secondaryHover = Color(0xFFE76F51);
   static const Color secondarySurface = Color(0xFFFFF3E0);
 
@@ -22,9 +22,9 @@ class AppTheme {
   static const Color textMuted = Color(0xFF64748B);
 
   // Status Colors
-  static const Color statusSuccess = Color(0xFF2A9D8F);
-  static const Color statusWarning = Color(0xFFE9C46A);
-  static const Color statusError = Color(0xFFE76F51);
+  static const Color statusSuccess = Color(0xFF177568);
+  static const Color statusWarning = Color(0xFF866200);
+  static const Color statusError = Color(0xFFB83D2C);
 
   static ThemeData get lightTheme {
     return ThemeData(

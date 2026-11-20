@@ -190,7 +190,7 @@ input:checked + .toggle-slider:before {
 }
 
 .auth-form-panel {
-  background: linear-gradient(180deg, #f0f7ff 0%, #f6faff 50%, #f1f6fc 100%);
+  background: #f3f7f9;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -207,7 +207,7 @@ input:checked + .toggle-slider:before {
   border: 1px solid #d4e4f7;
   border-radius: 16px;
   padding: 36px 32px;
-  box-shadow: 0 12px 36px -4px rgba(3, 4, 94, 0.08), 0 2px 8px rgba(0, 119, 182, 0.04);
+  box-shadow: 0 8px 28px rgba(7, 62, 81, 0.08);
   box-sizing: border-box;
 }
 
@@ -373,8 +373,10 @@ input:checked + .toggle-slider:before {
 }
 
 .auth-password-toggle {
+  min-width: 44px;
+  min-height: 44px;
   position: absolute;
-  right: 8px;
+  right: 2px;
   top: 50%;
   transform: translateY(-50%);
   background: none;
@@ -1757,6 +1759,11 @@ select:focus-visible {
 .destination-page-btn:not(:disabled):hover {
   background-color: #f1f5f9;
   border-color: #94a3b8;
+}
+
+.admin-workspace-main { padding: 24px 32px; }
+@media (max-width: 768px) {
+  .admin-workspace-main { padding: 16px; }
 }
 
 /* Responsive Table & Mobile Reflow (R-03 / antislop-layoutmobile) */
