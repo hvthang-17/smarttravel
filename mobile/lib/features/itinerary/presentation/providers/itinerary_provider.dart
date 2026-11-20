@@ -1,6 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smarttravel_mobile/features/itinerary/data/models/itinerary_model.dart';
 import 'package:smarttravel_mobile/features/itinerary/data/repositories/itinerary_repository.dart';
+import 'package:smarttravel_mobile/features/auth/presentation/providers/auth_provider.dart';
+
+final tripListsRevisionProvider = StateProvider<int>((ref) => 0);
+
+final tripDraftsProvider = FutureProvider.autoDispose<List<ItineraryResponseModel>>((ref) async {
+  final token = ref.watch(authNotifierProvider.select((user) => user.token));
+  ref.watch(tripListsRevisionProvider);
+  if (token == null) return [];
+  return ref.watch(itineraryRepositoryProvider).getDrafts(token);
+});
 
 class ItineraryState {
   final bool isLoading;
@@ -28,6 +38,7 @@ class ItineraryState {
 
 final itineraryNotifierProvider =
     StateNotifierProvider<ItineraryNotifier, ItineraryState>((ref) {
+  ref.watch(authNotifierProvider.select((user) => user.token));
   return ItineraryNotifier(ref.read(itineraryRepositoryProvider));
 });
 
@@ -40,9 +51,11 @@ class ItineraryNotifier extends StateNotifier<ItineraryState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final result = await _repository.generateItinerary(request);
+      if (!mounted) return null;
       state = state.copyWith(isLoading: false, generatedItinerary: result);
       return result;
     } catch (e) {
+      if (!mounted) return null;
       final msg = e.toString().replaceFirst('Exception: ', '');
       state = state.copyWith(isLoading: false, errorMessage: msg);
       return null;

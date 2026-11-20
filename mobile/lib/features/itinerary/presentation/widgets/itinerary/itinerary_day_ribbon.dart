@@ -1,3 +1,4 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:smarttravel_mobile/core/theme/app_theme.dart';
 import 'package:smarttravel_mobile/features/itinerary/data/models/itinerary_model.dart';
@@ -38,6 +39,7 @@ class ItineraryDayRibbon extends StatelessWidget {
                     borderRadius: BorderRadius.circular(999),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 180),
+                        constraints: const BoxConstraints(minHeight: 48),
                       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                       decoration: BoxDecoration(
                         color: isSelected ? AppTheme.primaryBlue : Colors.white,
@@ -55,7 +57,7 @@ class ItineraryDayRibbon extends StatelessWidget {
                               ]
                             : null,
                       ),
-                      child: Text(
+                      child: AppText(
                         'Ngày ${index + 1}',
                         style: TextStyle(
                           fontSize: 13,
@@ -73,7 +75,7 @@ class ItineraryDayRibbon extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Container(
-              height: 38,
+              constraints: const BoxConstraints(minHeight: 48),
               padding: const EdgeInsets.all(3),
               decoration: BoxDecoration(
                 color: const Color(0xFFF1F5F9),
@@ -110,7 +112,8 @@ class ItineraryDayRibbon extends StatelessWidget {
     required String label,
   }) {
     final isActive = activeViewIndex == index;
-    return GestureDetector(
+    return InkWell(
+      borderRadius: BorderRadius.circular(999),
       onTap: () => onViewChanged(index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
@@ -137,14 +140,14 @@ class ItineraryDayRibbon extends StatelessWidget {
               color: isActive ? AppTheme.primaryBlue : AppTheme.textSecondary,
             ),
             const SizedBox(width: 6),
-            Text(
+            Flexible(child: AppText(
               label,
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                 color: isActive ? AppTheme.primaryBlue : AppTheme.textSecondary,
               ),
-            ),
+            )),
           ],
         ),
       ),

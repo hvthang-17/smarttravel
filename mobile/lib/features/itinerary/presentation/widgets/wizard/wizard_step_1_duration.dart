@@ -1,3 +1,5 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
+import '../../../data/models/trip_dates.dart';
 import 'package:flutter/material.dart';
 
 class WizardStep1Duration extends StatelessWidget {
@@ -38,17 +40,24 @@ class WizardStep1Duration extends StatelessWidget {
     {
       'days': 5,
       'title': '5 ngày 4 đêm',
-      'subtitle': 'Kỳ nghỉ dài, kết hợp Hội An & Bà Nà',
+      'subtitle': 'Có thêm thời gian khám phá Đà Nẵng',
     },
+    {'days': 6, 'title': '6 ngày 5 đêm', 'subtitle': 'Thêm thời gian cho những điểm ở xa'},
+    {'days': 7, 'title': '7 ngày 6 đêm', 'subtitle': 'Một tuần khám phá Đà Nẵng'},
   ];
 
   Future<void> _selectStartDate(BuildContext context) async {
+    final today = planningToday();
+    final latestStart = today.add(Duration(days: 365 - selectedDays + 1));
+    final initial = startDate.isBefore(today) ? today : startDate.isAfter(latestStart) ? latestStart : startDate;
     final picked = await showDatePicker(
       context: context,
-      initialDate: startDate,
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-      locale: const Locale('vi', 'VN'),
+      initialDate: initial,
+      firstDate: today,
+      lastDate: latestStart,
+      helpText: 'Chọn ngày bắt đầu',
+      cancelText: 'Hủy',
+      confirmText: 'Chọn',
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -64,7 +73,7 @@ class WizardStep1Duration extends StatelessWidget {
       },
     );
     if (picked != null) {
-      onDateChanged(picked);
+      onDateChanged(tripDateOnly(picked));
     }
   }
 
@@ -76,7 +85,7 @@ class WizardStep1Duration extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        const AppText(
           'Bạn đi Đà Nẵng mấy ngày?',
           style: TextStyle(
             fontSize: 20,
@@ -85,7 +94,7 @@ class WizardStep1Duration extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 6),
-        const Text(
+        const AppText(
           'Chọn số ngày và thời điểm khởi hành chuyến đi',
           style: TextStyle(
             fontSize: 14,
@@ -117,7 +126,7 @@ class WizardStep1Duration extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      const AppText(
                         'Ngày khởi hành',
                         style: TextStyle(
                           fontSize: 12,
@@ -125,7 +134,7 @@ class WizardStep1Duration extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 2),
-                      Text(
+                      AppText(
                         formattedDate,
                         style: const TextStyle(
                           fontSize: 15,
@@ -146,7 +155,7 @@ class WizardStep1Duration extends StatelessWidget {
         ),
 
         const SizedBox(height: 18),
-        const Text(
+        const AppText(
           'Thời lượng chuyến đi',
           style: TextStyle(
             fontSize: 14,
@@ -201,7 +210,7 @@ class WizardStep1Duration extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          AppText(
                             opt['title'] as String,
                             style: TextStyle(
                               fontSize: 16,
@@ -211,7 +220,7 @@ class WizardStep1Duration extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 2),
-                          Text(
+                          AppText(
                             opt['subtitle'] as String,
                             style: const TextStyle(
                               fontSize: 12,

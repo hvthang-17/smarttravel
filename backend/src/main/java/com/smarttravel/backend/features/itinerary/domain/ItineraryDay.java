@@ -26,6 +26,15 @@ public class ItineraryDay {
     @OneToMany(mappedBy = "day", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItineraryItem> items = new ArrayList<>();
 
+    @Column(name = "origin_name")
+    private String originName;
+
+    @Column(name = "origin_latitude")
+    private java.math.BigDecimal originLatitude;
+
+    @Column(name = "origin_longitude")
+    private java.math.BigDecimal originLongitude;
+
     public ItineraryDay() {}
 
     public Long getId() { return id; }
@@ -38,4 +47,11 @@ public class ItineraryDay {
     public void setDate(LocalDate date) { this.date = date; }
     public List<ItineraryItem> getItems() { return items; }
     public void setItems(List<ItineraryItem> items) { this.items = items; }
+
+    public String getOriginName() { return originName; }
+    public void setOriginName(String originName) { this.originName = originName; }
+    public java.math.BigDecimal getOriginLatitude() { return originLatitude; }
+    public void setOriginLatitude(java.math.BigDecimal originLatitude) { this.originLatitude = originLatitude; }
+    public java.math.BigDecimal getOriginLongitude() { return originLongitude; }
+    public void setOriginLongitude(java.math.BigDecimal originLongitude) { this.originLongitude = originLongitude; }
 }

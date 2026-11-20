@@ -7,6 +7,7 @@ import java.util.List;
 public class GenerateItineraryRequest {
 
     @NotBlank(message = "Tiêu đề không được để trống")
+    @Size(max = 255)
     private String title;
 
     @NotNull(message = "Ngày bắt đầu là bắt buộc")
@@ -16,17 +17,64 @@ public class GenerateItineraryRequest {
     private LocalDate endDate;
 
     @Min(value = 1, message = "Số lượng khách tối thiểu là 1")
-    @Max(value = 50, message = "Số lượng khách tối đa là 50")
+    @NotNull
+    @Max(value = 10, message = "Số lượng khách tối đa là 10")
     private Integer travelersCount = 1;
 
     @NotNull(message = "Ngân sách tối đa là bắt buộc")
-    @Min(value = 100000, message = "Ngân sách tối thiểu là 100,000 VNĐ")
+    @Min(value = 1, message = "Ngân sách phải lớn hơn 0")
     private Long maxBudgetVnd;
 
     @NotBlank(message = "Nhịp độ chuyến đi là bắt buộc")
+    @Pattern(regexp = "relaxed|balanced|packed")
     private String pace = "balanced"; // relaxed, balanced, packed
 
-    private List<String> preferredCategories; // Tham quan, Ăn uống, Lưu trú, Giải trí
+    @Size(max = 6)
+    private List<@NotBlank String> preferredCategories;
+
+    @Pattern(regexp = "[a-z0-9_-]{1,64}")
+    private String generationKey;
+    @Size(max = 5)
+    private List<@NotNull @Positive Long> requiredDestinationIds;
+    @Size(max = 5)
+    private List<@NotNull @Positive Long> excludedDestinationIds;
+    public String getGenerationKey() { return generationKey; }
+    public void setGenerationKey(String value) { generationKey = value; }
+    public List<Long> getRequiredDestinationIds() { return requiredDestinationIds; }
+    public void setRequiredDestinationIds(List<Long> value) { requiredDestinationIds = value; }
+    public List<Long> getExcludedDestinationIds() { return excludedDestinationIds; }
+    public void setExcludedDestinationIds(List<Long> value) { excludedDestinationIds = value; }
+
+    @Size(max = 28)
+    private List<@NotNull @Positive Long> favoriteDestinationIds;
+    public List<Long> getFavoriteDestinationIds() { return favoriteDestinationIds; }
+    public void setFavoriteDestinationIds(List<Long> ids) { favoriteDestinationIds = ids; }
+
+    @Pattern(regexp = "walking|motorbike|car|taxi|unspecified")
+    private String transport = "unspecified";
+    @Size(max = 255)
+    private String originName;
+    @DecimalMin("-90") @DecimalMax("90") @Digits(integer = 2, fraction = 7)
+    private java.math.BigDecimal originLatitude;
+    @DecimalMin("-180") @DecimalMax("180") @Digits(integer = 3, fraction = 7)
+    private java.math.BigDecimal originLongitude;
+    public String getTransport() { return transport; }
+    public void setTransport(String value) { transport = value; }
+    public String getOriginName() { return originName; }
+    public void setOriginName(String value) { originName = value; }
+    public java.math.BigDecimal getOriginLatitude() { return originLatitude; }
+    public void setOriginLatitude(java.math.BigDecimal value) { originLatitude = value; }
+    public java.math.BigDecimal getOriginLongitude() { return originLongitude; }
+    public void setOriginLongitude(java.math.BigDecimal value) { originLongitude = value; }
+    @AssertTrue(message = "Điểm xuất phát cần đủ vĩ độ và kinh độ")
+    public boolean isOriginValid() { return (originLatitude == null) == (originLongitude == null); }
+
+    @AssertTrue(message = "Chuyến đi phải có từ 1 đến 7 ngày hợp lệ")
+    public boolean isDateRangeValid() {
+        if (startDate == null || endDate == null) return true;
+        long days = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate) + 1;
+        return startDate.getYear() >= 1000 && endDate.getYear() <= 9999 && days >= 1 && days <= 7;
+    }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }

@@ -1,4 +1,5 @@
 import 'package:smarttravel_mobile/features/destination/data/models/destination_model.dart';
+export 'itinerary_update_models.dart';
 
 class ItineraryRequestModel {
   final String title;
@@ -7,7 +8,15 @@ class ItineraryRequestModel {
   final int travelersCount;
   final int maxBudgetVnd;
   final String pace;
+  final String transport;
+  final String? originName;
+  final double? originLatitude;
+  final double? originLongitude;
   final List<String> preferredCategories;
+  final List<int> favoriteDestinationIds;
+  final List<int> requiredDestinationIds;
+  final List<int> excludedDestinationIds;
+  final String? generationKey;
 
   const ItineraryRequestModel({
     required this.title,
@@ -16,8 +25,22 @@ class ItineraryRequestModel {
     required this.travelersCount,
     required this.maxBudgetVnd,
     required this.pace,
+    this.transport = 'unspecified', this.originName, this.originLatitude, this.originLongitude,
     required this.preferredCategories,
+    this.favoriteDestinationIds = const [],
+    this.requiredDestinationIds = const [],
+    this.excludedDestinationIds = const [],
+    this.generationKey,
   });
+
+  ItineraryRequestModel withGenerationKey(String key) => ItineraryRequestModel(
+    title: title, startDate: startDate, endDate: endDate, travelersCount: travelersCount,
+    maxBudgetVnd: maxBudgetVnd, pace: pace, transport: transport, originName: originName,
+    originLatitude: originLatitude, originLongitude: originLongitude,
+    preferredCategories: preferredCategories, favoriteDestinationIds: favoriteDestinationIds,
+    requiredDestinationIds: requiredDestinationIds, excludedDestinationIds: excludedDestinationIds,
+    generationKey: key,
+  );
 
   Map<String, dynamic> toJson() {
     return {
@@ -26,8 +49,12 @@ class ItineraryRequestModel {
       'endDate': endDate,
       'travelersCount': travelersCount,
       'maxBudgetVnd': maxBudgetVnd,
-      'pace': pace,
+      'pace': pace, 'transport': transport, 'originName': originName, 'originLatitude': originLatitude, 'originLongitude': originLongitude,
       'preferredCategories': preferredCategories,
+      if (favoriteDestinationIds.isNotEmpty) 'favoriteDestinationIds': favoriteDestinationIds,
+      if (requiredDestinationIds.isNotEmpty) 'requiredDestinationIds': requiredDestinationIds,
+      if (excludedDestinationIds.isNotEmpty) 'excludedDestinationIds': excludedDestinationIds,
+      if (generationKey != null) 'generationKey': generationKey,
     };
   }
 }
@@ -44,10 +71,17 @@ class ItineraryResponseModel {
   final int totalEstimatedCost;
   final String status;
   final String? shareToken;
+  final String? period;
   final int version;
   final Map<String, int> categoryBreakdown;
   final double budgetUtilizationPercent;
   final String budgetHealth;
+  final bool costComplete;
+  final String transport;
+  final List<String> warnings;
+  final String generationStatus;
+  final String? originName;
+  final List<TripConstraintModel> constraints;
   final List<ItineraryDayModel> days;
 
   const ItineraryResponseModel({
@@ -62,10 +96,14 @@ class ItineraryResponseModel {
     required this.totalEstimatedCost,
     required this.status,
     this.shareToken,
-    this.version = 1,
+    this.period,
+    this.version = 0,
     required this.categoryBreakdown,
     required this.budgetUtilizationPercent,
     required this.budgetHealth,
+    this.costComplete = false, this.transport = 'unspecified', this.warnings = const [], this.generationStatus = 'PARTIAL',
+    this.originName,
+    this.constraints = const [],
     required this.days,
   });
 
@@ -84,7 +122,9 @@ class ItineraryResponseModel {
     final utilPercent = (json['budgetUtilizationPercent'] as num?)?.toDouble() ?? defaultPercent;
 
     String health = json['budgetHealth'] as String? ?? '';
-    if (health.isEmpty) {
+    if (json['costComplete'] != true) {
+      health = 'UNKNOWN';
+    } else if (health.isEmpty) {
       if (utilPercent > 100.0) {
         health = 'OVERBUDGET';
       } else if (utilPercent >= 85.0) {
@@ -104,16 +144,34 @@ class ItineraryResponseModel {
       maxBudgetVnd: maxBudget,
       pace: json['pace'] as String? ?? 'balanced',
       totalEstimatedCost: totalCost,
-      status: json['status'] as String? ?? 'ACTIVE',
+      status: json['status'] as String? ?? 'DRAFT',
       shareToken: json['shareToken'] as String?,
-      version: json['version'] as int? ?? 1,
+      period: json['period'] as String?,
+      version: json['version'] as int? ?? 0,
       categoryBreakdown: breakdown,
       budgetUtilizationPercent: utilPercent,
       budgetHealth: health,
+      costComplete: json['costComplete'] == true, transport: json['transport'] as String? ?? 'unspecified',
+      originName: json['originName'] as String?,
+      constraints: (json['constraints'] as List<dynamic>? ?? []).whereType<Map<String, dynamic>>()
+          .map(TripConstraintModel.fromJson).toList(),
+      warnings: (json['warnings'] as List<dynamic>? ?? []).cast<String>(), generationStatus: json['generationStatus'] as String? ?? 'PARTIAL',
       days: daysList
           .map((d) => ItineraryDayModel.fromJson(d as Map<String, dynamic>))
           .toList(),
     );
+  }
+}
+
+class TripConstraintModel {
+  const TripConstraintModel(this.destinationId, this.type, this.name);
+  final int destinationId;
+  final String type;
+  final String? name;
+
+  factory TripConstraintModel.fromJson(Map<String, dynamic> json) {
+    final snapshot = json['snapshot'] as Map<String, dynamic>?;
+    return TripConstraintModel(json['destinationId'] as int, json['type'] as String, snapshot?['name'] as String?);
   }
 }
 
@@ -122,8 +180,8 @@ class ItineraryDayModel {
   final int dayNumber;
   final String? date;
   final int dayCostVnd;
-  final double totalDistanceKm;
-  final int totalDurationMinutes;
+  final double? totalDistanceKm;
+  final int? totalDurationMinutes;
   final List<ItineraryItemModel> items;
 
   const ItineraryDayModel({
@@ -135,6 +193,9 @@ class ItineraryDayModel {
     required this.totalDurationMinutes,
     required this.items,
   });
+
+  bool get costComplete =>
+      items.every((item) => item.estimatedCostVnd != null && item.upperPriceKnown);
 
   factory ItineraryDayModel.fromJson(Map<String, dynamic> json) {
     final itemsList = json['items'] as List<dynamic>? ?? [];
@@ -152,22 +213,29 @@ class ItineraryDayModel {
       dayNumber: json['dayNumber'] as int? ?? 1,
       date: json['date'] as String?,
       dayCostVnd: json['dayCostVnd'] as int? ?? calculatedCost,
-      totalDistanceKm: (json['totalDistanceKm'] as num?)?.toDouble() ?? 0.0,
-      totalDurationMinutes: json['totalDurationMinutes'] as int? ?? 0,
+      totalDistanceKm: (json['totalDistanceKm'] as num?)?.toDouble(),
+      totalDurationMinutes: json['totalDurationMinutes'] as int?,
       items: parsedItems,
     );
   }
 }
 
 class ItineraryItemModel {
-  final int id;
+  final int? id;
   final int sequenceOrder;
   final String? startTime;
   final int? durationMinutes;
   final int? estimatedCostVnd;
   final String? notes;
-  final double travelDistanceKm;
-  final int travelMinutes;
+  final String? recommendationReason;
+  final bool featuredRecommendation;
+  final bool upperPriceKnown;
+  final String? categoryCode;
+  final int? unitPriceVnd;
+  final String routeSource;
+  final String? routePolyline;
+  final double? travelDistanceKm;
+  final int? travelMinutes;
   final DestinationModel? destination;
 
   const ItineraryItemModel({
@@ -177,10 +245,30 @@ class ItineraryItemModel {
     this.durationMinutes,
     this.estimatedCostVnd,
     this.notes,
-    this.travelDistanceKm = 0.0,
-    this.travelMinutes = 0,
+    this.recommendationReason,
+    this.featuredRecommendation = false,
+    this.upperPriceKnown = true,
+    this.categoryCode, this.unitPriceVnd, this.routeSource = 'UNKNOWN', this.routePolyline,
+    this.travelDistanceKm,
+    this.travelMinutes,
     this.destination,
   });
+
+  int? get previewDurationMinutes => durationMinutes ?? destination?.suggestedVisitDurationMinutes ?? destination?.visitDurationMinutes;
+
+  ItineraryItemModel edited({
+    required int sequence,
+    required String? time,
+    required int? duration,
+    required String? note,
+  }) => ItineraryItemModel(
+    id: id, sequenceOrder: sequence, startTime: time, durationMinutes: duration,
+    estimatedCostVnd: estimatedCostVnd, notes: note, recommendationReason: recommendationReason,
+    featuredRecommendation: featuredRecommendation, upperPriceKnown: upperPriceKnown,
+    categoryCode: categoryCode, unitPriceVnd: unitPriceVnd, routeSource: routeSource,
+    routePolyline: routePolyline, travelDistanceKm: travelDistanceKm, travelMinutes: travelMinutes,
+    destination: destination,
+  );
 
   factory ItineraryItemModel.fromJson(Map<String, dynamic> json) {
     DestinationModel? dest;
@@ -188,80 +276,21 @@ class ItineraryItemModel {
       dest = DestinationModel.fromJson(json['destination'] as Map<String, dynamic>);
     }
     return ItineraryItemModel(
-      id: json['id'] as int? ?? 0,
+      id: json['id'] as int?,
       sequenceOrder: json['sequenceOrder'] as int? ?? 1,
       startTime: json['startTime'] as String?,
       durationMinutes: json['durationMinutes'] as int?,
       estimatedCostVnd: json['estimatedCostVnd'] as int?,
       notes: json['notes'] as String?,
-      travelDistanceKm: (json['travelDistanceKm'] as num?)?.toDouble() ?? 0.0,
-      travelMinutes: json['travelMinutes'] as int? ?? 0,
+      recommendationReason: json['recommendationReason'] as String?,
+      featuredRecommendation: json['featuredRecommendation'] == true,
+      upperPriceKnown: json['upperPriceKnown'] != false,
+      categoryCode: json['categoryCode'] as String?, unitPriceVnd: json['unitPriceVnd'] as int?,
+      routeSource: json['routeSource'] as String? ?? 'UNKNOWN', routePolyline: json['routePolyline'] as String?,
+      travelDistanceKm: (json['travelDistanceKm'] as num?)?.toDouble(),
+      travelMinutes: json['travelMinutes'] as int?,
       destination: dest,
     );
-  }
-}
-
-class UpdateActivitiesRequestModel {
-  final List<DayUpdateModel> days;
-
-  const UpdateActivitiesRequestModel({required this.days});
-
-  Map<String, dynamic> toJson() {
-    return {
-      'days': days.map((d) => d.toJson()).toList(),
-    };
-  }
-}
-
-class DayUpdateModel {
-  final int? dayId;
-  final int? dayNumber;
-  final List<ItemUpdateModel> items;
-
-  const DayUpdateModel({
-    this.dayId,
-    this.dayNumber,
-    required this.items,
-  });
-
-  Map<String, dynamic> toJson() {
-    return {
-      if (dayId != null) 'dayId': dayId,
-      if (dayNumber != null) 'dayNumber': dayNumber,
-      'items': items.map((i) => i.toJson()).toList(),
-    };
-  }
-}
-
-class ItemUpdateModel {
-  final int? id;
-  final int destinationId;
-  final int sequenceOrder;
-  final String? startTime;
-  final int? durationMinutes;
-  final int? estimatedCostVnd;
-  final String? notes;
-
-  const ItemUpdateModel({
-    this.id,
-    required this.destinationId,
-    required this.sequenceOrder,
-    this.startTime,
-    this.durationMinutes,
-    this.estimatedCostVnd,
-    this.notes,
-  });
-
-  Map<String, dynamic> toJson() {
-    return {
-      if (id != null) 'id': id,
-      'destinationId': destinationId,
-      'sequenceOrder': sequenceOrder,
-      if (startTime != null) 'startTime': startTime,
-      if (durationMinutes != null) 'durationMinutes': durationMinutes,
-      if (estimatedCostVnd != null) 'estimatedCostVnd': estimatedCostVnd,
-      if (notes != null) 'notes': notes,
-    };
   }
 }
 

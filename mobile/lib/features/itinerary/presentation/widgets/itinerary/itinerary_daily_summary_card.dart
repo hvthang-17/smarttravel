@@ -1,3 +1,4 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:smarttravel_mobile/core/theme/app_theme.dart';
 import 'package:smarttravel_mobile/features/itinerary/data/models/itinerary_model.dart';
@@ -37,14 +38,14 @@ class ItineraryDailySummaryCard extends StatelessWidget {
         : 0.0;
     final isOver = percent > 100;
     final isWarning = percent >= 85 && !isOver;
-    final healthColor = isOver
+    final healthColor = !day.costComplete ? AppTheme.textSecondary : isOver
         ? AppTheme.statusError
         : isWarning
             ? AppTheme.statusWarning
             : AppTheme.statusSuccess;
 
-    final hours = day.totalDurationMinutes ~/ 60;
-    final mins = day.totalDurationMinutes % 60;
+    final hours = (day.totalDurationMinutes ?? 0) ~/ 60;
+    final mins = (day.totalDurationMinutes ?? 0) % 60;
     final timeFormatted = hours > 0 ? '${hours}h ${mins}p' : '${mins}p';
 
     return Container(
@@ -68,22 +69,28 @@ class ItineraryDailySummaryCard extends StatelessWidget {
               _buildStatColumn(
                 icon: Icons.credit_card_outlined,
                 label: 'Chi phí',
-                value: '${_formatVnd(day.dayCostVnd)} VNĐ',
+                value: '${_formatVnd(day.dayCostVnd)} VNĐ${day.costComplete ? '' : ' (đã biết)'}',
               ),
               Container(width: 1, height: 32, color: AppTheme.surfaceSubtle),
               _buildStatColumn(
                 icon: Icons.navigation_outlined,
                 label: 'Quãng đường',
-                value: '${day.totalDistanceKm.toStringAsFixed(1)} km',
+                value: day.totalDistanceKm == null ? 'Chưa rõ' : '${day.totalDistanceKm!.toStringAsFixed(1)} km',
               ),
               Container(width: 1, height: 32, color: AppTheme.surfaceSubtle),
               _buildStatColumn(
                 icon: Icons.schedule,
                 label: 'Thời gian',
-                value: timeFormatted,
+                value: day.totalDurationMinutes == null ? 'Chưa rõ' : timeFormatted,
               ),
             ],
           ),
+          if (day.items.any((item) => item.routeSource == 'HAVERSINE'))
+            const Padding(
+              padding: EdgeInsets.only(top: 8),
+              child: AppText('Có chặng di chuyển ước tính',
+                style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+            ),
           const SizedBox(height: 14),
           const Divider(height: 1, color: AppTheme.surfaceSubtle),
           const SizedBox(height: 12),
@@ -100,8 +107,8 @@ class ItineraryDailySummaryCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Expanded(
-                      child: Text(
-                        isOver
+                      child: AppText(
+                        !day.costComplete ? 'Chưa đủ dữ liệu chi phí' : isOver
                             ? 'Vượt hạn mức ngân sách ngày'
                             : isWarning
                                 ? 'Gần chạm hạn mức ngân sách'
@@ -115,14 +122,14 @@ class ItineraryDailySummaryCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(
-                '${percent.toStringAsFixed(0)}% (${(day.dayCostVnd / 1000).toStringAsFixed(0)}k / ${(dailyBudgetLimit / 1000).toStringAsFixed(0)}k)',
+              AppText(
+                day.costComplete ? '${percent.toStringAsFixed(0)}% (${(day.dayCostVnd / 1000).toStringAsFixed(0)}k / ${(dailyBudgetLimit / 1000).toStringAsFixed(0)}k)' : 'Chưa rõ',
                 style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: healthColor),
               ),
             ],
           ),
           const SizedBox(height: 6),
-          ClipRRect(
+          if (day.costComplete) ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               value: (percent / 100.0).clamp(0.0, 1.0),
@@ -152,7 +159,7 @@ class ItineraryDailySummaryCard extends StatelessWidget {
               Icon(icon, size: 13, color: AppTheme.primaryBlue),
               const SizedBox(width: 4),
               Flexible(
-                child: Text(
+                child: AppText(
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -162,7 +169,7 @@ class ItineraryDailySummaryCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 4),
-          Text(
+          AppText(
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

@@ -1,7 +1,11 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:smarttravel_mobile/core/utils/destination_categories.dart';
 import 'package:flutter/material.dart';
 
 class WizardStep3Preferences extends StatelessWidget {
   final Set<String> selectedCategories;
+  final AsyncValue<List<String>> availableCategories;
   final String selectedPace;
   final ValueChanged<Set<String>> onCategoriesChanged;
   final ValueChanged<String> onPaceChanged;
@@ -9,21 +13,11 @@ class WizardStep3Preferences extends StatelessWidget {
   const WizardStep3Preferences({
     super.key,
     required this.selectedCategories,
+    required this.availableCategories,
     required this.selectedPace,
     required this.onCategoriesChanged,
     required this.onPaceChanged,
   });
-
-  static const List<String> _availableCategories = [
-    'Tham quan',
-    'Ăn uống',
-    'Biển',
-    'Văn hóa',
-    'Check-in',
-    'Thiên nhiên',
-    'Giải trí',
-    'Mua sắm',
-  ];
 
   static const List<Map<String, dynamic>> _paceOptions = [
     {
@@ -49,9 +43,7 @@ class WizardStep3Preferences extends StatelessWidget {
   void _toggleCategory(String category) {
     final updated = Set<String>.from(selectedCategories);
     if (updated.contains(category)) {
-      if (updated.length > 1) {
-        updated.remove(category);
-      }
+      updated.remove(category);
     } else {
       updated.add(category);
     }
@@ -60,10 +52,12 @@ class WizardStep3Preferences extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final activeCodes = availableCategories.valueOrNull ?? const <String>[];
+    final unavailable = selectedCategories.difference(activeCodes.toSet());
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        const AppText(
           'Bạn thích trải nghiệm gì?',
           style: TextStyle(
             fontSize: 20,
@@ -72,7 +66,7 @@ class WizardStep3Preferences extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 6),
-        const Text(
+        const AppText(
           'Chọn ít nhất 1 chủ đề bạn muốn tập trung tại Đà Nẵng',
           style: TextStyle(
             fontSize: 14,
@@ -82,13 +76,17 @@ class WizardStep3Preferences extends StatelessWidget {
         const SizedBox(height: 16),
 
         // Categories multi-select chips
+        if (availableCategories.isLoading) const LinearProgressIndicator(),
+        if (availableCategories.hasError) const AppText('Không tải được danh mục. Mở lại màn hình để thử lại.'),
+        if (availableCategories.hasValue && unavailable.isNotEmpty)
+          const AppText('Bỏ chọn các danh mục đã ẩn hoặc không còn được hỗ trợ.'),
         Wrap(
           spacing: 8,
           runSpacing: 10,
-          children: _availableCategories.map((category) {
+          children: [...activeCodes, ...unavailable].map((category) {
             final isSelected = selectedCategories.contains(category);
             return FilterChip(
-              label: Text(category),
+              label: AppText(activeCodes.contains(category) ? categoryLabel(category) : '${categoryLabel(category)} (kiểm tra lại)'),
               selected: isSelected,
               onSelected: (_) => _toggleCategory(category),
               selectedColor: const Color(0xFF0077B6),
@@ -113,7 +111,7 @@ class WizardStep3Preferences extends StatelessWidget {
         ),
 
         const SizedBox(height: 28),
-        const Text(
+        const AppText(
           'Nhịp độ chuyến đi',
           style: TextStyle(
             fontSize: 16,
@@ -122,7 +120,7 @@ class WizardStep3Preferences extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        const Text(
+        const AppText(
           'Điều chỉnh số lượng hoạt động trong từng ngày',
           style: TextStyle(
             fontSize: 13,
@@ -176,7 +174,7 @@ class WizardStep3Preferences extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          AppText(
                             opt['title'] as String,
                             style: TextStyle(
                               fontSize: 15,
@@ -186,7 +184,7 @@ class WizardStep3Preferences extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 2),
-                          Text(
+                          AppText(
                             opt['subtitle'] as String,
                             style: const TextStyle(
                               fontSize: 12,

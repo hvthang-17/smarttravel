@@ -1,17 +1,51 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'dart:math' as math;
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' hide Path;
 import 'package:smarttravel_mobile/features/itinerary/data/models/itinerary_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+List<LatLng> itineraryRoutePoints(ItineraryItemModel item) {
+  final geometry = item.routePolyline;
+  if ((item.routeSource != 'PROVIDER' && item.routeSource != 'CACHE') ||
+      geometry == null || geometry.isEmpty) {
+    return const [];
+  }
+  try {
+    final coordinates = jsonDecode(geometry);
+    if (coordinates is! List || coordinates.length < 2 || coordinates.length > 10000) {
+      return const [];
+    }
+    final points = <LatLng>[];
+    for (final coordinate in coordinates) {
+      if (coordinate is! List || coordinate.length != 2 ||
+          coordinate[0] is! num || coordinate[1] is! num) {
+        return const [];
+      }
+      final lon = (coordinate[0] as num).toDouble();
+      final lat = (coordinate[1] as num).toDouble();
+      if (!lat.isFinite || !lon.isFinite || lat.abs() > 90 || lon.abs() > 180) {
+        return const [];
+      }
+      points.add(LatLng(lat, lon));
+    }
+    return points;
+  } on FormatException {
+    return const [];
+  }
+}
+
 class ItineraryMapView extends StatefulWidget {
   final List<ItineraryItemModel> items;
   final ValueChanged<ItineraryItemModel>? onItemTap;
+  final String transport;
 
   const ItineraryMapView({
     super.key,
     required this.items,
+    this.transport = 'unspecified',
     this.onItemTap,
   });
 
@@ -20,7 +54,7 @@ class ItineraryMapView extends StatefulWidget {
 }
 
 class _ItineraryMapViewState extends State<ItineraryMapView> {
-  int _selectedItemIndex = 0;
+  int? _selectedItemIndex;
   final MapController _mapController = MapController();
 
   static const LatLng _daNangCenter = LatLng(16.0544, 108.2022);
@@ -29,19 +63,22 @@ class _ItineraryMapViewState extends State<ItineraryMapView> {
   void didUpdateWidget(covariant ItineraryMapView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.items != widget.items) {
-      if (_selectedItemIndex >= widget.items.length) {
-        _selectedItemIndex = 0;
-      }
+      _selectedItemIndex = null;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _fitBounds();
+        if (mounted && _extractValidCoordinates().isNotEmpty) _fitBounds();
       });
     }
   }
 
   bool _isValidCoordinate(double? lat, double? lng) {
     if (lat == null || lng == null) return false;
-    if (lat == 0.0 && lng == 0.0) return false;
     return lat >= -90.0 && lat <= 90.0 && lng >= -180.0 && lng <= 180.0;
+  }
+
+  @override
+  void dispose() {
+    _mapController.dispose();
+    super.dispose();
   }
 
   List<LatLng> _extractValidCoordinates() {
@@ -49,14 +86,17 @@ class _ItineraryMapViewState extends State<ItineraryMapView> {
     for (final item in widget.items) {
       final dest = item.destination;
       if (dest != null && _isValidCoordinate(dest.latitude, dest.longitude)) {
-        points.add(LatLng(dest.latitude, dest.longitude));
+        points.add(LatLng(dest.latitude!, dest.longitude!));
       }
     }
     return points;
   }
 
   void _fitBounds() {
-    final points = _extractValidCoordinates();
+    final points = {
+      ..._extractValidCoordinates(),
+      for (final item in widget.items) ...itineraryRoutePoints(item),
+    }.toList();
     if (points.isEmpty) {
       _mapController.move(_daNangCenter, 12.0);
       return;
@@ -81,13 +121,20 @@ class _ItineraryMapViewState extends State<ItineraryMapView> {
     final lng = dest?.longitude;
     final name = dest?.name ?? 'Điểm đến';
 
-    Uri? targetUri;
+    final Uri targetUri;
 
     if (_isValidCoordinate(lat, lng)) {
-      final encodedName = Uri.encodeComponent(name);
-      targetUri = Uri.parse(
-        'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&destination_place_id=$encodedName',
-      );
+      final mode = switch (widget.transport) {
+        'walking' => 'walking',
+        'motorbike' => 'two-wheeler',
+        'car' || 'taxi' => 'driving',
+        _ => null,
+      };
+      targetUri = Uri.https('www.google.com', '/maps/dir/', {
+        'api': '1',
+        'destination': '$lat,$lng',
+        if (mode != null) 'travelmode': mode,
+      });
     } else {
       final encodedQuery = Uri.encodeComponent('$name Đà Nẵng');
       targetUri = Uri.parse(
@@ -95,22 +142,22 @@ class _ItineraryMapViewState extends State<ItineraryMapView> {
       );
     }
 
+    if (await _launch(targetUri, LaunchMode.externalApplication) ||
+        await _launch(targetUri, LaunchMode.platformDefault)) {
+      return;
+    }
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: AppText('Không thể mở Google Maps trên thiết bị này.')),
+      );
+    }
+  }
+
+  Future<bool> _launch(Uri uri, LaunchMode mode) async {
     try {
-      final canLaunch = await canLaunchUrl(targetUri);
-      if (canLaunch) {
-        await launchUrl(targetUri, mode: LaunchMode.externalApplication);
-      } else {
-        await launchUrl(targetUri, mode: LaunchMode.platformDefault);
-      }
+      return await launchUrl(uri, mode: mode);
     } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Không thể mở Google Maps trên thiết bị này.'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
+      return false;
     }
   }
 
@@ -118,7 +165,7 @@ class _ItineraryMapViewState extends State<ItineraryMapView> {
   Widget build(BuildContext context) {
     if (widget.items.isEmpty) {
       return const Center(
-        child: Text(
+        child: AppText(
           'Không có điểm đến nào trong ngày này',
           style: TextStyle(color: Color(0xFF64748B)),
         ),
@@ -126,9 +173,20 @@ class _ItineraryMapViewState extends State<ItineraryMapView> {
     }
 
     final validPoints = _extractValidCoordinates();
-    final selectedItem = _selectedItemIndex < widget.items.length
-        ? widget.items[_selectedItemIndex]
-        : widget.items.first;
+    if (validPoints.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: AppText('Các điểm trong ngày này chưa có tọa độ. Bạn vẫn có thể xem lịch theo ngày.',
+              textAlign: TextAlign.center),
+        ),
+      );
+    }
+    final selectedIndex = _selectedItemIndex ?? widget.items.indexWhere(
+      (item) => _isValidCoordinate(item.destination?.latitude, item.destination?.longitude),
+    );
+    final selectedItem = widget.items[selectedIndex];
+    final routes = widget.items.map(itineraryRoutePoints).where((points) => points.isNotEmpty);
 
     final initialCenter =
         validPoints.isNotEmpty ? validPoints.first : _daNangCenter;
@@ -154,36 +212,22 @@ class _ItineraryMapViewState extends State<ItineraryMapView> {
               maxZoom: 19,
             ),
 
-            // Polyline connecting stops in itinerary order
-            if (validPoints.length > 1)
-              PolylineLayer(
-                polylines: [
-                  Polyline(
-                    points: validPoints,
-                    strokeWidth: 4.0,
-                    color: const Color(0xFF0077B6).withValues(alpha: 0.85),
-                    strokeCap: StrokeCap.round,
-                    strokeJoin: StrokeJoin.round,
-                  ),
-                ],
-              ),
-
-            // Destination Markers
+            PolylineLayer(polylines: [
+              for (final points in routes)
+                Polyline(points: points, color: const Color(0xFF0077B6), strokeWidth: 4),
+            ]),
             MarkerLayer(
-              markers: List.generate(widget.items.length, (index) {
+              markers: List<Marker?>.generate(widget.items.length, (index) {
                 final item = widget.items[index];
                 final dest = item.destination;
 
                 if (dest == null ||
                     !_isValidCoordinate(dest.latitude, dest.longitude)) {
-                  return const Marker(
-                    point: LatLng(0, 0),
-                    child: SizedBox.shrink(),
-                  );
+                  return null;
                 }
 
-                final point = LatLng(dest.latitude, dest.longitude);
-                final isSelected = index == _selectedItemIndex;
+                final point = LatLng(dest.latitude!, dest.longitude!);
+                final isSelected = index == selectedIndex;
 
                 return Marker(
                   point: point,
@@ -195,7 +239,6 @@ class _ItineraryMapViewState extends State<ItineraryMapView> {
                       setState(() => _selectedItemIndex = index);
                       _mapController.move(
                           point, math.max(_mapController.camera.zoom, 14.0));
-                      widget.onItemTap?.call(item);
                     },
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -219,7 +262,7 @@ class _ItineraryMapViewState extends State<ItineraryMapView> {
                             ],
                           ),
                           alignment: Alignment.center,
-                          child: Text(
+                          child: AppText(
                             '${index + 1}',
                             style: const TextStyle(
                               color: Colors.white,
@@ -240,7 +283,7 @@ class _ItineraryMapViewState extends State<ItineraryMapView> {
                     ),
                   ),
                 );
-              }),
+              }).nonNulls.toList(),
             ),
           ],
         ),
@@ -272,7 +315,7 @@ class _ItineraryMapViewState extends State<ItineraryMapView> {
                         Icon(Icons.crop_free,
                             size: 14, color: Color(0xFF0077B6)),
                         SizedBox(width: 4),
-                        Text(
+                        AppText(
                           'Căn chỉnh',
                           style: TextStyle(
                             fontSize: 11,
@@ -293,8 +336,8 @@ class _ItineraryMapViewState extends State<ItineraryMapView> {
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: const Color(0xFFE2E8F0)),
                 ),
-                child: const Text(
-                  '© OpenStreetMap',
+                child: const AppText(
+                'Esri · © OpenStreetMap',
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w500,
@@ -333,7 +376,7 @@ class _ItineraryMapViewState extends State<ItineraryMapView> {
                     if (dest != null &&
                         _isValidCoordinate(dest.latitude, dest.longitude)) {
                       _mapController.move(
-                        LatLng(dest.latitude, dest.longitude),
+                        LatLng(dest.latitude!, dest.longitude!),
                         math.max(_mapController.camera.zoom, 14.5),
                       );
                     }
@@ -372,8 +415,8 @@ class _ItineraryMapViewState extends State<ItineraryMapView> {
                                 color: const Color(0xFF0077B6),
                                 borderRadius: BorderRadius.circular(4),
                               ),
-                              child: Text(
-                                'Điểm ${_selectedItemIndex + 1}',
+                              child: AppText(
+                                'Điểm ${selectedIndex + 1}',
                                 style: const TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
@@ -383,7 +426,7 @@ class _ItineraryMapViewState extends State<ItineraryMapView> {
                             ),
                             const SizedBox(width: 6),
                             Expanded(
-                              child: Text(
+                              child: AppText(
                                 selectedItem.destination?.name ?? 'Điểm đến',
                                 style: const TextStyle(
                                   fontSize: 14,
@@ -397,8 +440,12 @@ class _ItineraryMapViewState extends State<ItineraryMapView> {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          '${selectedItem.startTime ?? "08:30"} • ${selectedItem.destination?.category ?? "Tham quan"}',
+                        AppText(
+                          [
+                            selectedItem.startTime,
+                            if (selectedItem.routeSource == 'HAVERSINE') 'Chặng đến ước tính',
+                            if (selectedItem.routeSource == 'UNKNOWN') 'Chặng đến chưa có dữ liệu',
+                          ].nonNulls.join(' · '),
                           style: const TextStyle(
                             fontSize: 12,
                             color: Color(0xFF64748B),
@@ -414,7 +461,7 @@ class _ItineraryMapViewState extends State<ItineraryMapView> {
                 ElevatedButton.icon(
                   onPressed: () => _openGoogleMaps(selectedItem),
                   icon: const Icon(Icons.directions, size: 16),
-                  label: const Text('Chỉ đường'),
+                  label: const AppText('Chỉ đường'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0077B6),
                     foregroundColor: Colors.white,

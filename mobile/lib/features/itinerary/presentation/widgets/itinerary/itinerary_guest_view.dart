@@ -1,3 +1,4 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smarttravel_mobile/core/theme/app_theme.dart';
@@ -34,7 +35,7 @@ class ItineraryGuestView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
+            const AppText(
               'Bạn chưa đăng nhập',
               style: TextStyle(
                 fontFamily: 'Plus Jakarta Sans',
@@ -46,7 +47,7 @@ class ItineraryGuestView extends StatelessWidget {
             const SizedBox(height: 8),
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 320),
-              child: const Text(
+              child: const AppText(
                 'Đăng nhập để xem danh sách lịch trình đã tạo, đồng bộ chuyến đi và cá nhân hóa kế hoạch khám phá Đà Nẵng.',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 14, height: 1.5, color: Color(0xFF475569)),
@@ -77,7 +78,7 @@ class ItineraryGuestView extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: () => context.push('/login'),
                 icon: const Icon(Icons.login_rounded, size: 18),
-                label: const Text('Đăng nhập ngay', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                label: const AppText('Đăng nhập ngay', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryBlue,
                   foregroundColor: Colors.white,
@@ -97,7 +98,7 @@ class ItineraryGuestView extends StatelessWidget {
                   side: const BorderSide(color: AppTheme.primaryBlue),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text('Chưa có tài khoản? Đăng ký', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                child: const AppText('Chưa có tài khoản? Đăng ký', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
               ),
             ),
           ],
@@ -119,7 +120,7 @@ class ItineraryGuestView extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: Text(
+          child: AppText(
             text,
             style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500, color: Color(0xFF0F172A)),
           ),

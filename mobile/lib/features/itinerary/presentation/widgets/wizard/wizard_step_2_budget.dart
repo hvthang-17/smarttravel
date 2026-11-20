@@ -1,7 +1,9 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 
 class WizardStep2Budget extends StatelessWidget {
   final int budgetVnd;
+  final TextEditingController budgetController;
   final int travelersCount;
   final ValueChanged<int> onBudgetChanged;
   final ValueChanged<int> onTravelersChanged;
@@ -9,6 +11,7 @@ class WizardStep2Budget extends StatelessWidget {
   const WizardStep2Budget({
     super.key,
     required this.budgetVnd,
+    required this.budgetController,
     required this.travelersCount,
     required this.onBudgetChanged,
     required this.onTravelersChanged,
@@ -43,7 +46,7 @@ class WizardStep2Budget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        const AppText(
           'Ngân sách và số người',
           style: TextStyle(
             fontSize: 20,
@@ -52,7 +55,7 @@ class WizardStep2Budget extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 6),
-        const Text(
+        const AppText(
           'Ước tính chi phí tối đa và quy mô nhóm cho chuyến đi',
           style: TextStyle(
             fontSize: 14,
@@ -89,7 +92,7 @@ class WizardStep2Budget extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    const AppText(
                       'Số người đi cùng',
                       style: TextStyle(
                         fontSize: 15,
@@ -98,7 +101,7 @@ class WizardStep2Budget extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    Text(
+                    AppText(
                       '$travelersCount người',
                       style: const TextStyle(
                         fontSize: 12,
@@ -138,7 +141,7 @@ class WizardStep2Budget extends StatelessWidget {
                   ),
                   SizedBox(
                     width: 36,
-                    child: Text(
+                    child: AppText(
                       '$travelersCount',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
@@ -149,7 +152,7 @@ class WizardStep2Budget extends StatelessWidget {
                     ),
                   ),
                   InkWell(
-                    onTap: travelersCount < 20
+                    onTap: travelersCount < 10
                         ? () => onTravelersChanged(travelersCount + 1)
                         : null,
                     borderRadius: BorderRadius.circular(20),
@@ -178,7 +181,7 @@ class WizardStep2Budget extends StatelessWidget {
         const SizedBox(height: 20),
 
         // Budget Field
-        const Text(
+        const AppText(
           'Ngân sách dự kiến',
           style: TextStyle(
             fontSize: 15,
@@ -204,16 +207,15 @@ class WizardStep2Budget extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  _formatVnd(budgetVnd),
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF0F172A),
-                  ),
+                child: TextField(
+                  controller: budgetController,
+                  keyboardType: TextInputType.number,
+                  maxLength: 18,
+                  decoration: const InputDecoration(label: AppText('Ngân sách cả nhóm'), counterText: ''),
+                  onChanged: (text) => onBudgetChanged(int.tryParse(text.trim()) ?? 0),
                 ),
               ),
-              const Text(
+              const AppText(
                 'VNĐ',
                 style: TextStyle(
                   fontSize: 14,
@@ -229,7 +231,7 @@ class WizardStep2Budget extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
+            AppText(
               'Ước tính: ~${_formatVnd(perPerson)} đ / người',
               style: const TextStyle(
                 fontSize: 12,
@@ -240,7 +242,7 @@ class WizardStep2Budget extends StatelessWidget {
         ),
 
         const SizedBox(height: 16),
-        const Text(
+        const AppText(
           'Chọn nhanh mức ngân sách:',
           style: TextStyle(
             fontSize: 13,
@@ -255,9 +257,12 @@ class WizardStep2Budget extends StatelessWidget {
           children: _presetBudgets.map((preset) {
             final isSelected = budgetVnd == preset;
             return ChoiceChip(
-              label: Text('${_formatVnd(preset)} đ'),
+              label: AppText('${_formatVnd(preset)} đ'),
               selected: isSelected,
-              onSelected: (_) => onBudgetChanged(preset),
+              onSelected: (_) {
+                budgetController.text = preset.toString();
+                onBudgetChanged(preset);
+              },
               selectedColor: const Color(0xFFEDF6F9),
               backgroundColor: Colors.white,
               labelStyle: TextStyle(

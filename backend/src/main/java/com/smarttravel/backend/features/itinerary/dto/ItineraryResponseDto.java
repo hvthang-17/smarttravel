@@ -5,6 +5,27 @@ import java.time.LocalDate;
 import java.util.List;
 
 public class ItineraryResponseDto {
+    private String period;
+    public String getPeriod() { return period; }
+    public void setPeriod(String period) { this.period = period; }
+    public record ConstraintDto(Long destinationId, String type,
+            com.smarttravel.backend.features.itinerary.domain.ItineraryConstraint.Snapshot snapshot) {}
+    private List<ConstraintDto> constraints;
+    private String originName;
+    private java.math.BigDecimal originLatitude;
+    private java.math.BigDecimal originLongitude;
+    private List<String> preferredCategories;
+
+    public List<ConstraintDto> getConstraints() { return constraints; }
+    public void setConstraints(List<ConstraintDto> value) { constraints = value; }
+    public String getOriginName() { return originName; }
+    public void setOriginName(String value) { originName = value; }
+    public java.math.BigDecimal getOriginLatitude() { return originLatitude; }
+    public void setOriginLatitude(java.math.BigDecimal value) { originLatitude = value; }
+    public java.math.BigDecimal getOriginLongitude() { return originLongitude; }
+    public void setOriginLongitude(java.math.BigDecimal value) { originLongitude = value; }
+    public List<String> getPreferredCategories() { return preferredCategories; }
+    public void setPreferredCategories(List<String> value) { preferredCategories = value; }
     private Long id;
     private String title;
     private LocalDate startDate;
@@ -13,6 +34,19 @@ public class ItineraryResponseDto {
     private Integer travelersCount;
     private Long maxBudgetVnd;
     private String pace;
+    private String transport;
+    private Boolean costComplete;
+    private String generationStatus;
+    private List<String> warnings;
+    public String getTransport() { return transport; }
+    public void setTransport(String value) { transport = value; }
+    public Boolean getCostComplete() { return costComplete; }
+    public void setCostComplete(Boolean value) { costComplete = value; }
+    public String getGenerationStatus() { return generationStatus; }
+    public void setGenerationStatus(String value) { generationStatus = value; }
+    public List<String> getWarnings() { return warnings; }
+    public void setWarnings(List<String> value) { warnings = value; }
+
     private Long totalEstimatedCost;
     private String status;
     private String shareToken;
@@ -52,6 +86,28 @@ public class ItineraryResponseDto {
         private Integer sequenceOrder;
         private String startTime;
         private Integer durationMinutes;
+        private String categoryCode;
+        private Long unitPriceVnd;
+        private String routeSource;
+        private String recommendationReason;
+        private boolean featuredRecommendation;
+        private boolean upperPriceKnown;
+
+        public String getRecommendationReason() { return recommendationReason; }
+        public void setRecommendationReason(String value) { recommendationReason = value; }
+        public boolean isFeaturedRecommendation() { return featuredRecommendation; }
+        public void setFeaturedRecommendation(boolean value) { featuredRecommendation = value; }
+        public boolean isUpperPriceKnown() { return upperPriceKnown; }
+        public void setUpperPriceKnown(boolean value) { upperPriceKnown = value; }
+        private String routePolyline;
+        public String getCategoryCode() { return categoryCode; }
+        public void setCategoryCode(String value) { categoryCode = value; }
+        public Long getUnitPriceVnd() { return unitPriceVnd; }
+        public void setUnitPriceVnd(Long value) { unitPriceVnd = value; }
+        public String getRouteSource() { return routeSource; }
+        public void setRouteSource(String value) { routeSource = value; }
+        public String getRoutePolyline() { return routePolyline; }
+        public void setRoutePolyline(String value) { routePolyline = value; }
         private Long estimatedCostVnd;
         private String notes;
         private Double travelDistanceKm;

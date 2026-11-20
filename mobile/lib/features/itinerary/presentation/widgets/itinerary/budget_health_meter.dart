@@ -1,3 +1,5 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
+import 'package:smarttravel_mobile/core/utils/destination_categories.dart';
 import 'package:flutter/material.dart';
 
 class BudgetHealthMeter extends StatelessWidget {
@@ -47,6 +49,20 @@ class BudgetHealthMeter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (budgetHealth == 'UNKNOWN') {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(color: Colors.white, border: Border.all(color: const Color(0xFFCBD5E1)), borderRadius: BorderRadius.circular(16)),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const AppText('Chưa đủ dữ liệu chi phí', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF334155))),
+          const SizedBox(height: 8),
+          AppText('Chi phí đã biết: ${_formatVnd(totalEstimatedCost)} VNĐ'),
+          const AppText('Chưa thể kết luận ngân sách còn lại. Một số hoạt động chưa có giá.'),
+          ...categoryBreakdown.entries.map((entry) => AppText('${categoryLabel(entry.key)}: ${_formatVnd(entry.value)} VNĐ (đã biết)')),
+          if (onAdjustBudget != null) TextButton(onPressed: onAdjustBudget, child: const AppText('Điều chỉnh ngân sách')),
+        ]),
+      );
+    }
     final isOverbudget =
         budgetHealth == 'OVERBUDGET' || budgetUtilizationPercent > 100.0;
     final isWarning =
@@ -88,7 +104,7 @@ class BudgetHealthMeter extends StatelessWidget {
                     ),
                     SizedBox(width: 8),
                     Expanded(
-                      child: Text(
+                      child: AppText(
                         'Ngân sách chuyến đi',
                         style: TextStyle(
                           fontSize: 15,
@@ -109,7 +125,7 @@ class BudgetHealthMeter extends StatelessWidget {
                   color: const Color(0xFFEDF2F7),
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: const Text(
+                child: const AppText(
                   'ƯỚC TÍNH',
                   style: TextStyle(
                     fontSize: 10,
@@ -131,7 +147,7 @@ class BudgetHealthMeter extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.baseline,
               textBaseline: TextBaseline.alphabetic,
               children: [
-                Text(
+                AppText(
                   '${_formatVnd(totalEstimatedCost)} ',
                   style: TextStyle(
                     fontSize: 22,
@@ -139,7 +155,7 @@ class BudgetHealthMeter extends StatelessWidget {
                     color: isOverbudget ? redOverbudget : const Color(0xFF0F172A),
                   ),
                 ),
-                Text(
+                AppText(
                   '/ ${_formatVnd(maxBudgetVnd)} VNĐ',
                   style: const TextStyle(
                     fontSize: 14,
@@ -170,7 +186,7 @@ class BudgetHealthMeter extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              AppText(
                 '${budgetUtilizationPercent.toStringAsFixed(1)}% ngân sách',
                 style: TextStyle(
                   fontSize: 12,
@@ -178,7 +194,7 @@ class BudgetHealthMeter extends StatelessWidget {
                   color: _statusColor,
                 ),
               ),
-              Text(
+              AppText(
                 isOverbudget
                     ? 'Vượt: ${_formatVnd(-remainingVnd)} VNĐ'
                     : 'Còn lại: ${_formatVnd(remainingVnd)} VNĐ',
@@ -214,7 +230,7 @@ class BudgetHealthMeter extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        const AppText(
                           'Cảnh báo vượt ngân sách dự kiến',
                           style: TextStyle(
                             fontSize: 13,
@@ -223,7 +239,7 @@ class BudgetHealthMeter extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 2),
-                        Text(
+                        AppText(
                           'Tổng chi phí vượt ${_formatVnd(-remainingVnd)} VNĐ so với hạn mức ban đầu. Hãy cân nhắc điều chỉnh hoặc tăng ngân sách.',
                           style: const TextStyle(
                             fontSize: 12,
@@ -254,7 +270,7 @@ class BudgetHealthMeter extends StatelessWidget {
                   ),
                   SizedBox(width: 8),
                   Expanded(
-                    child: Text(
+                    child: AppText(
                       'Chi phí đã chạm ngưỡng ≥ 85% hạn mức.',
                       style: TextStyle(
                         fontSize: 12,
@@ -270,7 +286,7 @@ class BudgetHealthMeter extends StatelessWidget {
           // Category breakdown mini preview
           if (categoryBreakdown.isNotEmpty) ...[
             const Divider(height: 24, color: Color(0xFFE2E8F0)),
-            const Text(
+            const AppText(
               'Phân bổ theo danh mục:',
               style: TextStyle(
                 fontSize: 13,
@@ -289,7 +305,7 @@ class BudgetHealthMeter extends StatelessWidget {
                     color: const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: Text(
+                  child: AppText(
                     '${entry.key}: ${_formatVnd(entry.value)} đ',
                     style: const TextStyle(
                       fontSize: 11,
