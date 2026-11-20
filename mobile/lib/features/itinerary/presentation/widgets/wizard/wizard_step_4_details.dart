@@ -1,8 +1,12 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
+import 'package:smarttravel_mobile/features/auth/data/models/traveler_profile.dart';
 import 'package:flutter/material.dart';
 
 class WizardStep4Details extends StatelessWidget {
   final TextEditingController titleController;
   final TextEditingController startingPointController;
+  final TextEditingController latitudeController;
+  final TextEditingController longitudeController;
   final String selectedTransport;
   final ValueChanged<String> onTransportChanged;
   final int totalDays;
@@ -14,6 +18,8 @@ class WizardStep4Details extends StatelessWidget {
     super.key,
     required this.titleController,
     required this.startingPointController,
+    required this.latitudeController,
+    required this.longitudeController,
     required this.selectedTransport,
     required this.onTransportChanged,
     required this.totalDays,
@@ -21,12 +27,6 @@ class WizardStep4Details extends StatelessWidget {
     required this.budgetVnd,
     required this.pace,
   });
-
-  static const List<String> _transportOptions = [
-    'Xe máy',
-    'Ô tô / Taxi',
-    'Đi bộ kết hợp',
-  ];
 
   String _formatVnd(int amount) {
     final str = amount.toString();
@@ -58,7 +58,7 @@ class WizardStep4Details extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        const AppText(
           'Thông tin bổ sung',
           style: TextStyle(
             fontSize: 20,
@@ -67,8 +67,8 @@ class WizardStep4Details extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 6),
-        const Text(
-          'Tùy chỉnh thông tin để thuật toán sắp xếp tuyến đường phù hợp nhất',
+        const AppText(
+          'Nhập tên chuyến, điểm xuất phát và phương tiện dự kiến.',
           style: TextStyle(
             fontSize: 14,
             color: Color(0xFF475569),
@@ -77,7 +77,7 @@ class WizardStep4Details extends StatelessWidget {
         const SizedBox(height: 20),
 
         // Trip Title
-        const Text(
+        const AppText(
           'Tên chuyến đi',
           style: TextStyle(
             fontSize: 14,
@@ -88,8 +88,9 @@ class WizardStep4Details extends StatelessWidget {
         const SizedBox(height: 6),
         TextField(
           controller: titleController,
+          maxLength: 255,
           decoration: InputDecoration(
-            hintText: 'Ví dụ: Du lịch Đà Nẵng cùng bạn bè',
+            hint: const AppText('Ví dụ: Du lịch Đà Nẵng cùng bạn bè'),
             filled: true,
             fillColor: Colors.white,
             border: OutlineInputBorder(
@@ -112,7 +113,7 @@ class WizardStep4Details extends StatelessWidget {
         const SizedBox(height: 18),
 
         // Starting point / Hotel
-        const Text(
+        const AppText(
           'Nơi lưu trú / Điểm xuất phát (tùy chọn)',
           style: TextStyle(
             fontSize: 14,
@@ -123,9 +124,10 @@ class WizardStep4Details extends StatelessWidget {
         const SizedBox(height: 6),
         TextField(
           controller: startingPointController,
+          maxLength: 255,
           decoration: InputDecoration(
-            hintText: 'Ví dụ: Khách sạn Novotel Đà Nẵng, Sơn Trà...',
-            helperText: 'Tối ưu hoá các điểm đến xuất phát từ nơi ở của bạn',
+            hint: const AppText('Ví dụ: Nơi ở tại Sơn Trà'),
+            helper: const AppText('Dùng làm điểm xuất phát của chuyến đi'),
             helperStyle: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
             filled: true,
             fillColor: Colors.white,
@@ -148,8 +150,21 @@ class WizardStep4Details extends StatelessWidget {
 
         const SizedBox(height: 18),
 
+        const AppText('Tọa độ điểm xuất phát (tùy chọn)'),
+        const SizedBox(height: 8),
+        Row(children: [
+          Expanded(child: TextField(controller: latitudeController,
+            keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true),
+            decoration: const InputDecoration(label: AppText('Vĩ độ')))),
+          const SizedBox(width: 12),
+          Expanded(child: TextField(controller: longitudeController,
+            keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true),
+            decoration: const InputDecoration(label: AppText('Kinh độ')))),
+        ]),
+        const SizedBox(height: 18),
+
         // Transport
-        const Text(
+        const AppText(
           'Phương tiện di chuyển chính',
           style: TextStyle(
             fontSize: 14,
@@ -160,10 +175,10 @@ class WizardStep4Details extends StatelessWidget {
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
-          children: _transportOptions.map((opt) {
+          children: travelerTransports.keys.map((opt) {
             final isSelected = selectedTransport == opt;
             return ChoiceChip(
-              label: Text(opt),
+              label: AppText(travelerTransports[opt]!),
               selected: isSelected,
               onSelected: (_) => onTransportChanged(opt),
               selectedColor: const Color(0xFFEDF6F9),
@@ -208,12 +223,14 @@ class WizardStep4Details extends StatelessWidget {
                     size: 18,
                   ),
                   SizedBox(width: 8),
-                  Text(
-                    'Tóm tắt thông số chuyến đi',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF0077B6),
+                  Flexible(
+                    child: AppText(
+                      'Tóm tắt chuyến đi',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF0077B6),
+                      ),
                     ),
                   ),
                 ],
@@ -236,16 +253,22 @@ class WizardStep4Details extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: const TextStyle(fontSize: 13, color: Color(0xFF475569)),
+          Flexible(
+            child: AppText(
+              label,
+              style: const TextStyle(fontSize: 13, color: Color(0xFF475569)),
+            ),
           ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF0F172A),
+          const SizedBox(width: 8),
+          Flexible(
+            child: AppText(
+              value,
+              textAlign: TextAlign.end,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF0F172A),
+              ),
             ),
           ),
         ],

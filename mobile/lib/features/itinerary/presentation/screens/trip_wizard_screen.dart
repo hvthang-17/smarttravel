@@ -1,3 +1,13 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
+import 'dart:convert';
+import 'dart:math';
+import 'package:smarttravel_mobile/features/destination/data/models/destination_model.dart';
+import '../../data/models/trip_dates.dart';
+import '../widgets/wizard/wizard_constraints.dart';
+import 'package:smarttravel_mobile/features/destination/presentation/providers/favorite_provider.dart';
+import '../widgets/wizard/wizard_favorites.dart';
+import 'package:smarttravel_mobile/features/auth/data/repositories/auth_repository.dart';
+import 'package:smarttravel_mobile/features/auth/data/models/traveler_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,7 +20,9 @@ import 'package:smarttravel_mobile/features/itinerary/presentation/widgets/wizar
 import 'package:smarttravel_mobile/features/itinerary/presentation/widgets/wizard/wizard_step_4_details.dart';
 
 class TripWizardScreen extends ConsumerStatefulWidget {
-  const TripWizardScreen({super.key});
+  const TripWizardScreen({super.key, this.initialFavoriteId});
+
+  final int? initialFavoriteId;
 
   @override
   ConsumerState<TripWizardScreen> createState() => _TripWizardScreenState();
@@ -21,32 +33,60 @@ class _TripWizardScreenState extends ConsumerState<TripWizardScreen> {
 
   // Step 1: Duration
   int _selectedDays = 3;
-  DateTime _startDate = DateTime.now().add(const Duration(days: 1));
+  DateTime _startDate = planningToday().add(const Duration(days: 1));
 
   // Step 2: Budget & Travelers
   int _budgetVnd = 5000000;
   int _travelersCount = 2;
 
   // Step 3: Preferences
-  Set<String> _selectedCategories = {'Tham quan', 'Ăn uống', 'Biển'};
+  Set<String> _selectedCategories = <String>{};
   String _selectedPace = 'balanced';
+  Set<int> _favoriteIds = {};
+  final _required = <int, DestinationModel>{};
+  final _excluded = <int, DestinationModel>{};
+  final _generationKeys = <String, String>{};
+  final _latitude = TextEditingController();
+  final _longitude = TextEditingController();
+  late final TextEditingController _budgetController;
+  bool _submitting = false;
+  String? _generationError;
+  bool _hasAdvanced = false;
+  int get _capacity => min(28, _selectedDays * (switch (_selectedPace) {
+    'relaxed' => 5, 'packed' => 7, _ => 6,
+  }));
 
   // Step 4: Details
   late final TextEditingController _titleController;
   late final TextEditingController _startingPointController;
-  String _selectedTransport = 'Xe máy';
+  String _selectedTransport = 'motorbike';
 
   @override
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: 'Chuyến đi Đà Nẵng 3 ngày 2 đêm');
     _startingPointController = TextEditingController();
+    final initialFavorite = widget.initialFavoriteId;
+    if (initialFavorite != null && initialFavorite > 0) _favoriteIds.add(initialFavorite);
+    _budgetController = TextEditingController();
+    _applyProfile(ref.read(authNotifierProvider).travelerProfile);
+  }
+
+  void _applyProfile(TravelerProfile? profile) {
+    _selectedCategories = profile?.preferredCategories.toSet() ?? {};
+    _selectedPace = profile?.defaultPace ?? 'balanced';
+    _budgetVnd = profile?.defaultBudgetVnd ?? 5000000;
+    _selectedTransport = profile?.defaultTransport ?? 'motorbike';
+    _budgetController.text = _budgetVnd.toString();
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _startingPointController.dispose();
+    _budgetController.dispose();
+    _latitude.dispose();
+    _longitude.dispose();
     super.dispose();
   }
 
@@ -60,8 +100,16 @@ class _TripWizardScreenState extends ConsumerState<TripWizardScreen> {
   }
 
   void _nextStep() {
+    if (_submitting) return;
+    if (_currentStep == 1 && !_validDates()) return;
+    if (_currentStep == 2 && _budgetVnd <= 0) {
+      _feedback('Nhập ngân sách lớn hơn 0.');
+      return;
+    }
     if (_currentStep < 4) {
+      _hasAdvanced = true;
       setState(() => _currentStep++);
+      if (_currentStep == 3) ref.read(favoritesProvider.notifier).reload();
     } else {
       _submitWizard();
     }
@@ -71,7 +119,7 @@ class _TripWizardScreenState extends ConsumerState<TripWizardScreen> {
     if (_currentStep > 1) {
       setState(() => _currentStep--);
     } else {
-      context.pop();
+      if (context.canPop()) context.pop();
     }
   }
 
@@ -79,87 +127,101 @@ class _TripWizardScreenState extends ConsumerState<TripWizardScreen> {
     return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
   }
 
+  bool _validDates() {
+    final today = planningToday();
+    final end = _startDate.add(Duration(days: _selectedDays - 1));
+    if (!_startDate.isBefore(today) && !end.isAfter(today.add(const Duration(days: 365)))) return true;
+    _feedback('Ngày chuyến đi phải nằm trong khoảng từ hôm nay đến 365 ngày tới.');
+    return false;
+  }
+
+  void _feedback(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: AppText(message)));
+  }
+
+  double? _parseCoordinate(String raw, int boundary) {
+    final text = raw.trim().replaceAll(',', '.');
+    if (!RegExp(r'^[+-]?\d+(?:\.\d{1,7})?$').hasMatch(text)) return null;
+    final value = double.tryParse(text);
+    return value != null && value.abs() <= boundary ? value : null;
+  }
+
+  String _newGenerationKey() {
+    final random = Random.secure();
+    return List.generate(16, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
+  }
+
   Future<void> _submitWizard() async {
-    final authState = ref.read(authNotifierProvider);
-    if (authState.token == null || authState.token!.isEmpty) {
+    if (_submitting) return;
+    if (!ref.read(authNotifierProvider).isAuthenticated) {
       _showLoginRequiredDialog();
       return;
     }
+    if (!_validDates()) return;
+    if (_budgetVnd <= 0) {
+      _feedback('Nhập ngân sách lớn hơn 0 ở bước Ngân sách.');
+      return;
+    }
+    final activeCodes = ref.read(profileCategoriesProvider).valueOrNull;
+    if (_selectedCategories.isNotEmpty && (activeCodes == null || !_selectedCategories.every(activeCodes.contains))) {
+      _feedback('Kiểm tra danh mục ở bước Sở thích trước khi tạo chuyến.');
+      return;
+    }
+    if (_favoriteIds.isNotEmpty) {
+      final available = ref.read(favoritesProvider).valueOrNull;
+      if (available == null || !_favoriteIds.every((id) => available.any((item) => item.id == id))) {
+        _feedback('Kiểm tra lại các điểm đã lưu ở bước Sở thích.');
+        return;
+      }
+    }
 
-    final endDate = _startDate.add(Duration(days: _selectedDays - 1));
-    final request = ItineraryRequestModel(
-      title: _titleController.text.trim().isNotEmpty
-          ? _titleController.text.trim()
-          : 'Chuyến đi Đà Nẵng $_selectedDays ngày',
+    final lat = _parseCoordinate(_latitude.text, 90);
+    final lon = _parseCoordinate(_longitude.text, 180);
+    final hasCoordinateInput = _latitude.text.trim().isNotEmpty || _longitude.text.trim().isNotEmpty;
+    if (hasCoordinateInput && (lat == null || lon == null)) {
+      _feedback('Nhập đủ vĩ độ −90 đến 90 và kinh độ −180 đến 180, tối đa 7 số thập phân.');
+      return;
+    }
+
+    final end = _startDate.add(Duration(days: _selectedDays - 1));
+    final title = _titleController.text.trim();
+    final origin = _startingPointController.text.trim();
+    final input = ItineraryRequestModel(
+      title: title.isEmpty ? 'Chuyến đi Đà Nẵng $_selectedDays ngày' : title,
       startDate: _formatDate(_startDate),
-      endDate: _formatDate(endDate),
+      endDate: _formatDate(end),
       travelersCount: _travelersCount,
       maxBudgetVnd: _budgetVnd,
       pace: _selectedPace,
-      preferredCategories: _selectedCategories.toList(),
+      transport: _selectedTransport,
+      originName: origin.isEmpty ? null : origin,
+      originLatitude: lat,
+      originLongitude: lon,
+      preferredCategories: _selectedCategories.toList()..sort(),
+      favoriteDestinationIds: _favoriteIds.toList(),
+      requiredDestinationIds: _required.keys.toList()..sort(),
+      excludedDestinationIds: _excluded.keys.toList()..sort(),
     );
-
-    _showLoadingDialog();
-
-    final result = await ref
-        .read(itineraryNotifierProvider.notifier)
-        .generateItinerary(request);
-
-    if (mounted) {
-      Navigator.of(context, rootNavigator: true).pop(); // dismiss loading
+    final key = _generationKeys.putIfAbsent(jsonEncode(input.toJson()), _newGenerationKey);
+    setState(() {
+      _submitting = true;
+      _generationError = null;
+    });
+    try {
+      final result = await ref.read(itineraryNotifierProvider.notifier)
+          .generateItinerary(input.withGenerationKey(key));
+      if (!mounted) return;
       if (result != null) {
-        _showSuccessDialog(result);
+        ref.invalidate(tripDraftsProvider);
+        context.push('/itineraries/${result.id}');
       } else {
-        final err = ref.read(itineraryNotifierProvider).errorMessage ??
-            'Không thể tạo lịch trình, vui lòng thử lại';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(err),
-            backgroundColor: const Color(0xFFE76F51),
-          ),
-        );
+        final error = ref.read(itineraryNotifierProvider).errorMessage ?? 'Không thể tạo lịch trình. Hãy thử lại.';
+        setState(() => _generationError = error);
+        if (_favoriteIds.isNotEmpty) await ref.read(favoritesProvider.notifier).reload();
       }
+    } finally {
+      if (mounted) setState(() => _submitting = false);
     }
-  }
-
-  void _showLoadingDialog() {
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) {
-        return const Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(16)),
-          ),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 28),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF0077B6)),
-                ),
-                SizedBox(height: 20),
-                Text(
-                  'Đang tạo lịch trình...',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF0F172A),
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Hệ thống đang phân tích điểm đến và tối ưu cung đường theo sở thích của bạn.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, color: Color(0xFF475569)),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
   }
 
   void _showLoginRequiredDialog() {
@@ -170,14 +232,14 @@ class _TripWizardScreenState extends ConsumerState<TripWizardScreen> {
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(16)),
           ),
-          title: const Text('Yêu cầu đăng nhập'),
-          content: const Text(
+          title: const AppText('Yêu cầu đăng nhập'),
+          content: const AppText(
             'Vui lòng đăng nhập tài khoản để lưu trữ và quản lý lịch trình cá nhân của bạn.',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Để sau', style: TextStyle(color: Color(0xFF64748B))),
+              child: const AppText('Để sau', style: TextStyle(color: Color(0xFF64748B))),
             ),
             FilledButton(
               style: FilledButton.styleFrom(
@@ -187,73 +249,7 @@ class _TripWizardScreenState extends ConsumerState<TripWizardScreen> {
                 Navigator.of(ctx).pop();
                 context.push('/login');
               },
-              child: const Text('Đăng nhập ngay'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showSuccessDialog(ItineraryResponseModel itinerary) {
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) {
-        return AlertDialog(
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(16)),
-          ),
-          title: const Row(
-            children: [
-              Icon(Icons.check_circle, color: Color(0xFF2A9D8F), size: 26),
-              SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Tạo lịch trình thành công!',
-                  style: TextStyle(fontSize: 18),
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                itinerary.title,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF0F172A),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text('• Thời lượng: ${itinerary.totalDays} ngày'),
-              Text('• Số người: ${itinerary.travelersCount} người'),
-              Text(
-                '• Chi phí ước tính: ${(itinerary.totalEstimatedCost / 1000).toStringAsFixed(0)}.000 VNĐ',
-              ),
-              Text('• Số ngày lên kế hoạch: ${itinerary.days.length} ngày'),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(ctx).pop();
-                context.go('/');
-              },
-              child: const Text('Về trang chủ', style: TextStyle(color: Color(0xFF64748B))),
-            ),
-            FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF0077B6),
-              ),
-              onPressed: () {
-                Navigator.of(ctx).pop();
-                context.push('/itineraries/${itinerary.id}');
-              },
-              child: const Text('Xem lịch trình & Bản đồ'),
+              child: const AppText('Đăng nhập ngay'),
             ),
           ],
         );
@@ -263,6 +259,10 @@ class _TripWizardScreenState extends ConsumerState<TripWizardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(authNotifierProvider.select((user) => user.travelerProfile), (_, profile) {
+      if (!_hasAdvanced) setState(() => _applyProfile(profile));
+    });
+    final categories = ref.watch(profileCategoriesProvider);
     final progress = _currentStep / 4.0;
 
     return Scaffold(
@@ -272,9 +272,9 @@ class _TripWizardScreenState extends ConsumerState<TripWizardScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
-          onPressed: _previousStep,
+          onPressed: _submitting ? null : _previousStep,
         ),
-        title: Text(
+        title: AppText(
           'Bước $_currentStep / 4',
           style: const TextStyle(
             fontSize: 15,
@@ -298,10 +298,22 @@ class _TripWizardScreenState extends ConsumerState<TripWizardScreen> {
           children: [
             Expanded(
               child: SingleChildScrollView(
+                key: ValueKey(_currentStep),
                 padding: const EdgeInsets.all(16),
-                child: _buildCurrentStep(),
+                child: _buildCurrentStep(categories),
               ),
             ),
+            if (_currentStep == 4 && _generationError != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: Semantics(
+                  liveRegion: true,
+                  child: AppText(
+                    _generationError!,
+                    style: TextStyle(color: Theme.of(context).colorScheme.error),
+                  ),
+                ),
+              ),
             _buildBottomBar(),
           ],
         ),
@@ -309,7 +321,7 @@ class _TripWizardScreenState extends ConsumerState<TripWizardScreen> {
     );
   }
 
-  Widget _buildCurrentStep() {
+  Widget _buildCurrentStep(AsyncValue<List<String>> categories) {
     switch (_currentStep) {
       case 1:
         return WizardStep1Duration(
@@ -321,22 +333,38 @@ class _TripWizardScreenState extends ConsumerState<TripWizardScreen> {
       case 2:
         return WizardStep2Budget(
           budgetVnd: _budgetVnd,
+          budgetController: _budgetController,
           travelersCount: _travelersCount,
           onBudgetChanged: (b) => setState(() => _budgetVnd = b),
           onTravelersChanged: (c) => setState(() => _travelersCount = c),
         );
       case 3:
-        return WizardStep3Preferences(
+        return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          WizardStep3Preferences(
           selectedCategories: _selectedCategories,
+          availableCategories: categories,
           selectedPace: _selectedPace,
           onCategoriesChanged: (cats) =>
               setState(() => _selectedCategories = cats),
           onPaceChanged: (p) => setState(() => _selectedPace = p),
-        );
+          ),
+          const SizedBox(height: 20),
+          WizardFavorites(selected: _favoriteIds, excluded: _excluded.keys.toSet(), capacity: _capacity,
+            onChange: (ids) => setState(() => _favoriteIds = ids)),
+          const SizedBox(height: 20),
+          WizardConstraints(
+            requiredPoints: _required.values.toList(), excludedPoints: _excluded.values.toList(),
+            favoriteIds: _favoriteIds,
+            onPick: (required, point) => setState(() => (required ? _required : _excluded)[point.id!] = point),
+            onRemove: (required, id) => setState(() => (required ? _required : _excluded).remove(id)),
+          ),
+        ]);
       case 4:
         return WizardStep4Details(
           titleController: _titleController,
           startingPointController: _startingPointController,
+          latitudeController: _latitude,
+          longitudeController: _longitude,
           selectedTransport: _selectedTransport,
           onTransportChanged: (t) => setState(() => _selectedTransport = t),
           totalDays: _selectedDays,
@@ -369,9 +397,9 @@ class _TripWizardScreenState extends ConsumerState<TripWizardScreen> {
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-          onPressed: _nextStep,
-          child: Text(
-            isLastStep ? 'Tạo lịch trình' : 'Tiếp tục',
+          onPressed: _submitting ? null : _nextStep,
+          child: AppText(
+            _submitting ? 'Đang tạo bản nháp…' : isLastStep ? 'Tạo bản nháp' : 'Tiếp tục',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,

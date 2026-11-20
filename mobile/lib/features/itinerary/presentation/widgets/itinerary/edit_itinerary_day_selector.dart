@@ -1,3 +1,4 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:smarttravel_mobile/core/theme/app_theme.dart';
 import 'package:smarttravel_mobile/features/itinerary/data/models/itinerary_model.dart';
@@ -42,7 +43,7 @@ class EditItineraryDaySelector extends StatelessWidget {
                       color: isSelected ? AppTheme.primaryBlue : AppTheme.borderSubtle,
                     ),
                   ),
-                  child: Text(
+                  child: AppText(
                     'Ngày ${index + 1}$dateFormatted',
                     style: TextStyle(
                       fontSize: 13,

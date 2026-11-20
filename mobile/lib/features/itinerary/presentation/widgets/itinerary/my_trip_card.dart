@@ -1,19 +1,16 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smarttravel_mobile/core/theme/app_theme.dart';
 import 'package:smarttravel_mobile/features/itinerary/data/models/itinerary_model.dart';
-import 'package:smarttravel_mobile/features/itinerary/presentation/widgets/itinerary/share_itinerary_dialog.dart';
+import 'trip_actions.dart';
 
 class MyTripCard extends StatelessWidget {
   final ItineraryResponseModel trip;
-  final int index;
-  final void Function(int tripId) onDelete;
 
   const MyTripCard({
     super.key,
     required this.trip,
-    required this.index,
-    required this.onDelete,
   });
 
   String _formatVnd(int amount) {
@@ -30,43 +27,19 @@ class MyTripCard extends StatelessWidget {
     return buffer.toString().split('').reversed.join('');
   }
 
-  void _showDeleteDialog(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Xác nhận xóa'),
-        content: Text('Bạn có chắc chắn muốn xóa lịch trình "${trip.title}" không? Hành động này không thể hoàn tác.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Hủy'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppTheme.statusError),
-            onPressed: () {
-              Navigator.pop(ctx);
-              onDelete(trip.id);
-            },
-            child: const Text('Xóa lịch trình'),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     Color dotColor = AppTheme.primaryBlue;
-    String statusLabel = 'Sắp tới';
+    String statusLabel = 'Hiện tại / sắp tới';
     Color statusBg = const Color(0xFFE0F2FE);
     Color statusText = const Color(0xFF0284C7);
 
-    if (index == 1) {
+    if (trip.status == 'DRAFT') {
       dotColor = AppTheme.secondaryCoral;
       statusLabel = 'Nháp';
       statusBg = const Color(0xFFFFEDD5);
       statusText = const Color(0xFFC2410C);
-    } else if (index >= 2) {
+    } else if (trip.period == 'HISTORY') {
       dotColor = const Color(0xFF94A3B8);
       statusLabel = 'Đã đi';
       statusBg = const Color(0xFFF1F5F9);
@@ -123,7 +96,7 @@ class MyTripCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Expanded(
-                            child: Text(
+                            child: AppText(
                               trip.title,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -141,7 +114,7 @@ class MyTripCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                       decoration: BoxDecoration(color: statusBg, borderRadius: BorderRadius.circular(12)),
-                      child: Text(
+                      child: AppText(
                         statusLabel,
                         style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: statusText),
                       ),
@@ -153,16 +126,16 @@ class MyTripCard extends StatelessWidget {
                   children: [
                     const Icon(Icons.calendar_today_outlined, size: 14, color: AppTheme.textMuted),
                     const SizedBox(width: 6),
-                    Text(
+                    Flexible(child: AppText(
                       '${trip.startDate} - ${trip.endDate}',
                       style: const TextStyle(fontSize: 13, color: AppTheme.textMuted),
-                    ),
+                    )),
                     const SizedBox(width: 10),
-                    const Text('•', style: TextStyle(color: Color(0xFFCBD5E1))),
+                    const AppText('•', style: TextStyle(color: Color(0xFFCBD5E1))),
                     const SizedBox(width: 10),
                     const Icon(Icons.people_outline, size: 16, color: AppTheme.textMuted),
                     const SizedBox(width: 4),
-                    Text('${trip.travelersCount} người', style: const TextStyle(fontSize: 13, color: AppTheme.textMuted)),
+                    AppText('${trip.travelersCount} người', style: const TextStyle(fontSize: 13, color: AppTheme.textMuted)),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -176,27 +149,28 @@ class MyTripCard extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
+                      Expanded(child: Row(
                         children: [
                           const Icon(Icons.payments_outlined, size: 18, color: AppTheme.primaryBlue),
                           const SizedBox(width: 8),
-                          Text(
-                            '${_formatVnd(trip.totalEstimatedCost)} VNĐ',
+                          Flexible(child: AppText(
+                            '${_formatVnd(trip.totalEstimatedCost)} VNĐ${trip.costComplete ? '' : ' (đã biết)'}',
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
                               color: AppTheme.textPrimary,
                             ),
-                          ),
+                          )),
                         ],
-                      ),
+                      )),
+                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
                           color: const Color(0xFFE0F2FE),
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Text(
+                        child: const AppText(
                           'Ước tính',
                           style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.primaryBlue),
                         ),
@@ -214,7 +188,7 @@ class MyTripCard extends StatelessWidget {
                           const Icon(Icons.location_on_outlined, size: 16, color: AppTheme.primaryBlue),
                           const SizedBox(width: 4),
                           Expanded(
-                            child: Text(
+                            child: AppText(
                               placesText,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -228,39 +202,7 @@ class MyTripCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: 44,
-                          height: 44,
-                          child: IconButton(
-                            tooltip: 'Chỉnh sửa lịch trình',
-                            icon: const Icon(Icons.edit_outlined, size: 18, color: Color(0xFF475569)),
-                            onPressed: () => context.push('/itineraries/${trip.id}/edit', extra: trip),
-                          ),
-                        ),
-                        const SizedBox(width: 2),
-                        SizedBox(
-                          width: 44,
-                          height: 44,
-                          child: IconButton(
-                            tooltip: 'Chia sẻ lịch trình',
-                            icon: const Icon(Icons.share_outlined, size: 18, color: Color(0xFF475569)),
-                            onPressed: () => ShareItineraryDialog.show(context, trip.id, trip.title),
-                          ),
-                        ),
-                        const SizedBox(width: 2),
-                        SizedBox(
-                          width: 44,
-                          height: 44,
-                          child: IconButton(
-                            tooltip: 'Xóa lịch trình',
-                            icon: const Icon(Icons.delete_outline, size: 18, color: AppTheme.statusError),
-                            onPressed: () => _showDeleteDialog(context),
-                          ),
-                        ),
-                      ],
-                    ),
+                    TripActions(trip: trip),
                   ],
                 ),
               ],

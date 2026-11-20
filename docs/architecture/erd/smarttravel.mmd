@@ -1,0 +1,182 @@
+erDiagram
+    %% Current V1 column inventory: 12 tables, including former V11/V12 fields.
+    %% Column names follow the executable Flyway migration chain.
+    %% App rating/count are derived from published reviews, not stored columns.
+    %% Current V1 creates 12 tables and includes users.auth_version.
+    users {
+        bigint id PK
+        varchar email UK
+        varchar password_hash
+        varchar full_name
+        varchar role
+        varchar status
+        bigint auth_version
+        timestamp created_at
+        timestamp updated_at
+    }
+    categories {
+        bigint id PK
+        varchar code UK
+        varchar slug UK
+        varchar name
+        varchar name_en
+        varchar status
+        text description
+        varchar image_url
+        varchar icon
+        varchar color_hex
+        int display_order
+        timestamp created_at
+        timestamp updated_at
+    }
+    destinations {
+        bigint id PK
+        bigint category_id FK
+        varchar name
+        varchar name_en
+        text description_en
+        decimal latitude
+        decimal longitude
+        bigint price_min_vnd
+        bigint price_max_vnd
+        decimal google_rating
+        int google_review_count
+        int visit_duration_minutes
+        json opening_hours
+        varchar featured_reason
+        varchar status
+        text description
+        varchar address
+        varchar phone
+        varchar website
+        varchar image_url
+        text sub_images
+        varchar osm_id
+        timestamp created_at
+        timestamp updated_at
+    }
+    traveler_profiles {
+        bigint user_id PK,FK
+        varchar language
+        bigint default_budget_vnd
+        varchar default_pace
+        varchar default_transport
+        json preferred_categories
+        timestamp created_at
+        timestamp updated_at
+    }
+    favorites {
+        bigint user_id PK,FK
+        bigint destination_id PK,FK
+        timestamp created_at
+    }
+    itineraries {
+        bigint id PK
+        bigint user_id FK
+        varchar title
+        date start_date
+        date end_date
+        int total_days
+        int travelers_count
+        bigint max_budget_vnd
+        varchar pace
+        varchar transport
+        varchar origin_name
+        decimal origin_latitude
+        decimal origin_longitude
+        json preferred_categories_snapshot
+        varchar generation_key
+        json generation_input
+        varchar generation_status
+        json warnings
+        bigint total_estimated_cost
+        boolean cost_complete
+        varchar status
+        varchar share_token UK
+        datetime share_expires_at
+        int version
+        timestamp created_at
+        timestamp updated_at
+    }
+    itinerary_constraints {
+        bigint itinerary_id PK,FK
+        bigint destination_id PK,FK
+        varchar constraint_type
+        json destination_snapshot
+    }
+    itinerary_days {
+        bigint id PK
+        bigint itinerary_id FK
+        int day_number
+        date date
+        varchar origin_name
+        decimal origin_latitude
+        decimal origin_longitude
+    }
+    %% category_code is a server-derived snapshot, not an additional FK.
+    itinerary_items {
+        bigint id PK
+        bigint day_id FK
+        bigint destination_id FK
+        int sequence_order
+        time start_time
+        int duration_minutes
+        bigint estimated_cost_vnd
+        text notes
+        varchar destination_name
+        decimal latitude
+        decimal longitude
+        varchar category_code
+        bigint unit_price_vnd
+        varchar recommendation_reason
+        boolean featured_recommendation
+        boolean upper_price_known
+        int travel_distance_m
+        int travel_duration_seconds
+        varchar route_source
+        mediumtext route_polyline
+    }
+    audit_logs {
+        bigint id PK
+        bigint user_id FK
+        varchar actor_name
+        varchar action
+        varchar entity_type
+        bigint entity_id
+        text details
+        timestamp created_at
+    }
+    password_reset_tokens {
+        bigint id PK
+        bigint user_id FK
+        binary token_hash UK
+        datetime expires_at
+        datetime used_at
+        timestamp created_at
+    }
+    %% UNIQUE destination_reviews(user_id, destination_id).
+    destination_reviews {
+        bigint id PK
+        bigint destination_id FK
+        bigint user_id FK
+        int rating
+        text comment
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    categories ||--o{ destinations : classifies
+    users ||--o| traveler_profiles : has_profile
+    users ||--o{ favorites : bookmarks
+    destinations ||--o{ favorites : bookmarked
+    users ||--o{ itineraries : owns
+    itineraries ||--o{ itinerary_constraints : constrains
+    destinations ||--o{ itinerary_constraints : required_or_excluded
+    itineraries ||--o{ itinerary_days : contains
+    itinerary_days ||--o{ itinerary_items : schedules
+    destinations o|--o{ itinerary_items : visits
+    users o|--o{ audit_logs : performs
+    users ||--o{ password_reset_tokens : resets
+    users ||--o{ destination_reviews : reviews
+    destinations ||--o{ destination_reviews : receives

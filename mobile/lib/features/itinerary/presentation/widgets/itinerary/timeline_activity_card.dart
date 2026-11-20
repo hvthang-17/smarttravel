@@ -1,3 +1,5 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
+import 'package:smarttravel_mobile/core/utils/destination_categories.dart';
 import 'package:flutter/material.dart';
 import 'package:smarttravel_mobile/features/itinerary/data/models/itinerary_model.dart';
 
@@ -37,6 +39,12 @@ class TimelineActivityCard extends StatelessWidget {
         return Icons.park;
       case 'Giải trí':
         return Icons.attractions;
+      case 'Cà phê':
+        return Icons.local_cafe;
+      case 'Check-in':
+        return Icons.camera_alt;
+      case 'Giải trí đêm':
+        return Icons.nightlife;
       case 'Mua sắm':
         return Icons.shopping_bag;
       default:
@@ -66,7 +74,7 @@ class TimelineActivityCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final dest = item.destination;
     final seqStr = item.sequenceOrder.toString().padLeft(2, '0');
-    final cost = item.estimatedCostVnd ?? 0;
+    final cost = item.estimatedCostVnd;
     final timeStr = _formatEndTime(item.startTime, item.durationMinutes);
 
     return InkWell(
@@ -98,7 +106,7 @@ class TimelineActivityCard extends StatelessWidget {
                 color: Color(0xFF0077B6),
                 shape: BoxShape.circle,
               ),
-              child: Text(
+              child: AppText(
                 seqStr,
                 style: const TextStyle(
                   color: Colors.white,
@@ -118,7 +126,7 @@ class TimelineActivityCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
-                _getCategoryIcon(dest?.category),
+                _getCategoryIcon(categoryLabel(item.categoryCode ?? dest?.category ?? '')),
                 color: const Color(0xFF0077B6),
                 size: 24,
               ),
@@ -133,7 +141,7 @@ class TimelineActivityCard extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: Text(
+                        child: AppText(
                           dest?.name ?? 'Điểm tham quan',
                           style: const TextStyle(
                             fontSize: 15,
@@ -152,8 +160,8 @@ class TimelineActivityCard extends StatelessWidget {
                             color: const Color(0xFFF0F9FF),
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: Text(
-                            dest!.category,
+                          child: AppText(
+                            categoryLabel(item.categoryCode ?? dest!.category),
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -176,7 +184,7 @@ class TimelineActivityCard extends StatelessWidget {
                           color: Color(0xFF64748B),
                         ),
                         const SizedBox(width: 4),
-                        Text(
+                        AppText(
                           timeStr,
                           style: const TextStyle(
                             fontSize: 12,
@@ -196,17 +204,17 @@ class TimelineActivityCard extends StatelessWidget {
                         color: Color(0xFF475569),
                       ),
                       const SizedBox(width: 4),
-                      Text(
-                        cost > 0 ? '${_formatVnd(cost)} VNĐ' : 'Miễn phí',
+                      AppText(
+                        cost == null ? 'Chưa rõ giá' : cost > 0 ? '${_formatVnd(cost)} VNĐ' : 'Miễn phí',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: cost > 0
+                          color: cost == null || cost > 0
                               ? const Color(0xFF0F172A)
                               : const Color(0xFF2A9D8F),
                         ),
                       ),
-                      if (cost > 0) ...[
+                      if (cost != null && cost > 0) ...[
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -215,7 +223,7 @@ class TimelineActivityCard extends StatelessWidget {
                             color: const Color(0xFFEDF2F7),
                             borderRadius: BorderRadius.circular(3),
                           ),
-                          child: const Text(
+                          child: const AppText(
                             'Ước tính',
                             style: TextStyle(
                               fontSize: 9,
@@ -228,9 +236,25 @@ class TimelineActivityCard extends StatelessWidget {
                     ],
                   ),
 
+                  if (item.featuredRecommendation)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 8),
+                      child: AppText('Điểm tiêu biểu được đề xuất',
+                        style: TextStyle(fontWeight: FontWeight.w600)),
+                    ),
+                  if (item.recommendationReason?.isNotEmpty == true)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: AppText(item.recommendationReason!),
+                    ),
+                  if (!item.upperPriceKnown && item.estimatedCostVnd != null)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 4),
+                      child: AppText('Chi phí theo mức tối thiểu đã biết'),
+                    ),
                   if (item.notes != null && item.notes!.isNotEmpty) ...[
                     const SizedBox(height: 4),
-                    Text(
+                    AppText(
                       item.notes!,
                       style: const TextStyle(
                         fontSize: 12,

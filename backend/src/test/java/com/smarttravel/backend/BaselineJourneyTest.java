@@ -30,7 +30,7 @@ class BaselineJourneyTest {
         String token = login.path("token").asText();
         assertFalse(token.isBlank());
         JsonNode generated = request(HttpMethod.POST, "/itineraries/generate", Map.of(
-                "title", "Baseline trip", "startDate", "2026-12-01", "endDate", "2026-12-02",
+                "title", "Baseline trip", "startDate", planningDate(0), "endDate", planningDate(1),
                 "travelersCount", 2, "maxBudgetVnd", 5000000, "pace", "balanced",
                 "preferredCategories", List.of("FOOD")), token);
         long id = generated.path("id").asLong();
@@ -50,7 +50,7 @@ class BaselineJourneyTest {
             assertFalse(items.isEmpty());
             days.add(Map.of("dayId", day.path("id").asLong(), "items", items));
         }
-        request(HttpMethod.PUT, "/itineraries/" + id + "/activities", Map.of("days", days), token);
+        request(HttpMethod.PUT, "/itineraries/" + id + "/activities", Map.of("version", generated.path("version").asInt(), "days", days), token);
         JsonNode reopened = request(HttpMethod.GET, "/itineraries/" + id, null, token);
         assertEquals("Baseline persisted edit",
                 reopened.path("days").get(0).path("items").get(0).path("notes").asText());
@@ -60,6 +60,7 @@ class BaselineJourneyTest {
             for (JsonNode item : day.path("items")) sum += item.path("estimatedCostVnd").asLong();
         }
         assertEquals(sum, reopened.path("totalEstimatedCost").asLong());
+        request(HttpMethod.PUT, "/itineraries/" + id + "/save", null, token);
         JsonNode listed = request(HttpMethod.GET, "/itineraries", null, token);
         assertTrue(listed.isArray());
         boolean found = false;
@@ -78,5 +79,8 @@ class BaselineJourneyTest {
         JsonNode envelope = mapper.readTree(response.getBody());
         assertTrue(envelope.path("success").asBoolean());
         return envelope.path("data");
+    }
+    private static String planningDate(int days) {
+        return java.time.LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")).plusDays(days + 1L).toString();
     }
 }

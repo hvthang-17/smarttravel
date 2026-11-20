@@ -1,6 +1,7 @@
 package com.smarttravel.backend.features.itinerary.service;
 
 import com.smarttravel.backend.common.ResourceNotFoundException;
+import com.smarttravel.backend.common.ResourceConflictException;
 import com.smarttravel.backend.common.CurrentUser;
 import org.springframework.security.access.AccessDeniedException;
 import com.smarttravel.backend.features.auth.domain.User;
@@ -8,8 +9,6 @@ import com.smarttravel.backend.features.auth.repository.UserRepository;
 import com.smarttravel.backend.features.destination.domain.Destination;
 import com.smarttravel.backend.features.destination.repository.DestinationRepository;
 import com.smarttravel.backend.features.itinerary.domain.Itinerary;
-import com.smarttravel.backend.features.itinerary.domain.ItineraryDay;
-import com.smarttravel.backend.features.itinerary.domain.ItineraryItem;
 import com.smarttravel.backend.features.itinerary.dto.GenerateItineraryRequest;
 import com.smarttravel.backend.features.itinerary.dto.ItineraryResponseDto;
 import com.smarttravel.backend.features.itinerary.dto.UpdateActivitiesRequest;
@@ -19,10 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalTime;
+import com.smarttravel.backend.features.profile.repository.TravelerProfileRepository;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class ItineraryService {
@@ -30,257 +28,169 @@ public class ItineraryService {
     private final ItineraryRepository itineraryRepository;
     private final DestinationRepository destinationRepository;
     private final UserRepository userRepository;
+    private final com.smarttravel.backend.features.category.service.CatalogPolicy catalog;
+    private final SavedDestinationSelection savedDestinations;
+    private final TripConstraints constraints;
+    private final TripGenerationInput generationInput;
+    private final ItineraryCalculation calculation;
+    private final RecommendationPlanner planner;
+    private final TravelerProfileRepository profiles;
 
     public ItineraryService(ItineraryRepository itineraryRepository,
                             DestinationRepository destinationRepository,
-                            UserRepository userRepository) {
+                            UserRepository userRepository, com.smarttravel.backend.features.category.service.CatalogPolicy catalog,
+                            SavedDestinationSelection savedDestinations, TripConstraints constraints, TripGenerationInput generationInput,
+                            ItineraryCalculation calculation, RecommendationPlanner planner, TravelerProfileRepository profiles) {
         this.itineraryRepository = itineraryRepository;
         this.destinationRepository = destinationRepository;
         this.userRepository = userRepository;
+        this.catalog = catalog;
+        this.savedDestinations = savedDestinations;
+        this.constraints = constraints;
+        this.generationInput = generationInput;
+        this.calculation = calculation;
+        this.planner = planner;
+        this.profiles = profiles;
     }
 
     @Transactional
     public Itinerary generateItinerary(String userEmail, GenerateItineraryRequest request) {
-        User user = userRepository.findByEmail(userEmail)
+        User user = userRepository.lockByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng: " + userEmail));
 
+        CurrentUser.requireCurrentAccount(user);
+        if (request.getStartDate() == null || request.getEndDate() == null) throw new IllegalArgumentException("Thiếu ngày chuyến đi");
         long daysBetween = ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate()) + 1;
-        int totalDays = daysBetween > 0 ? (int) daysBetween : 1;
-
-        List<Destination> allDestinations = destinationRepository.findByStatus("ACTIVE").stream()
-                .filter(d -> d.getCategory() != null && "ACTIVE".equals(d.getCategory().getStatus())).toList();
-        if (allDestinations.isEmpty()) {
-            throw new IllegalStateException("Không có địa điểm nào khả dụng trong hệ thống.");
+        if (daysBetween < 1 || daysBetween > 7 || request.getTravelersCount() == null
+                || request.getTravelersCount() < 1 || request.getTravelersCount() > 10
+                || request.getMaxBudgetVnd() == null || request.getMaxBudgetVnd() <= 0
+                || !List.of("relaxed", "balanced", "packed").contains(request.getPace())) {
+            throw new IllegalArgumentException("Thông tin chuyến đi không hợp lệ");
         }
-
-        List<Destination> candidateDestinations = allDestinations;
-        if (request.getPreferredCategories() != null && !request.getPreferredCategories().isEmpty()) {
-            candidateDestinations = allDestinations.stream()
-                    .filter(d -> {
-                        if (d.getCategory() == null) return false;
-                        String name = d.getCategory().getName();
-                        String code = d.getCategory().getCode();
-                        return request.getPreferredCategories().stream()
-                                .anyMatch(pref -> pref.equalsIgnoreCase(name) || pref.equalsIgnoreCase(code));
-                    })
-                    .collect(Collectors.toList());
-            if (candidateDestinations.isEmpty()) candidateDestinations = allDestinations;
+        int totalDays = (int) daysBetween;
+        String input = generationInput.snapshot(request);
+        if (request.getGenerationKey() != null) {
+            var existing = itineraryRepository.findByUserIdAndGenerationKey(user.getId(), request.getGenerationKey());
+            if (existing.isPresent()) {
+                generationInput.verifyReplay(existing.get(), input);
+                return existing.get();
+            }
         }
-
-        int itemsPerDay = 3;
-        String pace = request.getPace() != null ? request.getPace().toLowerCase() : "balanced";
-        if (pace.equals("relaxed")) itemsPerDay = 2;
-        else if (pace.equals("packed")) itemsPerDay = 4;
-
+        generationInput.validatePlanningWindow(request);
+        List<String> preferred = request.getPreferredCategories() == null
+                ? catalog.profilePreferences(profiles.findById(user.getId())
+                        .map(com.smarttravel.backend.features.profile.domain.TravelerProfile::getPreferredCategories).orElse(List.of()))
+                : catalog.preferences(request.getPreferredCategories());
+        var selection = constraints.resolve(request);
+        var favorites = savedDestinations.load(user.getId(), request.getFavoriteDestinationIds(), totalDays * 7);
         Itinerary itinerary = new Itinerary();
         itinerary.setUser(user);
-        itinerary.setTitle(request.getTitle());
+        itinerary.setTitle(request.getTitle().trim());
         itinerary.setStartDate(request.getStartDate());
         itinerary.setEndDate(request.getEndDate());
         itinerary.setTotalDays(totalDays);
         itinerary.setTravelersCount(request.getTravelersCount());
         itinerary.setMaxBudgetVnd(request.getMaxBudgetVnd());
-        itinerary.setPace(pace);
-
-        List<ItineraryDay> itineraryDays = new ArrayList<>();
-        long totalCost = 0L;
-        LocalDate currentDate = request.getStartDate();
-        List<Destination> pool = new ArrayList<>(candidateDestinations);
-        Collections.shuffle(pool);
-        int poolIndex = 0;
-
-        for (int i = 1; i <= totalDays; i++) {
-            ItineraryDay day = new ItineraryDay();
-            day.setItinerary(itinerary);
-            day.setDayNumber(i);
-            day.setDate(currentDate);
-
-            List<ItineraryItem> items = new ArrayList<>();
-            LocalTime startTime = LocalTime.of(8, 30);
-
-            for (int seq = 1; seq <= itemsPerDay; seq++) {
-                if (pool.isEmpty()) break;
-                Destination dest = pool.get(poolIndex % pool.size());
-                poolIndex++;
-
-                ItineraryItem item = new ItineraryItem();
-                item.setDay(day);
-                item.setDestination(dest);
-                item.setSequenceOrder(seq);
-                item.setStartTime(startTime);
-                item.setDurationMinutes(120);
-
-                long itemCost = (dest.getPriceMinVnd() != null ? dest.getPriceMinVnd() : 0L) * request.getTravelersCount();
-                item.setEstimatedCostVnd(itemCost);
-                String catName = dest.getCategory() != null ? dest.getCategory().getName() : "";
-                item.setNotes("Khám phá " + dest.getName() + (!catName.isEmpty() ? " (" + catName + ")" : ""));
-
-                totalCost += itemCost;
-                items.add(item);
-                startTime = startTime.plusMinutes(150);
-            }
-
-            day.setItems(items);
-            itineraryDays.add(day);
-            currentDate = currentDate.plusDays(1);
-        }
-
-        itinerary.setDays(itineraryDays);
-        itinerary.setTotalEstimatedCost(totalCost);
-        return itineraryRepository.save(itinerary);
+        itinerary.setPace(request.getPace());
+        itinerary.setTransport(TripGenerationInput.transport(request));
+        itinerary.setOriginName(TripGenerationInput.origin(request));
+        itinerary.setOriginLatitude(request.getOriginLatitude());
+        itinerary.setOriginLongitude(request.getOriginLongitude());
+        itinerary.setPreferredCategoriesSnapshot(preferred);
+        itinerary.setGenerationKey(request.getGenerationKey());
+        itinerary.setGenerationInput(input);
+        planner.plan(itinerary, destinationRepository.findByStatus("ACTIVE"), selection.required(), favorites,
+                selection.excludedIds(), preferred);
+        var created = itineraryRepository.saveAndFlush(itinerary);
+        constraints.persist(created.getId(), selection);
+        return created;
     }
 
     @Transactional
     public ItineraryResponseDto generateItineraryDto(String userEmail, GenerateItineraryRequest request) {
         Itinerary itinerary = generateItinerary(userEmail, request);
-        return ItineraryMapper.toDto(itinerary);
+        return toPrivateDto(itinerary);
     }
 
     @Transactional(readOnly = true)
-    public List<Itinerary> getUserItineraries(String userEmail) {
+    public List<ItineraryResponseDto> getUserItineraryDtos(String userEmail, String status) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng: " + userEmail));
-        return itineraryRepository.findByUserId(user.getId());
-    }
-
-    @Transactional(readOnly = true)
-    public List<ItineraryResponseDto> getUserItineraryDtos(String userEmail) {
-        List<Itinerary> list = getUserItineraries(userEmail);
-        return list.stream().map(ItineraryMapper::toDto).collect(Collectors.toList());
+        CurrentUser.requireCurrentAccount(user);
+        return itineraryRepository.findByUserIdAndStatusOrderByUpdatedAtDescIdDesc(user.getId(), status)
+                .stream().map(this::toPrivateDto).toList();
     }
 
     @Transactional(readOnly = true)
     public Itinerary getItineraryById(Long id) {
         Itinerary itinerary = itineraryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lịch trình ID: " + id));
-        requireOwner(itinerary, CurrentUser.email());
+        requireAccess(itinerary, CurrentUser.email());
         return itinerary;
     }
 
     @Transactional(readOnly = true)
     public ItineraryResponseDto getItineraryDtoById(Long id) {
         Itinerary itinerary = getItineraryById(id);
-        return ItineraryMapper.toDto(itinerary);
+        return toPrivateDto(itinerary);
     }
 
     @Transactional
     public Itinerary updateActivities(String userEmail, Long itineraryId, UpdateActivitiesRequest request) {
-        Itinerary itinerary = itineraryRepository.findById(itineraryId)
+        Itinerary itinerary = itineraryRepository.lockById(itineraryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lịch trình ID: " + itineraryId));
 
         requireOwner(itinerary, userEmail);
 
-        Map<Long, ItineraryDay> existingDayMap = itinerary.getDays().stream()
-                .collect(Collectors.toMap(ItineraryDay::getId, d -> d));
-
-        long totalCost = 0L;
-
-        if (request.getDays() != null) {
-            for (UpdateActivitiesRequest.DayUpdateDto dayDto : request.getDays()) {
-                ItineraryDay day = null;
-                if (dayDto.getDayId() != null) {
-                    day = existingDayMap.get(dayDto.getDayId());
-                } else if (dayDto.getDayNumber() != null) {
-                    day = itinerary.getDays().stream()
-                            .filter(d -> d.getDayNumber().equals(dayDto.getDayNumber()))
-                            .findFirst().orElse(null);
-                }
-
-                if (day == null) continue;
-
-                List<ItineraryItem> updatedItems = new ArrayList<>();
-                if (dayDto.getItems() != null) {
-                    for (UpdateActivitiesRequest.ItemUpdateDto itemDto : dayDto.getItems()) {
-                        ItineraryItem item = new ItineraryItem();
-                        item.setDay(day);
-
-                        if (itemDto.getDestinationId() != null) {
-                            Destination dest = destinationRepository.findById(itemDto.getDestinationId())
-                                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy địa điểm"));
-                            if (!"ACTIVE".equals(dest.getStatus()) || dest.getCategory() == null
-                                    || !"ACTIVE".equals(dest.getCategory().getStatus())) {
-                                throw new ResourceNotFoundException("Không tìm thấy địa điểm");
-                            }
-                            item.setDestination(dest);
-                        }
-
-                        item.setSequenceOrder(itemDto.getSequenceOrder());
-                        if (itemDto.getStartTime() != null && !itemDto.getStartTime().isEmpty()) {
-                            try {
-                                item.setStartTime(LocalTime.parse(itemDto.getStartTime()));
-                            } catch (Exception e) {
-                                item.setStartTime(LocalTime.of(9, 0));
-                            }
-                        }
-                        item.setDurationMinutes(itemDto.getDurationMinutes() != null ? itemDto.getDurationMinutes() : 90);
-
-                        long cost = itemDto.getEstimatedCostVnd() != null
-                                ? itemDto.getEstimatedCostVnd()
-                                : (item.getDestination() != null && item.getDestination().getPriceMinVnd() != null
-                                    ? item.getDestination().getPriceMinVnd() * itinerary.getTravelersCount()
-                                    : 0L);
-                        item.setEstimatedCostVnd(cost);
-                        item.setNotes(itemDto.getNotes());
-
-                        totalCost += cost;
-                        updatedItems.add(item);
-                    }
-                }
-
-                day.getItems().clear();
-                day.getItems().addAll(updatedItems);
-            }
-        }
-
-        itinerary.setTotalEstimatedCost(totalCost);
-        itinerary.setVersion(itinerary.getVersion() + 1);
+        var previousActivities = TripConstraints.activityIds(itinerary);
+        var routeDays = ItineraryEditor.apply(itinerary, request, destinationRepository, itineraryRepository::flush);
+        constraints.verifyActivities(itinerary, previousActivities);
+        calculation.recalculate(itinerary, request.isRecalculateAll() ? null : routeDays);
+        ItineraryEditWarnings.refresh(itinerary, constraints.read(itinerary.getId()));
         itinerary.setUpdatedAt(Instant.now());
-        return itineraryRepository.save(itinerary);
-    }
-
-    @Transactional
-    public String createShareToken(String userEmail, Long itineraryId) {
-        Itinerary itinerary = itineraryRepository.findById(itineraryId)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lịch trình ID: " + itineraryId));
-
-        requireOwner(itinerary, userEmail);
-
-        if (itinerary.getShareToken() == null || itinerary.getShareToken().isEmpty()) {
-            String token = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
-            itinerary.setShareToken(token);
-            itineraryRepository.save(itinerary);
-        }
-
-        return itinerary.getShareToken();
+        return itineraryRepository.saveAndFlush(itinerary);
     }
 
     @Transactional
     public ItineraryResponseDto updateActivitiesDto(String userEmail, Long itineraryId, UpdateActivitiesRequest request) {
         Itinerary updated = updateActivities(userEmail, itineraryId, request);
-        return ItineraryMapper.toDto(updated);
-    }
-
-    @Transactional(readOnly = true)
-    public Itinerary getSharedItinerary(String shareToken) {
-        return itineraryRepository.findByShareToken(shareToken)
-                .orElseThrow(() -> new ResourceNotFoundException("Liên kết chia sẻ không hợp lệ hoặc đã hết hạn"));
-    }
-
-    @Transactional(readOnly = true)
-    public ItineraryResponseDto getSharedItineraryDto(String shareToken) {
-        Itinerary itinerary = getSharedItinerary(shareToken);
-        return ItineraryMapper.toDto(itinerary);
+        return toPrivateDto(updated);
     }
 
     @Transactional(readOnly = true)
     public List<ItineraryResponseDto> getAllItineraryDtos() {
         if (!CurrentUser.isAdmin()) throw new AccessDeniedException("Admin required");
-        return itineraryRepository.findAll().stream().map(ItineraryMapper::toDto).toList();
+        return itineraryRepository.findByStatusNot("DRAFT").stream().map(ItineraryMapper::toDto).toList();
     }
 
-    private void requireOwner(Itinerary itinerary, String email) {
-        if (!itinerary.getUser().getEmail().equals(email) && !CurrentUser.isAdmin()) {
-            throw new AccessDeniedException("Bạn không có quyền truy cập lịch trình này");
-        }
+    @Transactional
+    public ItineraryResponseDto saveDraft(Long id) {
+        var trip = itineraryRepository.lockById(id).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lịch trình"));
+        requireOwner(trip, CurrentUser.email());
+        if ("SAVED".equals(trip.getStatus())) return toPrivateDto(trip);
+        if (!"DRAFT".equals(trip.getStatus())) throw new ResourceConflictException("Chỉ có thể lưu bản nháp");
+        trip.setStatus("SAVED");
+        trip.setUpdatedAt(Instant.now());
+        return toPrivateDto(itineraryRepository.saveAndFlush(trip));
+    }
+
+    ItineraryResponseDto toPrivateDto(Itinerary itinerary) {
+        var dto = ItineraryMapper.toDto(itinerary);
+        dto.setConstraints(constraints.read(itinerary.getId()));
+        dto.setOriginName(itinerary.getOriginName());
+        dto.setOriginLatitude(itinerary.getOriginLatitude());
+        dto.setOriginLongitude(itinerary.getOriginLongitude());
+        dto.setPreferredCategories(itinerary.getPreferredCategoriesSnapshot());
+        return dto;
+    }
+
+    private void requireAccess(Itinerary itinerary, String email) {
+        if (CurrentUser.isAdmin() && !"DRAFT".equals(itinerary.getStatus())) return;
+        requireOwner(itinerary, email);
+    }
+
+    static void requireOwner(Itinerary itinerary, String email) {
+        if (!itinerary.getUser().getEmail().equals(email)) throw new AccessDeniedException("Bạn không có quyền truy cập lịch trình này");
+        CurrentUser.requireCurrentAccount(itinerary.getUser());
     }
 }

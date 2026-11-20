@@ -1,172 +1,122 @@
+import 'package:smarttravel_mobile/core/localization/app_language.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:smarttravel_mobile/features/auth/presentation/providers/auth_provider.dart';
+import 'package:smarttravel_mobile/features/itinerary/data/models/trip_management_models.dart';
 import 'package:smarttravel_mobile/features/itinerary/data/repositories/itinerary_repository.dart';
 
 class ShareItineraryDialog extends ConsumerStatefulWidget {
   final int itineraryId;
   final String title;
 
-  const ShareItineraryDialog({
-    super.key,
-    required this.itineraryId,
-    required this.title,
-  });
+  const ShareItineraryDialog({super.key, required this.itineraryId, required this.title});
 
-  static Future<void> show(BuildContext context, int itineraryId, String title) {
-    return showDialog<void>(
-      context: context,
-      builder: (_) => ShareItineraryDialog(itineraryId: itineraryId, title: title),
-    );
-  }
+  static Future<void> show(BuildContext context, int itineraryId, String title) => showDialog<void>(
+    context: context,
+    builder: (_) => ShareItineraryDialog(itineraryId: itineraryId, title: title),
+  );
 
   @override
   ConsumerState<ShareItineraryDialog> createState() => _ShareItineraryDialogState();
 }
 
 class _ShareItineraryDialogState extends ConsumerState<ShareItineraryDialog> {
-  bool _isLoading = true;
-  String? _shareUrl;
-  String? _errorMessage;
+  TripShareLink? _link;
+  bool _busy = false;
+  String? _error;
+  Timer? _expiry;
 
   @override
   void initState() {
     super.initState();
-    _generateShareLink();
+    _load();
   }
 
-  Future<void> _generateShareLink() async {
+  @override
+  void dispose() {
+    _expiry?.cancel();
+    super.dispose();
+  }
+
+  void _load() => _run((repo) => repo.shareStatus(widget.itineraryId));
+
+  Future<void> _run(Future<TripShareLink> Function(ItineraryRepository) action) async {
+    if (_busy) return;
+    final token = ref.read(authNotifierProvider).token;
+    setState(() { _busy = true; _error = null; });
     try {
-      final repo = ref.read(itineraryRepositoryProvider);
-      final res = await repo.shareItinerary(widget.itineraryId);
-      final token = res['shareToken'];
-      if (mounted) {
+      final link = await action(ref.read(itineraryRepositoryProvider));
+      if (!mounted || ref.read(authNotifierProvider).token != token) return;
+      _expiry?.cancel();
+      final remaining = link.expiresAt?.difference(DateTime.now());
+      if (remaining != null && remaining > Duration.zero) {
+        _expiry = Timer(remaining, () { if (mounted) setState(() {}); });
+      }
+      setState(() => _link = link);
+    } catch (error) {
+      if (mounted && ref.read(authNotifierProvider).token == token) {
         setState(() {
-          _shareUrl = 'https://smarttravel.danang.vn/itineraries/shared/$token';
-          _isLoading = false;
+          _link = null;
+          _error = error.toString().replaceFirst('Exception: ', '');
         });
       }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _errorMessage = e.toString().replaceFirst('Exception: ', '');
-          _isLoading = false;
-        });
-      }
+    } finally {
+      if (mounted && ref.read(authNotifierProvider).token == token) setState(() => _busy = false);
     }
   }
 
-  void _copyToClipboard() {
-    if (_shareUrl == null) return;
-    Clipboard.setData(ClipboardData(text: _shareUrl!));
-    Navigator.of(context).pop();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Đã sao chép liên kết chia sẻ (Read-only)!'),
-        backgroundColor: Color(0xFF2A9D8F),
-      ),
-    );
+  bool get _active => _link?.url != null && _link?.expiresAt?.isAfter(DateTime.now()) == true;
+
+  Future<void> _copy() async {
+    if (!_active) return;
+    await Clipboard.setData(ClipboardData(text: _link!.url.toString()));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: AppText('Đã sao chép liên kết.')));
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(authNotifierProvider.select((user) => user.token), (_, __) {
+      if (mounted) Navigator.of(context).pop();
+    });
+    final active = _active;
+    final expired = _link?.state == 'EXPIRED' || (_link?.state == 'ACTIVE' && !active);
     return AlertDialog(
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(16)),
-      ),
-      title: const Row(
-        children: [
-          Icon(Icons.share, color: Color(0xFF0077B6), size: 22),
-          SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              'Chia sẻ chuyến đi',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
-      ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.title,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF0F172A),
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Người nhận liên kết chỉ có quyền xem (Read-only), không thể chỉnh sửa lịch trình gốc của bạn.',
-            style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
-          ),
-          const SizedBox(height: 16),
-          if (_isLoading)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(12),
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF0077B6)),
-                ),
-              ),
-            )
-          else if (_errorMessage != null)
-            Text(
-              _errorMessage!,
-              style: const TextStyle(color: Color(0xFFE76F51), fontSize: 13),
-            )
-          else
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFCBD5E1)),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      _shareUrl ?? '',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF0F172A),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  InkWell(
-                    onTap: _copyToClipboard,
-                    child: const Icon(
-                      Icons.copy,
-                      size: 18,
-                      color: Color(0xFF0077B6),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
+      title: const AppText('Chia sẻ chuyến đi'),
+      scrollable: true,
+      content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        AppText(widget.title, style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 8),
+        const AppText('Ai có liên kết đều xem được lịch trình. Liên kết hết hạn sau 7 ngày.'),
+        const SizedBox(height: 12),
+        if (_busy)
+          const LinearProgressIndicator()
+        else if (_error != null)
+          AppText(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error))
+        else if (active) ...[
+          SelectableText(_link!.url.toString()),
+          const SizedBox(height: 4),
+          AppText('Hết hạn lúc ${_link!.expiresAt!.toLocal().toString().substring(0, 16)}'),
+        ] else
+          AppText(expired ? 'Liên kết đã hết hạn.' : 'Chưa có liên kết đang hoạt động.'),
+      ]),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Đóng', style: TextStyle(color: Color(0xFF64748B))),
-        ),
-        if (!_isLoading && _shareUrl != null)
-          FilledButton.icon(
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFF0077B6),
-            ),
-            onPressed: _copyToClipboard,
-            icon: const Icon(Icons.copy, size: 16),
-            label: const Text('Sao chép liên kết'),
-          ),
+        TextButton(onPressed: () => Navigator.of(context).pop(), child: const AppText('Đóng')),
+        if (!_busy && _error != null)
+          TextButton(onPressed: _load, child: const AppText('Thử lại')),
+        if (!_busy && _error == null && !active)
+          FilledButton(onPressed: () => _run((repo) => repo.shareItinerary(widget.itineraryId)),
+            child: AppText(expired ? 'Tạo liên kết mới' : 'Tạo liên kết')),
+        if (!_busy && active) ...[
+          TextButton(onPressed: () => _run((repo) => repo.revokeShare(widget.itineraryId)),
+            child: const AppText('Thu hồi')),
+          TextButton(onPressed: () => _run((repo) => repo.shareItinerary(widget.itineraryId, rotate: true)),
+            child: const AppText('Thay liên kết')),
+          FilledButton(onPressed: _copy, child: const AppText('Sao chép')),
+        ],
       ],
     );
   }
