@@ -15,8 +15,16 @@ As a traveler, I want to choose pace, interests, and constraints, so that the tr
 
 Acceptance Criteria:
 - Given I select a pace (relaxed, balanced, packed), when the itinerary is generated, then the suggestions reflect that pace.
-- Given I add interests or constraints, when I generate a plan, then those items are considered in the itinerary.
-- Given I have conflicting preferences, when the system cannot satisfy all, then it explains the conflict and offers alternatives.
+- Given I choose categories for this trip, when a plan is generated, then those choices take precedence over the defaults in my profile.
+- Given an excluded stop would rank highly, when the plan is generated, then the stop is omitted. Given a required stop does not fit, the result identifies the stop, the reason and an adjustment I can make.
+
+### US-02a: Điểm tiêu biểu cho chuyến một ngày
+
+Là khách du lịch có một ngày ở Đà Nẵng, tôi muốn lịch ưu tiên một điểm tiêu biểu thuộc nhóm tôi thích để trải nghiệm đặc trưng của thành phố trong thời gian có hạn.
+
+- Cho trước một điểm yêu thích thông thường và một điểm tiêu biểu phù hợp, khi cả hai có thể làm điểm chính của chuyến một ngày, hệ thống ưu tiên điểm tiêu biểu và hiển thị lý do.
+- Khi điểm tiêu biểu đầu bảng đóng cửa hoặc vượt ngân sách, hệ thống thử ứng viên khả thi tiếp theo. Nếu hết điểm tiêu biểu khả thi, hệ thống có thể đề xuất điểm thường.
+- Khi tôi chọn một điểm khác là bắt buộc, hệ thống thử xếp điểm đó trước. Nhãn tiêu biểu giữ vai trò ưu tiên.
 
 ## Epic 2: Xem và đánh giá lịch trình
 
@@ -47,7 +55,7 @@ Acceptance Criteria:
 ## Epic 3: Chỉnh sửa lịch trình
 
 ### US-06: Điều chỉnh lịch trình bằng câu lệnh tự nhiên
-As a traveler, I want to request changes in plain language, so that I can refine the trip without rebuilding it manually.
+As a traveler, I want to request changes in plain language, so that I can refine the trip without rebuilding it manually. Planned extension after MVP.
 
 Acceptance Criteria:
 - Given I enter a request like “make it cheaper” or “add rest day”, when I submit, then the relevant activity or day is adjusted.

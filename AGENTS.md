@@ -121,9 +121,9 @@ Run commands from the corresponding project directory:
 
 ## 4. Documentation Index
 
-- `docs/system-architecture.md`: Detailed end-to-end architecture & data model.
-- `docs/code-standards.md`: Complete coding conventions for Java, Dart, and TypeScript.
-- `docs/agent-workflow.md`: Step-by-step feature implementation guide for coding agents.
+- `docs/architecture/system-architecture.md`: Detailed end-to-end architecture & data model.
+- `docs/development/code-standards.md`: Complete coding conventions for Java, Dart, and TypeScript.
+- `docs/development/agent-workflow.md`: Step-by-step feature implementation guide for coding agents.
 - `docs/codebase-summary.md`: Living summary of implemented features and project structure.
 - `tasks/prd-smarttravel.md`: Product Requirements Document (PRD).
 - `tasks/smarttravel-user-stories.md`: User stories & acceptance criteria.

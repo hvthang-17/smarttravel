@@ -117,7 +117,7 @@ Khách du lịch tự túc cần **một lịch trình hoàn chỉnh theo ngày*
 | Lập kế hoạch | Tạo gợi ý lịch trình | Nhập ngày, ngân sách, số người, sở thích, nơi ở/điểm xuất phát và ràng buộc; hệ thống tạo lịch trình theo ngày. |
 | Chỉnh sửa | Tùy biến lịch trình | Thêm, xóa, đổi thứ tự, thay thế điểm; tính toán lại thông tin ngày và tổng chuyến đi. |
 | Bản đồ | Tuyến đường, thời gian, khoảng cách | Xem các điểm theo ngày và tuyến giữa các điểm từ API bản đồ. |
-| Tài chính | Ước tính ngân sách | Phân tách tham quan, ăn uống, lưu trú (nếu người dùng chọn), đi lại; hiển thị tổng và cảnh báo vượt mức. |
+| Tài chính | Ước tính ngân sách | Tổng chi phí hoạt động của nhóm theo danh mục địa điểm, kèm cảnh báo vượt mức. |
 | Lưu trữ | Yêu thích, lịch trình đã lưu, lịch sử | Lưu điểm yêu thích; tạo/sửa/xóa/sao chép lịch trình; lịch sử các chuyến đã kết thúc. |
 | Quản trị | Quản lý dữ liệu | CRUD và ẩn/hiện địa điểm; quản lý danh mục, ảnh, giá, giờ mở cửa và trạng thái người dùng. |
 
@@ -125,34 +125,36 @@ Khách du lịch tự túc cần **một lịch trình hoàn chỉnh theo ngày*
 
 Không thuộc MVP. Có thể đưa vào giai đoạn sau khi có cơ chế kiểm duyệt; trong MVP dùng dữ liệu biên tập bởi quản trị viên và/hoặc rating công khai từ nhà cung cấp Places theo điều khoản API, không sao chép review đầy đủ.
 
-## 7. Hệ thống gợi ý AI/dựa trên quy tắc
+## 7. Gợi ý lộ trình cá nhân hóa
 
-Trong phạm vi đồ án, “AI recommendation” là bộ máy ra quyết định có thể giải thích được, dựa trên lọc ràng buộc và chấm điểm; không phụ thuộc LLM để tạo dữ liệu địa điểm.
+Mốc 8 dùng gợi ý dựa trên nội dung địa điểm và tối ưu lịch theo ràng buộc. Thuật toán chấm mức độ phù hợp, chèn điểm tham lam và cải thiện lịch bằng tìm kiếm cục bộ. Cách tiếp cận thuộc nhóm bài toán thiết kế chuyến du lịch nhiều ngày có khung giờ mở cửa. [City Trip Planner](https://biblio.ugent.be/publication/1086438)
 
 ### Đầu vào người dùng
 
 - Ngày bắt đầu và số ngày du lịch (MVP: 1–7 ngày).
 - Số khách (MVP: 1–10 người).
-- Ngân sách tổng bằng VND; người dùng chọn bao gồm/không bao gồm lưu trú.
-- Sở thích: biển, văn hóa/lịch sử, ẩm thực, thiên nhiên, giải trí, mua sắm, check-in.
+- Ngân sách hoạt động của cả nhóm bằng VND. Chi phí lưu trú và di chuyển nằm ngoài tổng này.
+- Sở thích theo danh mục `BEACH`, `CULTURE`, `FOOD`, `CHECKIN`, `CAFE`, `NIGHTLIFE`. Lựa chọn trong wizard ưu tiên hơn mặc định hồ sơ. Điểm yêu thích được chọn cho chuyến là tín hiệu bổ sung.
 - Cường độ: thư thả, cân bằng, dày đặc.
 - Phương tiện ưu tiên: đi bộ, xe máy/ô tô/taxi, hoặc không xác định.
 - Điểm xuất phát mỗi ngày/nơi lưu trú (tùy chọn); ràng buộc bắt buộc như điểm muốn đi hoặc điểm cần tránh (tối đa 5 mỗi loại).
 
 ### Logic đề xuất
 
-1. Lọc các địa điểm đang hoạt động ở Đà Nẵng, phù hợp loại hình, sở thích, ngày/giờ mở cửa và ràng buộc loại trừ.
-2. Gán điểm cho từng ứng viên từ độ khớp sở thích, độ phổ biến/điểm chất lượng, mức chi phí, khoảng cách đến điểm trước đó và thời lượng phù hợp cường độ.
-3. Phân bổ số hoạt động trong ngày: thư thả 2–3, cân bằng 3–4, dày đặc 4–5; không tính bữa ăn là hoạt động nếu chưa có dữ liệu phù hợp.
-4. Sắp xếp theo cụm địa lý và dùng Distance Matrix/Directions API để giảm tổng thời gian di chuyển; tôn trọng thời gian đệm mặc định 30 phút giữa các hoạt động.
-5. Kiểm tra tổng chi phí và thời gian mỗi ngày. Nếu vi phạm, thay bằng phương án có điểm tương đương nhưng rẻ/gần hơn hoặc loại hoạt động có điểm thấp nhất.
-6. Trả về lịch trình ngày-qua-ngày cùng lý do ngắn cho từng đề xuất (ví dụ: “phù hợp sở thích biển, cách điểm trước 2,1 km”).
+1. Lọc địa điểm và danh mục `ACTIVE` trong phạm vi Đà Nẵng, bỏ điểm bị loại trừ và tránh lặp điểm. Xét điểm bắt buộc dù khác danh mục sở thích, ưu tiên xếp điểm có ít khung giờ khả thi.
+2. Chấm điểm theo danh mục yêu thích và điểm yêu thích được chọn. Mức phổ biến, chi phí, thời lượng và thời gian đi thêm giúp so sánh các lựa chọn khả thi. Dùng thứ tự phân giải cố định khi bằng điểm để cùng đầu vào và dữ liệu cho cùng kết quả.
+3. Với chuyến **một ngày**, sau khi bố trí điểm bắt buộc, ưu tiên một điểm tiêu biểu khả thi thuộc nhóm khách quan tâm làm điểm chính. Admin biên tập dấu hiệu tiêu biểu và lý do ngắn theo từng danh mục. `google_rating` và `google_review_count` hỗ trợ xếp hạng khi có dữ liệu. Nếu điểm đầu bảng vướng giờ, ngân sách hoặc chặng đi, thử điểm tiêu biểu tiếp theo. Nếu hết lựa chọn khả thi, dùng điểm thường phù hợp. Nhãn đề xuất tiêu biểu là một ưu tiên. Chỉ lựa chọn **Bắt buộc ghé** của khách tạo ràng buộc.
+4. Chèn lần lượt điểm có lợi ích tăng thêm cao nhất vào vị trí khả thi. Tính chặng từ origin hoặc điểm liền trước, thời gian đệm và lịch của các điểm bị ảnh hưởng. Toàn bộ thời lượng tham quan phải nằm trong một ca mở cửa đã biết, kể cả lúc xét ca qua đêm. Mục tiêu lượt tham quan/ngày là 2–3 cho thư thả, 3–4 cho cân bằng và 4–5 cho dày đặc. Bữa ăn có khung riêng, vẫn chiếm thời gian và ngân sách.
+5. Thử đổi thứ tự, chuyển điểm qua ngày khác hoặc thay điểm tùy chọn bằng phương án gần hay rẻ hơn. Giữ thay đổi khi lịch còn khả thi và điểm tổng tăng. Backend tính dự toán bằng đơn giá tham khảo nhân số khách. Cận trên được ưu tiên. Nếu chỉ có cận dưới thì ghi đó là mức tối thiểu đã biết, còn giá thiếu giữ trạng thái chưa đủ dữ liệu.
+6. Trả bản nháp cùng lý do cho từng đề xuất và cảnh báo về dữ liệu thiếu. Ví dụ “Điểm biển tiêu biểu, phù hợp sở thích và cùng khu vực với điểm tiếp theo”.
+
+LLM thuộc phạm vi mở rộng. Nó có thể chuyển yêu cầu tự nhiên như “đi với bố mẹ, muốn đi bộ ít” thành ưu tiên để khách xác nhận. Backend dùng catalog và thuật toán xếp lịch để kiểm tra tính khả thi.
 
 ### Ràng buộc và fallback
 
 - Không tạo tuyến qua ngoài phạm vi thành phố Đà Nẵng trong MVP.
-- Không khẳng định giá, giờ mở cửa, thời gian di chuyển là chính xác tuyệt đối; hiển thị “ước tính” và thời điểm cập nhật.
-- Nếu ngân sách quá thấp hoặc bộ lọc không đủ địa điểm, trả lịch trình một phần kèm thông báo ràng buộc gây thiếu kết quả và các lựa chọn: tăng ngân sách, bỏ điểm bắt buộc, giảm số ngày hoặc đổi sở thích.
+- Gắn cảnh báo nếu chưa biết giờ mở cửa hoặc giá. Với chặng `HAVERSINE`, ghi rõ ước tính. Với `UNKNOWN`, giữ thời gian chưa biết.
+- Nếu còn lịch hữu ích nhưng thiếu điểm bắt buộc hoặc thiếu hoạt động do ràng buộc, trả `PARTIAL` và nêu nguyên nhân cụ thể. Nếu không xếp được hoạt động nào, hướng dẫn điều chỉnh đầu vào.
 - Nếu API bản đồ lỗi/hết hạn mức, dùng khoảng cách đường chim bay — Haversine (công thức tính khoảng cách giữa 2 vị trí địa lý dựa vào tọa độ GPS) — để sắp xếp sơ bộ, gắn nhãn “ước tính”; không hiển thị polyline tuyến đường.
 - Nếu không có giờ mở cửa, cho phép đề xuất nhưng gắn cờ yêu cầu người dùng kiểm tra trước chuyến đi.
 
@@ -164,7 +166,7 @@ Trong phạm vi đồ án, “AI recommendation” là bộ máy ra quyết đ�
 - FR-04: Mỗi trang chi tiết phải hiển thị tối thiểu tên, loại, mô tả, tọa độ, ảnh (nếu có), giá tham khảo, giờ mở cửa (nếu có) và nguồn/thời điểm cập nhật.
 - FR-05: Người dùng đã đăng nhập phải có thể thêm/xóa một địa điểm khỏi danh sách yêu thích.
 - FR-06: Biểu mẫu tạo lịch trình phải xác thực ngày, 1–7 ngày, 1–10 khách và ngân sách lớn hơn 0 trước khi gửi.
-- FR-07: Bộ máy gợi ý phải tạo lịch trình theo ngày từ đầu vào tại mục 4 và chỉ sử dụng điểm đến được phép hiển thị.
+- FR-07: Bộ máy gợi ý phải tạo lịch trình cá nhân hóa theo mục 7 và ưu tiên một điểm tiêu biểu khả thi cho chuyến một ngày.
 - FR-08: Mỗi ngày trong lịch trình phải có thứ tự hoạt động, thời lượng đề xuất, khoảng cách/thời gian di chuyển ước tính đến điểm kế tiếp và chi phí ước tính.
 - FR-09: Người dùng phải có thể thêm, xóa, di chuyển, thay thế hoạt động và yêu cầu tính lại một ngày hoặc toàn lịch trình.
 - FR-10: Khi lịch trình thay đổi, hệ thống phải tính lại tổng chi phí, tổng quãng đường và tổng thời gian; cảnh báo nếu ngân sách bị vượt.
@@ -265,9 +267,11 @@ Trong phạm vi đồ án, “AI recommendation” là bộ máy ra quyết đ�
 
 **Acceptance Criteria:**
 - [ ] Kết quả không chứa điểm bị loại trừ và chứa điểm bắt buộc nếu dữ liệu cho phép.
+- [ ] Chuyến một ngày ưu tiên điểm tiêu biểu khả thi trong danh mục được chọn. Ca kiểm thử có điểm đầu bảng đóng cửa và có điểm tiêu biểu thay thế.
+- [ ] Cùng catalog, ngày và ngân sách, hai bộ sở thích khác nhau cho kết quả khác nhau khi có ứng viên khả thi theo từng nhóm.
 - [ ] Mỗi hoạt động có lý do đề xuất, thời lượng và chi phí ước tính.
 - [ ] Kết quả tuân theo số ngày và giới hạn hoạt động theo cường độ.
-- [ ] Trường hợp không đủ dữ liệu trả fallback theo mục 4, không trả lịch trình sai im lặng.
+- [ ] Trường hợp thiếu dữ liệu hoặc thiếu điểm bắt buộc trả cảnh báo và phương án theo mục 7.
 - [ ] Typecheck/lint passes.
 
 **Priority:** Must-have. **Dependencies:** US-003, US-006.
@@ -321,10 +325,10 @@ Trong phạm vi đồ án, “AI recommendation” là bộ máy ra quyết đ�
 **Priority:** Should-have. **Dependencies:** US-001.
 
 ### US-012: Xem ước tính ngân sách chi tiết
-**Description:** Là khách du lịch, tôi muốn xem tổng chi phí ước tính phân tách theo hạng mục (tham quan, ăn uống, di chuyển, lưu trú) để kiểm soát ngân sách chuyến đi.
+**Description:** Là khách du lịch, tôi muốn xem chi phí hoạt động ước tính theo danh mục địa điểm để kiểm soát ngân sách của nhóm.
 
 **Acceptance Criteria:**
-- [ ] Hiển thị ước tính chi phí theo từng hạng mục: tham quan, ăn uống, di chuyển và lưu trú (nếu bao gồm).
+- [ ] Hiển thị chi phí theo danh mục địa điểm, chẳng hạn `BEACH`, `FOOD` và `CAFE`. Tổng ngân sách hoạt động loại trừ chi phí di chuyển và lưu trú.
 - [ ] Hiển thị tổng chi phí theo từng ngày và tổng toàn chuyến.
 - [ ] Cảnh báo trực quan rõ ràng khi tổng chi phí vượt ngân sách đã nhập.
 - [ ] Khi người dùng thêm/xóa/thay hoạt động, số liệu ngân sách cập nhật lại.
@@ -491,7 +495,7 @@ Repository hiện chỉ có `README.md` (“AI Product Development”), chưa c�
 | Hạng mục | Rủi ro/giả định | Giảm thiểu |
 | --- | --- | --- |
 | API bên thứ ba | Maps/Places cần API key, có hạn mức/chi phí và dữ liệu có thể thiếu/sai. | Đặt quota/caching, khóa key, seed dữ liệu cốt lõi, có Haversine fallback. |
-| Tối ưu lịch trình | Bài toán tối ưu route phức tạp nếu bổ sung quá nhiều ràng buộc. | MVP dùng heuristic (thuật toán tìm lời giải đủ tốt thay vì tối ưu tuyệt đối) chấm điểm + sắp xếp theo cụm, giới hạn 1–7 ngày và 5 hoạt động/ngày. |
+| Tối ưu lịch trình | Bài toán tối ưu route phức tạp nếu bổ sung quá nhiều ràng buộc. | MVP dùng chấm điểm, chèn tham lam và tìm kiếm cục bộ với giới hạn thời gian chạy. |
 | “AI” | Không có dữ liệu lịch sử để huấn luyện mô hình đáng tin cậy. | Mô tả trung thực là recommendation engine giải thích được; chỉ nghiên cứu LLM/ML ở future scope. |
 | Dữ liệu | Giờ mở cửa, giá và thông tin địa điểm thay đổi nhanh. | Hiển thị thời điểm cập nhật/nguồn; cho admin cập nhật và dùng nhãn “ước tính”. |
 | Tiến độ đồ án | Mobile, backend, admin, map và thuật toán dễ vượt năng lực/thời gian. | Làm theo Must-have, dùng dữ liệu seed giới hạn, hoãn review/booking/offline. |
